@@ -35,14 +35,24 @@ export function CoverPage() {
           className={styles.subtitle}
         />
         <div className={styles.rule} />
-        <a
-          href="/blank"
-          className={styles.enter}
-          onClick={(e) => { e.preventDefault(); navigate('/blank'); }}
-        >
-          <span className="visually-hidden">Begin Reading</span>
-          <PixelatedText letterSpacing={2} textTransform="uppercase">Begin Reading</PixelatedText>
-        </a>
+        <div className={styles.actions}>
+          <a
+            href="/blank"
+            className={styles.enter}
+            onClick={(e) => { e.preventDefault(); navigate('/blank'); }}
+          >
+            <span className="visually-hidden">Begin Reading</span>
+            <PixelatedText letterSpacing={2} textTransform="uppercase">Begin Reading</PixelatedText>
+          </a>
+          <a
+            href="/museum"
+            className={styles.enter}
+            onClick={(e) => { e.preventDefault(); navigate('/museum'); }}
+          >
+            <span className="visually-hidden">Reconstitute</span>
+            <PixelatedText letterSpacing={2} textTransform="uppercase">Reconstitute</PixelatedText>
+          </a>
+        </div>
         <span className={styles.meta}>
           <span className="visually-hidden">Unauthorized reproduction is punishable by dissolution</span>
           <PixelatedText letterSpacing={1.5}>Unauthorized reproduction is punishable by dissolution</PixelatedText>

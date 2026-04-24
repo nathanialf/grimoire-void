@@ -41,8 +41,7 @@
 }
 
 .link {
-  display: flex;
-  align-items: center;
+  display: block;
   position: relative;
   color: var(--color-text-dim);
   padding: var(--space-xs) var(--space-sm);
@@ -62,6 +61,8 @@
   content: '>';
   position: absolute;
   left: var(--space-sm);
+  top: var(--space-xs);
+  line-height: 1;
   opacity: 0;
   transition: opacity var(--transition-fast);
 }
@@ -94,8 +95,9 @@
 .pageNum {
   color: var(--color-text-dim);
   opacity: 0.5;
-  margin-right: var(--space-sm);
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
 }
 
 .footer {

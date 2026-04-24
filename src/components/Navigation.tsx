@@ -40,18 +40,15 @@ function NavLink({ entry, pathname, navigate, close }: { entry: NavEntry; pathna
   const isActive = pathname === entry.to;
 
   const inner = (
-    <>
+    <span className={styles.linkLabel}>
+      <span className="visually-hidden">{`${entry.pageNumber} ${entry.label}`}</span>
       <span className={styles.pageNum}>
-        <span className="visually-hidden">{entry.pageNumber}</span>
         <PixelatedText renderSize={7} textTransform="uppercase" letterSpacing={0.8}>{entry.pageNumber}</PixelatedText>
       </span>
-      <span className={styles.linkLabel}>
-        <span className="visually-hidden">{entry.label}</span>
-        {entry.label.split(' ').map((word, i) => (
-          <PixelatedText key={i} renderSize={7} textTransform="uppercase" letterSpacing={0.4}>{word}</PixelatedText>
-        ))}
-      </span>
-    </>
+      {entry.label.split(' ').map((word, i) => (
+        <PixelatedText key={i} renderSize={7} textTransform="uppercase" letterSpacing={0.4}>{word}</PixelatedText>
+      ))}
+    </span>
   );
 
   if (isRedacted && entry.to) {
