@@ -10,7 +10,12 @@ import styles from '../styles/Museum.module.css'
 
 const FADE_MS = 1000
 
-const CARCOSA_BOUNDS = [{ minX: -200, maxX: 200, minZ: -200, maxZ: 200 }]
+// Bounded play area: prevents the player from walking behind the return
+// portal (one-sided plane) and caps wandering into the red expanse.
+// minZ matches the portal's z (PORTAL_Z = -10) so the player can step
+// fully into the trigger zone (z ∈ [-10, -9.1]) and fire beginReturn — but
+// cannot pass through to the back side of the door.
+const CARCOSA_BOUNDS = [{ minX: -15, maxX: 15, minZ: -10, maxZ: 15 }]
 
 function detectTouch(): boolean {
   if (typeof window === 'undefined') return false
