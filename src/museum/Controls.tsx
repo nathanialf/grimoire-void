@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { PointerLockControls } from '@react-three/drei'
 import { Vector3, MathUtils } from 'three'
+import { clampToWalkable, type Rect } from './sceneConstants'
 
 export interface InputState {
   forward: number
@@ -10,33 +11,52 @@ export interface InputState {
   pitch: number
 }
 
+export interface Trigger {
+  zone: Rect
+  onEnter: () => void
+}
+
 export interface ControlsProps {
   input: React.MutableRefObject<InputState>
   touch: boolean
-  onExitZone: () => void
-  exitZone: { minX: number; maxX: number; minZ: number; maxZ: number }
-  roomBounds: { minX: number; maxX: number; minZ: number; maxZ: number }
+  triggers: Trigger[]
+  walkableRects: Rect[]
   pedestalPositions: [number, number][]
+  spawn?: [number, number, number]
+  spawnLookAt?: [number, number, number]
 }
 
 const MOVE_SPEED = 2.5
 const PEDESTAL_RADIUS = 0.8
 
-export function Controls({ input, touch, onExitZone, exitZone, roomBounds, pedestalPositions }: ControlsProps) {
+export function Controls({
+  input,
+  touch,
+  triggers,
+  walkableRects,
+  pedestalPositions,
+  spawn = [0, 1.6, 5],
+  spawnLookAt = [0, 1.6, 0],
+}: ControlsProps) {
   const { camera } = useThree()
   const velocity = useRef(new Vector3())
   const forward = useRef(new Vector3())
   const right = useRef(new Vector3())
-  const triggeredRef = useRef(false)
+  const triggeredRef = useRef<Set<number>>(new Set())
 
   // Initialise camera pose. Use YXZ Euler order so yaw (Y) + pitch (X) never
   // introduce roll on the Z axis — otherwise touch swipes skew the horizon.
+  // Depend on the array elements (not the arrays themselves) so a fresh
+  // literal from the parent render doesn't re-snap the camera to spawn every
+  // frame, which would lock movement and look.
+  const sx = spawn[0], sy = spawn[1], sz = spawn[2]
+  const lx = spawnLookAt[0], ly = spawnLookAt[1], lz = spawnLookAt[2]
   useEffect(() => {
     camera.rotation.order = 'YXZ'
-    camera.position.set(0, 1.6, 5)
-    camera.lookAt(0, 1.6, 0)
+    camera.position.set(sx, sy, sz)
+    camera.lookAt(lx, ly, lz)
     camera.rotation.z = 0
-  }, [camera])
+  }, [camera, sx, sy, sz, lx, ly, lz])
 
   // Desktop WASD keyboard
   useEffect(() => {
@@ -86,9 +106,14 @@ export function Controls({ input, touch, onExitZone, exitZone, roomBounds, pedes
       input.current.pitch = 0
     }
 
-    // Clamp to room bounds (inset 0.5m)
-    next.x = MathUtils.clamp(next.x, roomBounds.minX + 0.5, roomBounds.maxX - 0.5)
-    next.z = MathUtils.clamp(next.z, roomBounds.minZ + 0.5, roomBounds.maxZ - 0.5)
+    // Walkable-rect clamp with axis-separated wall slide.
+    const clamped = clampToWalkable(
+      { x: next.x, z: next.z },
+      { x: camera.position.x, z: camera.position.z },
+      walkableRects,
+    )
+    next.x = clamped.x
+    next.z = clamped.z
     next.y = 1.6
 
     // Push out of pedestals
@@ -105,14 +130,14 @@ export function Controls({ input, touch, onExitZone, exitZone, roomBounds, pedes
 
     camera.position.copy(next)
 
-    // Exit zone check
-    if (
-      !triggeredRef.current &&
-      next.x >= exitZone.minX && next.x <= exitZone.maxX &&
-      next.z >= exitZone.minZ && next.z <= exitZone.maxZ
-    ) {
-      triggeredRef.current = true
-      onExitZone()
+    // Per-trigger entry detection (each fires once per session).
+    for (let i = 0; i < triggers.length; i++) {
+      if (triggeredRef.current.has(i)) continue
+      const z = triggers[i].zone
+      if (next.x >= z.minX && next.x <= z.maxX && next.z >= z.minZ && next.z <= z.maxZ) {
+        triggeredRef.current.add(i)
+        triggers[i].onEnter()
+      }
     }
   })
 

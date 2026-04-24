@@ -32,6 +32,7 @@ import { glassLitany } from './data/reports/glass-litany'
 import styles from './styles/App.module.css'
 
 const MuseumPage = lazy(() => import('./pages/MuseumPage').then(m => ({ default: m.MuseumPage })))
+const CarcosaPage = lazy(() => import('./pages/CarcosaPage').then(m => ({ default: m.CarcosaPage })))
 
 const PAGES = [
   { path: '/', component: SplashScreen },
@@ -257,6 +258,16 @@ export function App() {
       <NavigateProvider value={navigate}>
         <Suspense fallback={<div style={{ background: '#0a0a0a', position: 'fixed', inset: 0 }} />}>
           <MuseumPage />
+        </Suspense>
+      </NavigateProvider>
+    )
+  }
+
+  if (pathname === '/carcosa') {
+    return (
+      <NavigateProvider value={navigate}>
+        <Suspense fallback={<div style={{ background: '#ffffff', position: 'fixed', inset: 0 }} />}>
+          <CarcosaPage />
         </Suspense>
       </NavigateProvider>
     )

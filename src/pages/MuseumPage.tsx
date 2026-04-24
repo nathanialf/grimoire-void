@@ -1,12 +1,13 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Scene } from '../museum/Scene'
-import { roomBounds, pedestalPositions, exitZone } from '../museum/sceneConstants'
+import { walkableRects, pedestalPositions, exitZone, carcosaDoorZone } from '../museum/sceneConstants'
 import { Controls, type InputState } from '../museum/Controls'
 import { TouchControls } from '../museum/TouchControls'
 import { Effects } from '../museum/Effects'
 import { Timer } from '../museum/Timer'
 import { glitchOut } from '../museum/effects/glitchOutUniform'
+import { museumSpawnIntent } from '../museum/spawnIntent'
 import { useNavigate } from '../hooks/useNavigate'
 import styles from '../styles/Museum.module.css'
 
@@ -24,6 +25,23 @@ export function MuseumPage() {
   const inputRef = useRef<InputState>({ forward: 0, strafe: 0, yaw: 0, pitch: 0 })
   const touch = detectTouch()
   const exitingRef = useRef(false)
+
+  // Consumed once on mount. Returning from Carcosa spawns the player just in
+  // front of the antechamber's debug door (past its trigger zone) facing
+  // back toward the corridor, instead of at the museum entrance.
+  const { spawn, spawnLookAt } = useMemo(() => {
+    const intent = museumSpawnIntent.consume()
+    if (intent === 'fromCarcosa') {
+      return {
+        spawn: [-14.5, 1.6, 0] as [number, number, number],
+        spawnLookAt: [0, 1.6, 0] as [number, number, number],
+      }
+    }
+    return {
+      spawn: [0, 1.6, 5] as [number, number, number],
+      spawnLookAt: [0, 1.6, 0] as [number, number, number],
+    }
+  }, [])
 
   // Countdown loop (rAF-based)
   useEffect(() => {
@@ -44,7 +62,7 @@ export function MuseumPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const beginExit = () => {
+  const runGlitchThen = (to: string) => {
     if (exitingRef.current) return
     exitingRef.current = true
     const start = performance.now()
@@ -54,13 +72,15 @@ export function MuseumPage() {
       if (t < 1) {
         requestAnimationFrame(ramp)
       } else {
-        // Settle and route
         glitchOut.value = 0
-        navigate('/cover')
+        navigate(to)
       }
     }
     requestAnimationFrame(ramp)
   }
+
+  const beginExit = () => runGlitchThen('/cover')
+  const beginCarcosaTransition = () => runGlitchThen('/carcosa')
 
   // ESC key exits immediately (via glitch-out)
   useEffect(() => {
@@ -87,10 +107,14 @@ export function MuseumPage() {
         <Controls
           input={inputRef}
           touch={touch}
-          onExitZone={beginExit}
-          exitZone={exitZone}
-          roomBounds={roomBounds}
+          triggers={[
+            { zone: exitZone, onEnter: beginExit },
+            { zone: carcosaDoorZone, onEnter: beginCarcosaTransition },
+          ]}
+          walkableRects={walkableRects}
           pedestalPositions={pedestalPositions}
+          spawn={spawn}
+          spawnLookAt={spawnLookAt}
         />
       </Canvas>
       <Timer ms={msLeft} />

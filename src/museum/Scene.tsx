@@ -1,7 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BackSide, CanvasTexture, NearestFilter, RepeatWrapping, SRGBColorSpace, type Group } from 'three'
+import { CanvasTexture, NearestFilter, RepeatWrapping, SRGBColorSpace, type Group } from 'three'
 import { useFrame } from '@react-three/fiber'
-import { ROOM, PEDESTAL_SIZE, pedestalPositions, EXIT_Z_POS, ARTIFACT_NAMES } from './sceneConstants'
+import {
+  ROOM,
+  PEDESTAL_SIZE,
+  pedestalPositions,
+  EXIT_Z_POS,
+  ARTIFACT_NAMES,
+  CORRIDOR,
+  ANTECHAMBER,
+  CORRIDOR_X_INNER,
+  CORRIDOR_X_OUTER,
+  ANTECHAMBER_CENTER_X,
+  ANTECHAMBER_DOOR_X,
+} from './sceneConstants'
+import {
+  DOOR_W,
+  DOOR_H,
+  DOOR_CY,
+  FrameTicker,
+  makeDebugTickerCanvas,
+} from './frameTicker'
 
 const BAND_HEIGHT = 0.11
 
@@ -127,11 +146,6 @@ function makePedestalTickerCanvas(): { canvas: HTMLCanvasElement; msgWidth: numb
   return { canvas, msgWidth }
 }
 
-const DOOR_W = 1.2
-const DOOR_H = 2.2
-const DOOR_CY = 1.1
-const FRAME_W = 0.12
-
 function ExitDoor() {
   // Pre-generate a handful of aspect-corrected noise textures with different
   // seeds, then cycle the door's map through them every few seconds so the
@@ -161,95 +175,67 @@ function ExitDoor() {
   )
 }
 
-function SealFrame() {
-  const { canvas } = useMemo(() => makeSealTickerCanvas(), [])
-
-  // Each strip gets its own CanvasTexture clone so rotation / repeat / offset
-  // can differ per strip. Rotation orientation traces a clockwise drum around
-  // the frame: top upright, right top-down, bottom upside-down, left bottom-up.
-  const textures = useMemo(() => {
-    const make = (rotation: number) => {
-      const t = new CanvasTexture(canvas)
-      t.wrapS = RepeatWrapping
-      t.wrapT = RepeatWrapping
-      t.anisotropy = 4
-      t.center.set(0.5, 0.5)
-      t.rotation = rotation
-      return t
-    }
-    return {
-      top: make(0),
-      right: make(Math.PI / 2),
-      bottom: make(Math.PI),
-      left: make(-Math.PI / 2),
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvas])
-
-  useFrame((_, dt) => {
-    const d = dt * 0.05
-    // All four strips advance offset.x in the same direction. With the
-    // per-strip texture rotations (top 0, right π/2, bottom π, left -π/2),
-    // identical UV motion maps to a single continuous circulation around the
-    // frame perimeter.
-    textures.top.offset.x = (textures.top.offset.x + d) % 1
-    textures.right.offset.x = (textures.right.offset.x + d) % 1
-    textures.bottom.offset.x = (textures.bottom.offset.x + d) % 1
-    textures.left.offset.x = (textures.left.offset.x + d) % 1
-  })
-
-  // Aspect correction: one canvas "copy" spans msgWidth/h; we set repeat so
-  // the strip samples the right amount for its physical size.
-  const canvasAspect = canvas.width / canvas.height
-  const topAspect = (DOOR_W + 2 * FRAME_W) / FRAME_W
-  const sideAspect = DOOR_H / FRAME_W
-  textures.top.repeat.x = topAspect / canvasAspect
-  textures.bottom.repeat.x = topAspect / canvasAspect
-  textures.left.repeat.x = sideAspect / canvasAspect
-  textures.right.repeat.x = sideAspect / canvasAspect
-
-  const zFront = EXIT_Z_POS - 0.005 // slightly in front of the door/wall
-  const outerLeft = -DOOR_W / 2 - FRAME_W / 2
-  const outerRight = DOOR_W / 2 + FRAME_W / 2
-  const outerTop = DOOR_H + FRAME_W / 2
-  const outerBottom = -FRAME_W / 2
+function DebugDoor() {
+  // Same pulsing-noise treatment as ExitDoor, different seeds so it doesn't
+  // sync visually. The antechamber's -X wall is at x = ANTECHAMBER_DOOR_X;
+  // place the door just inside (positive X).
+  const textures = useMemo(
+    () =>
+      Array.from({ length: 5 }, (_, i) =>
+        makeArtifactTexture(311 + i * 13, { ombre: false, aspect: DOOR_H / DOOR_W }),
+      ),
+    [],
+  )
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setIdx((n) => (n + 1) % textures.length), 2200)
+    return () => clearInterval(id)
+  }, [textures.length])
 
   return (
-    <>
-      {/* Top strip */}
-      <mesh position={[0, outerTop, zFront]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[DOOR_W + 2 * FRAME_W, FRAME_W]} />
-        <meshBasicMaterial map={textures.top} toneMapped={false} />
-      </mesh>
-      {/* Bottom strip */}
-      <mesh position={[0, Math.max(outerBottom, FRAME_W / 2), zFront]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[DOOR_W + 2 * FRAME_W, FRAME_W]} />
-        <meshBasicMaterial map={textures.bottom} toneMapped={false} />
-      </mesh>
-      {/* Left strip */}
-      <mesh position={[outerLeft, DOOR_CY, zFront]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[FRAME_W, DOOR_H]} />
-        <meshBasicMaterial map={textures.left} toneMapped={false} />
-      </mesh>
-      {/* Right strip */}
-      <mesh position={[outerRight, DOOR_CY, zFront]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[FRAME_W, DOOR_H]} />
-        <meshBasicMaterial map={textures.right} toneMapped={false} />
-      </mesh>
-      {/* White corner caps — 80% of the ticker band so a thin red border shows
-          around them. z slightly in front so they win depth over the strips. */}
-      {[
-        [outerLeft, outerTop],
-        [outerRight, outerTop],
-        [outerLeft, Math.max(outerBottom, FRAME_W / 2)],
-        [outerRight, Math.max(outerBottom, FRAME_W / 2)],
-      ].map(([cx, cy], i) => (
-        <mesh key={i} position={[cx, cy, zFront - 0.001]} rotation={[0, Math.PI, 0]}>
-          <planeGeometry args={[FRAME_W * 0.8, FRAME_W * 0.8]} />
-          <meshBasicMaterial color="#ffffff" toneMapped={false} />
-        </mesh>
-      ))}
-    </>
+    <mesh
+      position={[ANTECHAMBER_DOOR_X + 0.001, DOOR_CY, 0]}
+      rotation={[0, Math.PI / 2, 0]}
+    >
+      <planeGeometry args={[DOOR_W, DOOR_H]} />
+      <meshStandardMaterial map={textures[idx]} roughness={0.9} metalness={0} />
+    </mesh>
+  )
+}
+
+function SealFrame() {
+  const { canvas } = useMemo(() => makeSealTickerCanvas(), [])
+  // Museum exit door on +Z wall, facing -Z (rotationY = π). Strips sit at
+  // EXIT_Z_POS - 0.005 (slightly into the room).
+  return (
+    <FrameTicker
+      canvas={canvas}
+      centerX={0}
+      centerY={DOOR_CY}
+      centerZ={EXIT_Z_POS}
+      rotationY={Math.PI}
+      outwardOffset={-0.005}
+      wallAxis="x"
+      cornerColor="#ffffff"
+    />
+  )
+}
+
+function DebugFrame() {
+  const { canvas } = useMemo(() => makeDebugTickerCanvas(), [])
+  // Antechamber debug door on -X wall, facing +X (rotationY = π/2). Strips sit
+  // at ANTECHAMBER_DOOR_X + 0.005 (slightly into the antechamber).
+  return (
+    <FrameTicker
+      canvas={canvas}
+      centerX={ANTECHAMBER_DOOR_X}
+      centerY={DOOR_CY}
+      centerZ={0}
+      rotationY={Math.PI / 2}
+      outwardOffset={0.005}
+      wallAxis="z"
+      cornerColor="#ff0000"
+    />
   )
 }
 
@@ -462,6 +448,206 @@ function makeFloorLightmap(): CanvasTexture {
   return tex
 }
 
+const WALL_COLOR = '#f5f5f5'
+const FLOOR_COLOR = '#eaeaea'
+
+interface PlaneProps {
+  position: [number, number, number]
+  rotation: [number, number, number]
+  size: [number, number]
+  color?: string
+  lightMap?: CanvasTexture
+}
+function FlatPlane({ position, rotation, size, color = WALL_COLOR, lightMap }: PlaneProps) {
+  return (
+    <mesh position={position} rotation={rotation}>
+      <planeGeometry args={size} />
+      <meshStandardMaterial
+        color={color}
+        roughness={0.95}
+        metalness={0}
+        lightMap={lightMap}
+        lightMapIntensity={1.0}
+      />
+    </mesh>
+  )
+}
+
+function MuseumRoom({ lightMap, floorLightMap }: { lightMap: CanvasTexture; floorLightMap: CanvasTexture }) {
+  // Doorway in -X wall — opening matches the corridor cross-section so the
+  // player walks through cleanly without a lip.
+  const openW = CORRIDOR.w
+  const openH = CORRIDOR.h
+  const halfW = ROOM.w / 2  // 6
+  const halfD = ROOM.d / 2  // 6
+  const halfOpenZ = openW / 2
+  const halfH = ROOM.h / 2
+
+  return (
+    <>
+      {/* Floor */}
+      <FlatPlane
+        position={[0, 0.002, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        size={[ROOM.w, ROOM.d]}
+        color={FLOOR_COLOR}
+        lightMap={floorLightMap}
+      />
+      {/* Ceiling */}
+      <FlatPlane
+        position={[0, ROOM.h, 0]}
+        rotation={[Math.PI / 2, 0, 0]}
+        size={[ROOM.w, ROOM.d]}
+        lightMap={lightMap}
+      />
+      {/* +Z wall (back wall, with sealed exit door) — facing -Z */}
+      <FlatPlane
+        position={[0, halfH, halfD]}
+        rotation={[0, Math.PI, 0]}
+        size={[ROOM.w, ROOM.h]}
+        lightMap={lightMap}
+      />
+      {/* -Z wall — facing +Z */}
+      <FlatPlane
+        position={[0, halfH, -halfD]}
+        rotation={[0, 0, 0]}
+        size={[ROOM.w, ROOM.h]}
+        lightMap={lightMap}
+      />
+      {/* +X wall — facing -X */}
+      <FlatPlane
+        position={[halfW, halfH, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+        size={[ROOM.d, ROOM.h]}
+        lightMap={lightMap}
+      />
+      {/* -X wall, split around doorway opening (centered z=0, w=openW, h=openH) */}
+      {/* Above doorway */}
+      <FlatPlane
+        position={[-halfW, openH + (ROOM.h - openH) / 2, 0]}
+        rotation={[0, Math.PI / 2, 0]}
+        size={[ROOM.d, ROOM.h - openH]}
+        lightMap={lightMap}
+      />
+      {/* Left strip (z < -halfOpenZ) */}
+      <FlatPlane
+        position={[-halfW, openH / 2, -(halfD + halfOpenZ) / 2]}
+        rotation={[0, Math.PI / 2, 0]}
+        size={[halfD - halfOpenZ, openH]}
+        lightMap={lightMap}
+      />
+      {/* Right strip (z > halfOpenZ) */}
+      <FlatPlane
+        position={[-halfW, openH / 2, (halfD + halfOpenZ) / 2]}
+        rotation={[0, Math.PI / 2, 0]}
+        size={[halfD - halfOpenZ, openH]}
+        lightMap={lightMap}
+      />
+    </>
+  )
+}
+
+function Corridor() {
+  const cx = (CORRIDOR_X_INNER + CORRIDOR_X_OUTER) / 2 // -8
+  const halfH = CORRIDOR.h / 2
+  const halfW = CORRIDOR.w / 2
+  return (
+    <>
+      {/* Floor */}
+      <FlatPlane
+        position={[cx, 0.002, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        size={[CORRIDOR.len, CORRIDOR.w]}
+        color={FLOOR_COLOR}
+      />
+      {/* Ceiling */}
+      <FlatPlane
+        position={[cx, CORRIDOR.h, 0]}
+        rotation={[Math.PI / 2, 0, 0]}
+        size={[CORRIDOR.len, CORRIDOR.w]}
+      />
+      {/* +Z wall — facing -Z */}
+      <FlatPlane
+        position={[cx, halfH, halfW]}
+        rotation={[0, Math.PI, 0]}
+        size={[CORRIDOR.len, CORRIDOR.h]}
+      />
+      {/* -Z wall — facing +Z */}
+      <FlatPlane
+        position={[cx, halfH, -halfW]}
+        rotation={[0, 0, 0]}
+        size={[CORRIDOR.len, CORRIDOR.h]}
+      />
+    </>
+  )
+}
+
+function Antechamber() {
+  const cx = ANTECHAMBER_CENTER_X
+  const halfH = ANTECHAMBER.h / 2
+  const halfW = ANTECHAMBER.w / 2
+  const halfD = ANTECHAMBER.d / 2
+  // Doorway in the +X wall (toward corridor), matching corridor cross-section.
+  const openW = CORRIDOR.w
+  const openH = CORRIDOR.h
+  const halfOpenZ = openW / 2
+
+  return (
+    <>
+      {/* Floor */}
+      <FlatPlane
+        position={[cx, 0.002, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        size={[ANTECHAMBER.w, ANTECHAMBER.d]}
+        color={FLOOR_COLOR}
+      />
+      {/* Ceiling */}
+      <FlatPlane
+        position={[cx, ANTECHAMBER.h, 0]}
+        rotation={[Math.PI / 2, 0, 0]}
+        size={[ANTECHAMBER.w, ANTECHAMBER.d]}
+      />
+      {/* +Z wall — facing -Z */}
+      <FlatPlane
+        position={[cx, halfH, halfD]}
+        rotation={[0, Math.PI, 0]}
+        size={[ANTECHAMBER.w, ANTECHAMBER.h]}
+      />
+      {/* -Z wall — facing +Z */}
+      <FlatPlane
+        position={[cx, halfH, -halfD]}
+        rotation={[0, 0, 0]}
+        size={[ANTECHAMBER.w, ANTECHAMBER.h]}
+      />
+      {/* -X wall (debug-door wall) — facing +X */}
+      <FlatPlane
+        position={[cx - halfW, halfH, 0]}
+        rotation={[0, Math.PI / 2, 0]}
+        size={[ANTECHAMBER.d, ANTECHAMBER.h]}
+      />
+      {/* +X wall (corridor side), split around doorway */}
+      {/* Above doorway */}
+      <FlatPlane
+        position={[cx + halfW, openH + (ANTECHAMBER.h - openH) / 2, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+        size={[ANTECHAMBER.d, ANTECHAMBER.h - openH]}
+      />
+      {/* Left strip (z < -halfOpenZ) */}
+      <FlatPlane
+        position={[cx + halfW, openH / 2, -(halfD + halfOpenZ) / 2]}
+        rotation={[0, -Math.PI / 2, 0]}
+        size={[halfD - halfOpenZ, openH]}
+      />
+      {/* Right strip (z > halfOpenZ) */}
+      <FlatPlane
+        position={[cx + halfW, openH / 2, (halfD + halfOpenZ) / 2]}
+        rotation={[0, -Math.PI / 2, 0]}
+        size={[halfD - halfOpenZ, openH]}
+      />
+    </>
+  )
+}
+
 export function Scene() {
   const roomLightmap = useMemo(() => makeRoomLightmap(), [])
   const floorLightmap = useMemo(() => makeFloorLightmap(), [])
@@ -471,22 +657,9 @@ export function Scene() {
       <ambientLight intensity={0.35} />
       <hemisphereLight args={[0xffffff, 0xb0b0b0, 0.25]} />
 
-      <mesh position={[0, ROOM.h / 2, 0]}>
-        <boxGeometry args={[ROOM.w, ROOM.h, ROOM.d]} />
-        <meshStandardMaterial
-          side={BackSide}
-          color="#f5f5f5"
-          roughness={0.95}
-          metalness={0}
-          lightMap={roomLightmap}
-          lightMapIntensity={1.0}
-        />
-      </mesh>
-
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]}>
-        <planeGeometry args={[ROOM.w, ROOM.d]} />
-        <meshStandardMaterial color="#eaeaea" roughness={0.95} metalness={0} lightMap={floorLightmap} lightMapIntensity={1.0} />
-      </mesh>
+      <MuseumRoom lightMap={roomLightmap} floorLightMap={floorLightmap} />
+      <Corridor />
+      <Antechamber />
 
       {pedestalPositions.map(([x, z], i) => (
         <Pedestal key={i} x={x} z={z} seed={i} name={ARTIFACT_NAMES[i % ARTIFACT_NAMES.length]} />
@@ -494,6 +667,8 @@ export function Scene() {
 
       <ExitDoor />
       <SealFrame />
+      <DebugDoor />
+      <DebugFrame />
     </>
   )
 }
