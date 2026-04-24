@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { PixelatedText } from './PixelatedText'
 import styles from '../styles/Ticker.module.css'
 
@@ -12,7 +13,7 @@ interface TickerProps {
 }
 
 export function Ticker({ position }: TickerProps) {
-  return (
+  return createPortal(
     <div className={`${styles.ticker} ${position === 'top' ? styles.top : styles.bottom}`} aria-hidden="true">
       <div className={styles.track}>
         {Array.from({ length: REPEAT * 2 }, (_, i) => (
@@ -23,6 +24,7 @@ export function Ticker({ position }: TickerProps) {
           </span>
         ))}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

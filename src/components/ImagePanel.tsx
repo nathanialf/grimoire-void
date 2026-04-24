@@ -39,10 +39,7 @@ export function ImagePanel({
         </div>
       )}
       {caption && (
-        <figcaption className={styles.caption}>
-          <span className="visually-hidden">{caption}</span>
-          <PixelatedText letterSpacing={0.8}>{caption}</PixelatedText>
-        </figcaption>
+        <figcaption className={styles.caption}>{caption}</figcaption>
       )}
     </figure>
   );

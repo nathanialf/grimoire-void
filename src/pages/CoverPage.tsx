@@ -22,9 +22,9 @@ export function CoverPage() {
           lineHeight={0.95}
           className={styles.title}
         />
-        <p className={`${styles.subtitle} visually-hidden`}>A Field Manual for the Lost</p>
+        <p className={`${styles.subtitle} visually-hidden`}>A Restricted Archive of the Lost</p>
         <PixelatedHeading
-          lines={['A Field Manual for the Lost']}
+          lines={['A Restricted Archive of the Lost']}
           renderSize={14}
           scale={2}
           fontStyle="italic"

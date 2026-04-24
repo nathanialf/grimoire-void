@@ -128,8 +128,8 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
           />
         </a>
         <div className={styles.subtitle}>
-          <span className="visually-hidden">Field Manual</span>
-          <PixelatedText letterSpacing={2} textTransform="uppercase">Field Manual</PixelatedText>
+          <span className="visually-hidden">Restricted Archive</span>
+          <PixelatedText letterSpacing={2} textTransform="uppercase">Restricted Archive</PixelatedText>
         </div>
         <div className={styles.list} data-nav-list>
           <ul className={styles.listInner} data-nav-list-inner>
@@ -151,8 +151,8 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
           </span>
           <span className={styles.copyrightLogo} role="img" aria-label="defnf" />
           <span>
-            <span className="visually-hidden">Nathanial Fine</span>
-            <PixelatedText renderSize={7}>Nathanial Fine</PixelatedText>
+            <span className="visually-hidden">DEFNF</span>
+            <PixelatedText renderSize={7}>DEFNF</PixelatedText>
           </span>
         </div>
       </nav>

@@ -35,20 +35,20 @@ const PAGES = [
   { path: '/', component: SplashScreen },
   { path: '/cover', component: CoverPage },
   { path: '/blank', component: BlankPage },
-  { path: '/character/aria-vex', component: () => <CharacterPage {...ariaVex} /> },
-  { path: '/character/yael-mox', component: () => <CharacterPage {...yaelMox} /> },
-  { path: '/bestiary/pallid-watcher', component: () => <BestiaryEntry {...pallidWatcher} /> },
-  { path: '/bestiary/greyfield-choir', component: () => <BestiaryEntry {...greyfieldChoir} /> },
-  { path: '/item/hollow-blade', component: () => <ItemPage {...hollowBlade} /> },
-  { path: '/item/spectral-caul', component: () => <ItemPage {...spectralCaul} /> },
-  { path: '/location/sunken-relay', component: () => <LocationPage {...sunkenRelay} /> },
-  { path: '/location/outpost-kaya', component: () => <LocationPage {...outpostKaya} /> },
-  { path: '/map/wasting-expanse', component: () => <MapPage {...wastingExpanse} /> },
+  { path: '/character/aria-vex', component: () => <CharacterPage {...ariaVex} />, isPlaceholder: true },
+  { path: '/character/yael-mox', component: () => <CharacterPage {...yaelMox} />, isPlaceholder: true },
+  { path: '/bestiary/pallid-watcher', component: () => <BestiaryEntry {...pallidWatcher} />, isPlaceholder: true },
+  { path: '/bestiary/greyfield-choir', component: () => <BestiaryEntry {...greyfieldChoir} />, isPlaceholder: true },
+  { path: '/item/hollow-blade', component: () => <ItemPage {...hollowBlade} />, isPlaceholder: true },
+  { path: '/item/spectral-caul', component: () => <ItemPage {...spectralCaul} />, isPlaceholder: true },
+  { path: '/location/sunken-relay', component: () => <LocationPage {...sunkenRelay} />, isPlaceholder: true },
+  { path: '/location/outpost-kaya', component: () => <LocationPage {...outpostKaya} />, isPlaceholder: true },
+  { path: '/map/wasting-expanse', component: () => <MapPage {...wastingExpanse} />, isPlaceholder: true },
   { path: '/redacted/067', component: RedactedPage },
-  { path: '/lore/omicron-collapse', component: () => <LorePage {...omicronCollapse} /> },
-  { path: '/lore/threshold-accords', component: () => <LorePage {...thresholdAccords} /> },
-  { path: '/report/sable-threshold', component: () => <ReportPage {...sableThreshold} /> },
-  { path: '/report/glass-litany', component: () => <ReportPage {...glassLitany} /> },
+  { path: '/lore/omicron-collapse', component: () => <LorePage {...omicronCollapse} />, isPlaceholder: true },
+  { path: '/lore/threshold-accords', component: () => <LorePage {...thresholdAccords} />, isPlaceholder: true },
+  { path: '/report/sable-threshold', component: () => <ReportPage {...sableThreshold} />, isPlaceholder: true },
+  { path: '/report/glass-litany', component: () => <ReportPage {...glassLitany} />, isPlaceholder: true },
 ]
 
 export function App() {
@@ -259,14 +259,12 @@ export function App() {
     )
   }
 
-  const TICKER_EXCLUDED = new Set(['/', '/cover', '/blank', '/redacted/067'])
-  const showTicker = !TICKER_EXCLUDED.has(pathname)
+  const showTicker = PAGES.find(({ path }) => path === pathname)?.isPlaceholder ?? false
 
   return (
     <NavigateProvider value={navigate}>
       <Navigation onToggle={handleNavToggle} pathname={pathname} navigate={navigate} />
-        <div ref={contentRef} className={`${styles.content}${navOpen ? ` ${styles.contentPushed}` : ''}`} data-content>
-          {showTicker && <Ticker position="top" />}
+        <div ref={contentRef} className={`${styles.content}${navOpen ? ` ${styles.contentPushed}` : ''}${showTicker ? ` ${styles.contentWithTicker}` : ''}`} data-content>
           <div className={styles.contentInner} data-content-inner>
             {PAGES.map(({ path, component: Page }) => (
               <div key={path} data-page={path} style={{ display: pathname === path ? 'block' : 'none' }}>
@@ -276,8 +274,9 @@ export function App() {
               </div>
             ))}
           </div>
-          {showTicker && <Ticker position="bottom" />}
         </div>
+      {showTicker && <Ticker position="top" />}
+      {showTicker && <Ticker position="bottom" />}
       <SignalTear ref={tearRef} effectsOn={effectsOn} />
     </NavigateProvider>
   )
