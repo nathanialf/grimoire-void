@@ -1,0 +1,161 @@
+/* Mission parameters — key/value metadata rows */
+.metaTable {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+.metaRow {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+  line-height: 1.6;
+}
+
+.metaRow:last-child {
+  border-bottom: none;
+}
+
+.metaLabel {
+  color: var(--color-text-dim);
+  white-space: nowrap;
+  padding-top: 0.1em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.metaValue {
+  color: var(--color-text-bright);
+}
+
+.metaValueAccent {
+  color: var(--color-accent);
+}
+
+.metaValueDanger {
+  color: var(--color-danger);
+}
+
+/* Operational timeline */
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-lg);
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+
+.timestamp {
+  color: var(--color-accent);
+  padding-top: 0.15em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.event {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--color-text);
+}
+
+.event em {
+  color: var(--color-text-bright);
+  font-style: italic;
+}
+
+/* Casualties & losses */
+.casualties {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.casualties li {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--color-text);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.casualties li:last-child {
+  border-bottom: none;
+}
+
+.kia {
+  color: var(--color-danger);
+  margin-right: var(--space-sm);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.lost {
+  color: var(--color-accent);
+  margin-right: var(--space-sm);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+/* Recommendations — numbered list with accent numbering */
+.recommendations {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: rec;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.recommendations li {
+  counter-increment: rec;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--color-text);
+  padding-left: 2.5em;
+  position: relative;
+}
+
+.recommendations li::before {
+  content: counter(rec, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: 0.1em;
+}
+
+
+/* Responsive: timeline stacks on small screens */
+@media (max-width: 480px) {
+  .timeline {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline li {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+}

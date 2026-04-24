@@ -1,0 +1,84 @@
+.frame {
+  position: relative;
+  margin: 0;
+  padding: var(--space-xl) var(--space-lg);
+  min-height: 100dvh;
+}
+
+.frameLocked {
+  composes: frame;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* decorative corner brackets */
+.frame::before,
+.frame::after {
+  content: '';
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-color: var(--color-accent);
+  border-style: solid;
+  pointer-events: none;
+  opacity: 1;
+}
+.frame::before {
+  top: var(--space-md);
+  left: var(--space-md);
+  border-width: 3px 0 0 3px;
+}
+.frame::after {
+  bottom: var(--space-md);
+  right: var(--space-md);
+  border-width: 0 3px 3px 0;
+}
+
+.pageNavRow {
+  position: absolute;
+  bottom: var(--space-md);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.pageNumber {
+  color: var(--color-accent);
+  opacity: 0.6;
+}
+
+.pageNavBtn {
+  position: absolute;
+  color: var(--color-accent);
+  opacity: 0.6;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: opacity var(--transition-base);
+  white-space: nowrap;
+}
+
+.pageNavPrev {
+  right: calc(100% + var(--space-lg));
+}
+
+.pageNavNext {
+  left: calc(100% + var(--space-lg));
+}
+
+.pageNavBtn:hover {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .frame {
+    border-left: none;
+    border-right: none;
+  }
+}

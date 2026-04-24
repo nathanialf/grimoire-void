@@ -1,0 +1,47 @@
+.splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  cursor: pointer;
+}
+
+.ringContainer {
+  position: relative;
+  width: clamp(280px, 55vmin, 440px);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-xl);
+}
+
+.rings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.logo {
+  width: 28%;
+  height: auto;
+  position: relative;
+  image-rendering: pixelated;
+}
+
+.corp {
+  margin-bottom: var(--space-2xl);
+}
+
+.enterLabel {
+  position: absolute;
+  bottom: var(--space-xl);
+  color: var(--color-text-dim);
+}

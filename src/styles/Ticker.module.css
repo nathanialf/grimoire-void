@@ -1,0 +1,45 @@
+.ticker {
+  position: sticky;
+  left: 0;
+  right: 0;
+  height: 1.5rem;
+  background: #ff0000;
+  color: #fff;
+  overflow: hidden;
+  z-index: 10;
+  pointer-events: none;
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  border-block: 1px solid #990000;
+}
+
+.top {
+  top: 0;
+}
+
+.bottom {
+  bottom: 0;
+}
+
+.track {
+  display: flex;
+  gap: 1ch;
+  white-space: nowrap;
+  animation: scroll 30s linear infinite;
+  will-change: transform;
+}
+
+.item {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+@keyframes scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}

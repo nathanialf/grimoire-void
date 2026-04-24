@@ -1,0 +1,65 @@
+.block {
+  padding: 0;
+}
+.block + .block {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+}
+
+.header {
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat {
+  padding: var(--space-sm) 0;
+  border-bottom: var(--border-width) solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+}
+.stat:last-child {
+  border-bottom: none;
+}
+
+.label {
+  color: var(--color-stat-label);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-width: 0;
+  overflow: hidden;
+  flex: 1 1 0;
+}
+
+.value {
+  color: var(--color-text-bright);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: right;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.valueDanger {
+  color: var(--color-danger);
+}
+
+.valueAccent {
+  color: var(--color-accent);
+}

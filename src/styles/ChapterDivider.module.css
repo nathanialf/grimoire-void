@@ -1,0 +1,36 @@
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin: 0;
+}
+
+.line {
+  flex: 1;
+  height: 2px;
+  background: rgba(191, 255, 0, 0.25);
+}
+
+.label {
+  color: var(--color-accent);
+  opacity: 0.6;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.ornament {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--color-text-dim);
+}
+.ornament::before {
+  content: '\25C6';
+  font-size: 0.55rem;
+  color: var(--color-accent);
+  opacity: 1;
+}

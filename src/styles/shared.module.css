@@ -1,0 +1,119 @@
+/* ── Page layout ── */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ── Prose text ── */
+.prose {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--color-text);
+}
+
+.prose p + p {
+  margin-top: var(--space-md);
+}
+
+.prose > :last-child {
+  margin-bottom: 0;
+}
+
+/* ── Two-column responsive layout ── */
+.twoCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 1100px) {
+  .twoCol {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: var(--space-xl);
+    align-items: start;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: var(--space-lg);
+  }
+}
+
+/* ── Sidebar stat panel ── */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-bg-inset);
+  padding: var(--space-lg);
+  min-width: 0;
+  overflow: hidden;
+  contain: inline-size;
+}
+
+/* ── Section column (for ChapterDivider-separated content) ── */
+.sectionCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ── Full-bleed image wrapper ── */
+.fullBleed {
+  margin: 0 calc(-1 * var(--space-lg));
+}
+
+/* ── Blockquote ── */
+.quote {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--color-text-dim);
+  border-left: 4px solid var(--color-accent);
+  padding-left: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+.quoteSource {
+  display: block;
+  font-style: normal;
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+  margin-top: var(--space-sm);
+}
+
+/* ── Points of interest list ── */
+.poiList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.poi {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: var(--border-width) solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+.poiMarker {
+  color: var(--color-accent);
+  white-space: nowrap;
+  min-width: 40px;
+}
+
+.poiName {
+  color: var(--color-text-bright);
+}
+
+.poiDesc {
+  color: var(--color-text-dim);
+}

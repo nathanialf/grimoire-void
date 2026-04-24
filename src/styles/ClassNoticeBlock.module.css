@@ -1,0 +1,24 @@
+/* Classification notice — bordered footer block */
+.classNotice {
+  border: var(--border-width) solid var(--color-border);
+  padding: var(--space-lg);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.8;
+  color: var(--color-text-dim);
+}
+
+.classNotice p + p {
+  margin-top: var(--space-md);
+}
+
+.classNoticeHeader {
+  color: var(--color-accent);
+  margin-bottom: var(--space-md);
+}
+
+.classNoticeFooter {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}

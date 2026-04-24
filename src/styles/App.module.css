@@ -1,0 +1,26 @@
+.content {
+  margin-left: var(--nav-width);
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  position: relative;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.content::-webkit-scrollbar {
+  display: none;
+}
+
+.contentInner {
+}
+
+@media (max-width: 768px) {
+  .content {
+    margin-left: 0;
+    transition: transform var(--transition-base);
+  }
+  .contentPushed {
+    transform: translateX(280px);
+  }
+}

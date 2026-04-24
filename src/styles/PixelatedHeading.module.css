@@ -1,0 +1,10 @@
+.wrapper {
+  display: block;
+}
+
+.canvas {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  max-width: 100%;
+  height: auto;
+}

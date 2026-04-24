@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap');
+
+:root {
+  /* ── Palette ── */
+  --color-bg:        #0a0a0a;
+  --color-bg-raised: #111111;
+  --color-bg-inset:  #060606;
+  --color-border:    #3a3a3a;
+  --color-border-hi: #4a4a4a;
+  --color-text:      #c8c8c8;
+  --color-text-dim:  #6a6a6a;
+  --color-text-bright: #e8e8e8;
+  --color-accent:    #bfff00;
+  --color-accent-dim: rgba(191, 255, 0, 0.2);
+  --color-accent-inv: #4000ff;
+  --color-danger:    #ff3333;
+  --color-secondary:     #1e3a8f;
+  --color-secondary-dim: rgba(30, 58, 143, 0.15);
+  --color-secondary-bright: #2b4ec2;
+
+  /* ── Typography ── */
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  /* ── Spacing ── */
+  --space-xs:  0.25rem;
+  --space-sm:  0.5rem;
+  --space-md:  1rem;
+  --space-lg:  2rem;
+  --space-xl:  3rem;
+  --space-2xl: 5rem;
+
+  /* ── Layout ── */
+  --page-max-width: 960px;
+  --nav-width: clamp(220px, calc((100vw - var(--page-max-width) + 220px) / 2), 360px);
+  --border-width: 4px;
+
+  /* ── Stat label (swapped by palette) ── */
+  --color-stat-label: var(--color-text-dim);
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
+
+  transition: background-color 1s ease, border-color 1s ease;
+}
+
+[data-palette="blue"] {
+  --color-bg:        var(--color-secondary);
+  --color-bg-raised: var(--color-secondary-bright);
+  --color-bg-inset:  #152a6b;
+  --color-border:    var(--color-accent);
+  --color-border-hi: var(--color-accent);
+  --color-text-dim:  #a0b0d0;
+  --color-stat-label: var(--color-text-bright);
+  --color-danger:    #ff2266;
+}
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#root {
+  background-color: var(--color-bg);
+  height: 100dvh;
+  position: relative;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text-bright);
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  font-smooth: never;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover {
+  color: var(--color-text-bright);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font-family: var(--font-mono);
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+/* ── Utility ── */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* ── Noise overlay ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+

@@ -1,0 +1,62 @@
+.controls {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 9997;
+}
+
+.btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 56px;
+  background: var(--color-bg-inset);
+  border: var(--border-width) solid var(--color-border);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover {
+  background: var(--color-bg-raised);
+  border-color: var(--color-accent);
+}
+
+.btn:active:not(:disabled) {
+  background: var(--color-accent-dim);
+}
+
+.btnDisabled {
+  opacity: 0.25;
+  cursor: default;
+  pointer-events: none;
+}
+
+.arrow {
+  line-height: 1;
+}
+
+.label {
+  color: var(--color-text-dim);
+  margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .controls {
+    bottom: var(--space-md);
+    right: var(--space-md);
+  }
+
+  .btn {
+    width: 56px;
+    height: 48px;
+  }
+}

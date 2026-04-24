@@ -1,0 +1,21 @@
+.link {
+  color: var(--color-bg);
+  text-decoration: none;
+  background: var(--color-accent);
+  padding: 0.05em 0.35em;
+  letter-spacing: 0.05em;
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+
+.link:hover {
+  background: var(--color-text-bright);
+}
+
+.danger {
+  background: var(--color-danger);
+}
+
+.danger:hover {
+  background: #ff6666;
+}

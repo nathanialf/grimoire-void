@@ -1,0 +1,45 @@
+.page {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.noiseField {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  line-height: 1.1;
+  color: var(--color-danger);
+  overflow: hidden;
+  white-space: pre;
+  word-break: break-all;
+  user-select: none;
+  width: 100%;
+  height: 100%;
+}
+
+:global([data-palette="blue"]) .noiseField {
+  font-weight: 700;
+}
+
+.banner {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.sub {
+  color: var(--color-danger);
+  opacity: 0.6;
+}
+
+.returnLink {
+  color: var(--color-accent);
+  text-decoration: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.returnLink:hover {
+  text-decoration: underline;
+}
