@@ -1,4 +1,4 @@
-import { useEffect, useState, type ElementType } from 'react';
+import { useEffect, useState } from 'react';
 import { renderPixelBitmap, type RenderPixelBitmapResult } from '../utils/renderPixelBitmap';
 import styles from '../styles/PixelatedText.module.css';
 
@@ -26,7 +26,7 @@ export function PixelatedText({
   alphaThreshold = 40,
   fontWeight = 400,
   align = 'left',
-  as: Tag = 'span' as ElementType,
+  as: Tag = 'span',
   className,
 }: PixelatedTextProps) {
   const [result, setResult] = useState<RenderPixelBitmapResult | null>(null);

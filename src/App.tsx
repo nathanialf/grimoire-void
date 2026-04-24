@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useCallback, useEffect } from 'react'
+import { useMemo, useRef, useState, useCallback, useEffect, lazy, Suspense } from 'react'
 import { Navigation } from './components/Navigation'
 import { NavigateProvider } from './hooks/useNavigate'
 import { PageNavProvider } from './hooks/usePageNav'
@@ -31,6 +31,8 @@ import { sableThreshold } from './data/reports/sable-threshold'
 import { glassLitany } from './data/reports/glass-litany'
 import styles from './styles/App.module.css'
 
+const MuseumPage = lazy(() => import('./pages/MuseumPage').then(m => ({ default: m.MuseumPage })))
+
 const PAGES = [
   { path: '/', component: SplashScreen },
   { path: '/cover', component: CoverPage },
@@ -56,7 +58,7 @@ export function App() {
   const tearRef = useRef<SignalTearHandle>(null)
   const [navOpen, setNavOpen] = useState(false)
   const [pathname, setPathname] = useState(window.location.pathname)
-  const [effectsOn, setEffectsOn] = useState(false)
+  const [effectsOn] = useState(false)
   const [fontsReady, setFontsReady] = useState(false)
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export function App() {
       timer = window.setTimeout(() => {
         if (done) return
         done = true
-        observer.disconnect()
+        observer?.disconnect()
         tearRef.current?.reclone()
       }, 150)
     }) : null
@@ -247,6 +249,16 @@ export function App() {
           Loading
         </span>
       </div>
+    )
+  }
+
+  if (pathname === '/museum') {
+    return (
+      <NavigateProvider value={navigate}>
+        <Suspense fallback={<div style={{ background: '#0a0a0a', position: 'fixed', inset: 0 }} />}>
+          <MuseumPage />
+        </Suspense>
+      </NavigateProvider>
     )
   }
 

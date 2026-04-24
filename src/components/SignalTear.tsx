@@ -39,8 +39,18 @@ const CHANNEL_GROUPS = [
   },
 ] as const
 
+interface BleedLayer {
+  className: string
+  baseTranslateX: number
+  maxTranslateX: number
+  baseOpacity: number
+  maxOpacity: number
+  baseSkewX: number
+  maxSkewX: number
+}
+
 // Flat list for rendering
-const ALL_LAYERS = CHANNEL_GROUPS.flatMap(g => g.layers)
+const ALL_LAYERS: readonly BleedLayer[] = CHANNEL_GROUPS.flatMap(g => g.layers as readonly BleedLayer[])
 
 // Random float in [min, max]
 function rand(min: number, max: number) {
