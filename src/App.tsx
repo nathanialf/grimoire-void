@@ -298,11 +298,21 @@ export function App() {
   )
 }
 
-// Hidden SVG filter used by .contentInnerCA. Splits the source into R/G/B
-// channel-isolated layers, offsets red left and blue right by a fraction of
-// a pixel, and additively recombines (feBlend screen on isolated channels is
-// equivalent to addition since each layer only carries one channel). Sized
-// region overflow so the offset edges aren't clipped at the filter bounds.
+// Hidden SVG filter used by .ca-fx. Splits the source into R/G/B channel-
+// isolated layers, offsets red left and blue right by a fraction of a pixel,
+// and screen-blends them. Two important wrinkles:
+//   1. Each channel's alpha is set equal to its color value (matrix row
+//      `1 0 0 0 0` for the alpha row of rOnly, etc). If we kept A=A like a
+//      naive split would, a channel that's zero in the source (e.g. blue in
+//      lime #BFFF00, or all three in black) would still produce an opaque
+//      black silhouette — and screen-blending three offset opaque silhouettes
+//      just dilates the alpha union, fattening the glyphs into a "cutout"
+//      shape with no visible color fringe. Tying alpha to channel value means
+//      a zero channel contributes nothing.
+//   2. The split layers are merged on top of SourceGraphic so pure-black
+//      text (where all three channels are zero and the split produces nothing)
+//      still renders as the original silhouette. For colored text the split
+//      is fully opaque at the stationary position and overrides the source.
 function ChromaticAberrationFilter() {
   return (
     <svg
@@ -317,25 +327,29 @@ function ChromaticAberrationFilter() {
           <feColorMatrix
             in="SourceGraphic"
             type="matrix"
-            values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+            values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0"
             result="rOnly"
           />
           <feOffset in="rOnly" dx="-2.5" dy="0" result="rShift" />
           <feColorMatrix
             in="SourceGraphic"
             type="matrix"
-            values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
+            values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 1 0 0 0"
             result="gOnly"
           />
           <feColorMatrix
             in="SourceGraphic"
             type="matrix"
-            values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 1 0 0"
             result="bOnly"
           />
           <feOffset in="bOnly" dx="2.5" dy="0" result="bShift" />
           <feBlend in="rShift" in2="gOnly" mode="screen" result="rg" />
-          <feBlend in="rg" in2="bShift" mode="screen" />
+          <feBlend in="rg" in2="bShift" mode="screen" result="ca" />
+          <feMerge>
+            <feMergeNode in="SourceGraphic" />
+            <feMergeNode in="ca" />
+          </feMerge>
         </filter>
       </defs>
     </svg>

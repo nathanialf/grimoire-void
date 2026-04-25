@@ -18,13 +18,6 @@
   border-block: 1px solid #990000;
 }
 
-/* Ticker text uses PixelatedText, which adds the global ca-fx wrapper.
-   Strip the filter inside the ticker — the dense scrolling row turns into
-   illegible color noise with chromatic aberration applied. */
-.ticker :global(.ca-fx) {
-  filter: none;
-}
-
 .top {
   top: 0;
 }

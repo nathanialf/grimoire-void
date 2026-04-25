@@ -152,7 +152,9 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
             <span className="visually-hidden">{`\u00A9 ${new Date().getFullYear()}`}</span>
             <PixelatedText renderSize={7}>{`\u00A9 ${new Date().getFullYear()}`}</PixelatedText>
           </span>
-          <span className={styles.copyrightLogo} role="img" aria-label="defnf" />
+          <span className={`${styles.copyrightLogo} ca-fx`} role="img" aria-label="defnf">
+            <span className={styles.copyrightLogoMask} />
+          </span>
           <span>
             <span className="visually-hidden">DEFNF</span>
             <PixelatedText renderSize={7}>DEFNF</PixelatedText>

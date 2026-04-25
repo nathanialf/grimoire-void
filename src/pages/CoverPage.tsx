@@ -11,7 +11,13 @@ export function CoverPage() {
       <div className={styles.cover}>
         <span className={styles.emblem}>
           <span className="visually-hidden">// Sector 9 Archives — Restricted //</span>
-          <PixelatedText letterSpacing={4} textTransform="uppercase">// Sector 9 Archives — Restricted //</PixelatedText>
+          <span className={styles.desktopOnly}>
+            <PixelatedText letterSpacing={4} textTransform="uppercase">// Sector 9 Archives — Restricted //</PixelatedText>
+          </span>
+          <span className={styles.mobileOnly}>
+            <PixelatedText letterSpacing={4} textTransform="uppercase">// Sector 9 Archives —</PixelatedText>
+            <PixelatedText letterSpacing={4} textTransform="uppercase">Restricted //</PixelatedText>
+          </span>
         </span>
         <h1 className="visually-hidden">Grimoire Void</h1>
         <PixelatedHeading
@@ -55,7 +61,13 @@ export function CoverPage() {
         </div>
         <span className={styles.meta}>
           <span className="visually-hidden">Unauthorized reproduction is punishable by dissolution</span>
-          <PixelatedText letterSpacing={1.5}>Unauthorized reproduction is punishable by dissolution</PixelatedText>
+          <span className={styles.desktopOnly}>
+            <PixelatedText letterSpacing={1.5}>Unauthorized reproduction is punishable by dissolution</PixelatedText>
+          </span>
+          <span className={styles.mobileOnly}>
+            <PixelatedText letterSpacing={1.5}>Unauthorized reproduction is</PixelatedText>
+            <PixelatedText letterSpacing={1.5}>punishable by dissolution</PixelatedText>
+          </span>
         </span>
       </div>
     </PageFrame>

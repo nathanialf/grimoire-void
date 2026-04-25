@@ -55,3 +55,23 @@
   bottom: 0;
   color: var(--color-text-dim);
 }
+
+.desktopOnly {
+  display: inline-block;
+}
+
+.mobileOnly {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+@media (max-width: 768px) {
+  .desktopOnly {
+    display: none;
+  }
+  .mobileOnly {
+    display: flex;
+  }
+}
