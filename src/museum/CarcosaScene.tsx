@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
-import { BufferAttribute, BufferGeometry, CanvasTexture, NearestFilter, SRGBColorSpace } from 'three'
-// `CanvasTexture` and `SRGBColorSpace` retained for the portal noise texture.
+import { useMemo, useRef, useState } from 'react'
+import { BufferAttribute, BufferGeometry } from 'three'
+import { useFrame } from '@react-three/fiber'
 import { DOOR_W, DOOR_H, DOOR_CY, FrameTicker, makeDebugTickerCanvas } from './frameTicker'
+import { useRevealedArtifactTexture, DOOR_ANIM_RADIUS } from './Scene'
 
 export const PORTAL_Z = -10
 
@@ -30,13 +31,14 @@ const GALAXY_OFFSET: [number, number, number] = [220, 200, 400]
 // the player so the spiral structure is visible face-on instead of edge-on.
 const SPAWN_FOR_FACING: [number, number, number] = [0, 1.6, -8.8]
 
-// Build an orthonormal disc basis (u, v) such that the disc plane's normal
+// Build an orthonormal disc basis (u, v, n) such that the disc plane's normal
 // points from the galaxy back toward the spawn camera, then slightly tilt
 // the disc around u so the spiral reads as an oblique ellipse with depth
 // rather than a perfectly face-on circle.
 function makeDiscBasis(): {
   u: [number, number, number]
   v: [number, number, number]
+  n: [number, number, number]
 } {
   const dx = GALAXY_OFFSET[0] - SPAWN_FOR_FACING[0]
   const dy = GALAXY_OFFSET[1] - SPAWN_FOR_FACING[1]
@@ -56,24 +58,46 @@ function makeDiscBasis(): {
   const vx = ny * uz - nz * uy
   const vy = nz * ux - nx * uz
   const vz = nx * uy - ny * ux
-  // Tilt: rotate disc around u by TILT so v gets a small +n component.
+  // Tilt: rotate disc around u by TILT so v and n both rotate.
   // Pushes the "top" of the disc toward the viewer, "bottom" away — the disc
   // appears as a tilted ellipse instead of a flat face-on circle.
-  const TILT = Math.PI * 0.22
+  const TILT = Math.PI * 0.28
   const cosT = Math.cos(TILT)
   const sinT = Math.sin(TILT)
   const vTx = vx * cosT + nx * sinT
   const vTy = vy * cosT + ny * sinT
   const vTz = vz * cosT + nz * sinT
-  return { u: [ux, uy, uz], v: [vTx, vTy, vTz] }
+  let nTx = nx * cosT - vx * sinT
+  let nTy = ny * cosT - vy * sinT
+  let nTz = nz * cosT - vz * sinT
+  // Yaw: rotate around worldUp so the disc isn't symmetric to the line of
+  // sight — adds a sideways skew so the ellipse turns away from head-on.
+  const YAW = Math.PI * 0.1
+  const cosY = Math.cos(YAW)
+  const sinY = Math.sin(YAW)
+  const uRx = ux * cosY + uz * sinY
+  const uRz = -ux * sinY + uz * cosY
+  const nRx = nTx * cosY + nTz * sinY
+  const nRz = -nTx * sinY + nTz * cosY
+  const vRx = vTx * cosY + vTz * sinY
+  const vRz = -vTx * sinY + vTz * cosY
+  return {
+    u: [uRx, uy, uRz],
+    v: [vRx, vTy, vRz],
+    n: [nRx, nTy, nRz],
+  }
 }
 
 function makeGalaxyGeometry(): BufferGeometry {
-  const COUNT = 35000
-  const BULGE_FRAC = 0.3
-  const ARM_TIGHTNESS = 0.32
-  const ARM_RADIAL_JITTER = 6
-  const ARM_ANGULAR_JITTER = 0.45
+  const COUNT = 7000
+  const BULGE_FRAC = 0.08
+  const ARM_TIGHTNESS = 0.3
+  const ARM_RADIAL_JITTER = 10
+  const ARM_ANGULAR_JITTER = 0.32
+  // Anisotropic stretch of the disc plane — pulls the whole shape into an
+  // elongated oval along u (the disc's horizontal axis).
+  const STRETCH_U = 1.7
+  const STRETCH_V = 0.85
 
   const { u, v } = makeDiscBasis()
 
@@ -84,21 +108,29 @@ function makeGalaxyGeometry(): BufferGeometry {
     let dx: number
     let dy: number
     if (rand() < BULGE_FRAC) {
-      dx = gaussian(rand) * 18
-      dy = gaussian(rand) * 14
+      dx = gaussian(rand) * 9
+      dy = gaussian(rand) * 7
     } else {
-      const t = 0.4 + rand() * 3.6
+      // Power-weighted t so most stars cluster inward and only a thin tail
+      // reaches the outer arm — feathers the galaxy edge instead of stopping
+      // at a hard radius. Jitters grow with t so outer stars spread wider.
+      const t = 0.4 + Math.pow(rand(), 1.7) * 4.4
       const arm = i % 2 === 0 ? 0 : Math.PI
-      const r = Math.exp(t * ARM_TIGHTNESS) * 9 + (rand() - 0.5) * ARM_RADIAL_JITTER
-      const theta = t * 2.4 + arm + (rand() - 0.5) * ARM_ANGULAR_JITTER
+      const radialScatter = ARM_RADIAL_JITTER * (1 + t * 0.6)
+      const angularScatter = ARM_ANGULAR_JITTER * (1 + t * 0.35)
+      const r = Math.exp(t * ARM_TIGHTNESS) * 20 + (rand() - 0.5) * radialScatter
+      const theta = t * 2.4 + arm + (rand() - 0.5) * angularScatter
       dx = Math.cos(theta) * r
       dy = Math.sin(theta) * r
     }
 
-    // Map disc-plane (dx, dy) to world using the orthonormal basis.
-    positions[i * 3 + 0] = GALAXY_OFFSET[0] + dx * u[0] + dy * v[0]
-    positions[i * 3 + 1] = GALAXY_OFFSET[1] + dx * u[1] + dy * v[1]
-    positions[i * 3 + 2] = GALAXY_OFFSET[2] + dx * u[2] + dy * v[2]
+    // Map disc-plane (dx, dy) to world using the orthonormal basis, with
+    // an anisotropic stretch applied in the disc plane.
+    const sx = dx * STRETCH_U
+    const sy = dy * STRETCH_V
+    positions[i * 3 + 0] = GALAXY_OFFSET[0] + sx * u[0] + sy * v[0]
+    positions[i * 3 + 1] = GALAXY_OFFSET[1] + sx * u[1] + sy * v[1]
+    positions[i * 3 + 2] = GALAXY_OFFSET[2] + sx * u[2] + sy * v[2]
   }
 
   const geo = new BufferGeometry()
@@ -146,14 +178,19 @@ function makeDustGeometry(): BufferGeometry {
   const COUNT = 35000
   const positions = new Float32Array(COUNT * 3)
   const rand = seeded(53)
+  const { u, v, n } = makeDiscBasis()
 
   for (let i = 0; i < COUNT; i++) {
-    // 75% cluster tightly around the galaxy plane to densify the spiral
-    // arms; 25% drift across the rest of the sky dome for ambient density.
+    // 75% cluster in the galaxy disc plane (thin along the normal) to
+    // densify the spiral arms; 25% drift across the rest of the sky dome
+    // for ambient density.
     if (rand() < 0.75) {
-      positions[i * 3 + 0] = GALAXY_OFFSET[0] + gaussian(rand) * 110
-      positions[i * 3 + 1] = GALAXY_OFFSET[1] + gaussian(rand) * 40
-      positions[i * 3 + 2] = GALAXY_OFFSET[2] + gaussian(rand) * 110
+      const du = gaussian(rand) * 90
+      const dv = gaussian(rand) * 90
+      const dn = gaussian(rand) * 12
+      positions[i * 3 + 0] = GALAXY_OFFSET[0] + du * u[0] + dv * v[0] + dn * n[0]
+      positions[i * 3 + 1] = GALAXY_OFFSET[1] + du * u[1] + dv * v[1] + dn * n[1]
+      positions[i * 3 + 2] = GALAXY_OFFSET[2] + du * u[2] + dv * v[2] + dn * n[2]
     } else {
       // Random dome direction.
       let x = 0, y = 0, z = 0, len = 0
@@ -176,59 +213,44 @@ function makeDustGeometry(): BufferGeometry {
   return geo
 }
 
-function makePortalNoiseTexture(seed: number): CanvasTexture {
-  const cellsX = 64
-  const cellsY = Math.round(cellsX * (DOOR_H / DOOR_W))
-  const pixel = 12
-  const w = cellsX * pixel
-  const h = cellsY * pixel
-  const rand = seeded(seed)
-
-  const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
-  const ctx = canvas.getContext('2d')!
-  ctx.fillStyle = '#000000'
-  ctx.fillRect(0, 0, w, h)
-
-  for (let y = 0; y < cellsY; y++) {
-    for (let x = 0; x < cellsX; x++) {
-      const r = rand()
-      if (r < 0.04) {
-        ctx.fillStyle = '#ffffff'
-        ctx.fillRect(x * pixel, y * pixel, pixel, pixel)
-      } else if (r < 0.08) {
-        ctx.fillStyle = '#444444'
-        ctx.fillRect(x * pixel, y * pixel, pixel, pixel)
-      }
-    }
-  }
-
-  const tex = new CanvasTexture(canvas)
-  tex.magFilter = NearestFilter
-  tex.minFilter = NearestFilter
-  tex.generateMipmaps = false
-  tex.colorSpace = SRGBColorSpace
-  return tex
-}
+const PORTAL_PALETTE = { base: '#000000', ink: '#ffffff', accent: '#444444' }
 
 function ReturnPortal() {
-  const textures = useMemo(
-    () => Array.from({ length: 5 }, (_, i) => makePortalNoiseTexture(401 + i * 19)),
-    [],
-  )
   const [idx, setIdx] = useState(0)
-  useEffect(() => {
-    const id = setInterval(() => setIdx((n) => (n + 1) % textures.length), 1800)
-    return () => clearInterval(id)
-  }, [textures.length])
+  const cycleAccum = useRef(0)
+  useFrame(({ camera }, delta) => {
+    const dx = camera.position.x - 0
+    const dy = camera.position.y - DOOR_CY
+    const dz = camera.position.z - PORTAL_Z
+    if (Math.hypot(dx, dy, dz) >= DOOR_ANIM_RADIUS) return
+    cycleAccum.current += delta * 1000
+    if (cycleAccum.current >= 1800) {
+      cycleAccum.current = 0
+      setIdx((n) => (n + 1) % 5)
+    }
+  })
+  // Same per-pixel reveal animation the museum doors use, with a black/white
+  // palette and the portal's sparse noise density.
+  const tex = useRevealedArtifactTexture(
+    401 + idx * 19,
+    {
+      ombre: false,
+      aspect: DOOR_H / DOOR_W,
+      palette: PORTAL_PALETTE,
+      density: 0.08,
+      inkFraction: 0.5,
+      // Red perimeter ink — matches the return portal's red FrameTicker.
+      edgeInk: { thickness: 12, color: '#ff0000' },
+    },
+    900,
+  )
 
   // Faces +Z (toward the player at spawn). Door panel only — frame is drawn
   // separately by ReturnPortalFrame so the ticker strips can render in front.
   return (
     <mesh position={[0, DOOR_CY, PORTAL_Z]}>
       <planeGeometry args={[DOOR_W, DOOR_H]} />
-      <meshBasicMaterial map={textures[idx]} toneMapped={false} />
+      <meshBasicMaterial map={tex} toneMapped={false} />
     </mesh>
   )
 }
@@ -301,6 +323,6 @@ export function CarcosaScene() {
 export const returnPortalZone = {
   minX: -0.9,
   maxX: 0.9,
-  minZ: PORTAL_Z,
-  maxZ: PORTAL_Z + 0.9,
+  minZ: -9.8,
+  maxZ: -8.9,
 }

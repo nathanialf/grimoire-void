@@ -27,6 +27,7 @@ const entries: NavEntry[] = [
   { label: 'Operation Sable Threshold', to: '/report/sable-threshold', pageNumber: '085' },
   { label: 'Operation Glass Litany', to: '/report/glass-litany', pageNumber: '090' },
   { label: '\u2588\u2588\u2588\u2588\u2588\u2588 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588', to: '/redacted/067', pageNumber: '067', redacted: true },
+  { label: 'Credits', to: '/credits', pageNumber: '999' },
 ].sort((a, b) => a.pageNumber.localeCompare(b.pageNumber));
 
 interface NavigationProps {

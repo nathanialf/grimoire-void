@@ -13,8 +13,19 @@ export interface InputState {
 
 export interface Trigger {
   zone: Rect
-  onEnter: () => void
+  onActivate: () => void
+  label?: string
+  // Optional unit vector (xz) pointing outward through the door. If set, the
+  // trigger only activates when the camera is facing roughly this direction
+  // (dot >= FACING_DOT_THRESHOLD) so players don't trip doors while looking
+  // away from them.
+  facing?: [number, number]
+  // If true, fire onActivate the moment the player walks into the zone
+  // (facing the door) instead of showing a prompt + waiting for E/tap.
+  instant?: boolean
 }
+
+const FACING_DOT_THRESHOLD = 0.5
 
 export interface ControlsProps {
   input: React.MutableRefObject<InputState>
@@ -24,6 +35,7 @@ export interface ControlsProps {
   pedestalPositions: [number, number][]
   spawn?: [number, number, number]
   spawnLookAt?: [number, number, number]
+  onActiveTriggerChange?: (index: number | null) => void
 }
 
 const MOVE_SPEED = 2.5
@@ -37,12 +49,32 @@ export function Controls({
   pedestalPositions,
   spawn = [0, 1.6, 5],
   spawnLookAt = [0, 1.6, 0],
+  onActiveTriggerChange,
 }: ControlsProps) {
   const { camera } = useThree()
   const velocity = useRef(new Vector3())
   const forward = useRef(new Vector3())
   const right = useRef(new Vector3())
-  const triggeredRef = useRef<Set<number>>(new Set())
+  const activeRef = useRef<number | null>(null)
+  const wasInsideInstantRef = useRef<Set<number>>(new Set())
+  const triggersRef = useRef(triggers)
+  useEffect(() => { triggersRef.current = triggers }, [triggers])
+  const onActiveTriggerChangeRef = useRef(onActiveTriggerChange)
+  useEffect(() => { onActiveTriggerChangeRef.current = onActiveTriggerChange }, [onActiveTriggerChange])
+
+  // 'E' key activates the currently-inside trigger (desktop only — mobile
+  // uses the DoorPrompt button directly).
+  useEffect(() => {
+    if (touch) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'KeyE') return
+      const i = activeRef.current
+      if (i === null) return
+      triggersRef.current[i]?.onActivate()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [touch])
 
   // Initialise camera pose. Use YXZ Euler order so yaw (Y) + pitch (X) never
   // introduce roll on the Z axis — otherwise touch swipes skew the horizon.
@@ -130,14 +162,37 @@ export function Controls({
 
     camera.position.copy(next)
 
-    // Per-trigger entry detection (each fires once per session).
+    // Presence detection. Non-instant triggers report an active index for the
+    // E-prompt UI; instant triggers fire onActivate on walk-in (rising-edge
+    // crossing of the zone boundary while facing the door).
+    let active: number | null = null
+    const stillInsideInstant = new Set<number>()
     for (let i = 0; i < triggers.length; i++) {
-      if (triggeredRef.current.has(i)) continue
-      const z = triggers[i].zone
-      if (next.x >= z.minX && next.x <= z.maxX && next.z >= z.minZ && next.z <= z.maxZ) {
-        triggeredRef.current.add(i)
-        triggers[i].onEnter()
+      const t = triggers[i]
+      const z = t.zone
+      const inside = next.x >= z.minX && next.x <= z.maxX && next.z >= z.minZ && next.z <= z.maxZ
+      if (!inside) continue
+      let facingOk = true
+      if (t.facing) {
+        const fx = forward.current.x
+        const fz = forward.current.z
+        const flen = Math.hypot(fx, fz) || 1
+        const dot = (fx / flen) * t.facing[0] + (fz / flen) * t.facing[1]
+        facingOk = dot >= FACING_DOT_THRESHOLD
       }
+      if (t.instant) {
+        stillInsideInstant.add(i)
+        if (facingOk && !wasInsideInstantRef.current.has(i)) {
+          t.onActivate()
+        }
+      } else if (facingOk && active === null) {
+        active = i
+      }
+    }
+    wasInsideInstantRef.current = stillInsideInstant
+    if (active !== activeRef.current) {
+      activeRef.current = active
+      onActiveTriggerChangeRef.current?.(active)
     }
   })
 

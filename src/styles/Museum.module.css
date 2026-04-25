@@ -40,6 +40,28 @@
   to { opacity: 0.2; }
 }
 
+.prompt {
+  position: fixed;
+  bottom: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  line-height: 1;
+  color: #000;
+  background: var(--color-accent);
+  border: none;
+  text-transform: uppercase;
+  user-select: none;
+  z-index: 11;
+}
+
+div.prompt { pointer-events: none; }
+button.prompt { pointer-events: auto; cursor: pointer; }
+
 .hint {
   position: fixed;
   bottom: var(--space-md);

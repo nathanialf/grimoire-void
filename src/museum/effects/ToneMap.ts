@@ -26,7 +26,7 @@ export class ToneMapEffect extends Effect {
   constructor() {
     super('ToneMapEffect', fragment, {
       uniforms: new Map<string, Uniform>([
-        ['exposure', new Uniform(1.35)],
+        ['exposure', new Uniform(1.6)],
       ]),
     })
   }

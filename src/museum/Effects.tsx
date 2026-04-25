@@ -12,6 +12,16 @@ function EffectWrapper({ effect }: { effect: Effect }) {
 export function Effects() {
   const grade = useMemo(() => new ColorGradeEffect(), [])
   const glitch = useMemo(() => new GlitchOutEffect(), [])
+  // Chromatic aberration offset is in UV space, so a fixed value is much
+  // more visible on a 4K monitor than a 720p laptop. Scale it so the CA
+  // shift stays around a constant pixel count instead of blowing out on
+  // big desktop screens.
+  const caOffset = useMemo(() => {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1920
+    const targetPx = 2.2 // approximate pixel shift in the X direction
+    const ux = targetPx / w
+    return new Vector2(ux, ux * 0.6)
+  }, [])
 
   return (
     <EffectComposer multisampling={0}>
@@ -23,7 +33,7 @@ export function Effects() {
       />
       <EffectWrapper effect={grade} />
       <ChromaticAberration
-        offset={new Vector2(0.0025, 0.0015)}
+        offset={caOffset}
         radialModulation={false}
         modulationOffset={0}
         blendFunction={BlendFunction.NORMAL}

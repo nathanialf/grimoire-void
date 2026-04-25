@@ -7,8 +7,11 @@ const fragment = /* glsl */ `
     vec3 c = inputColor.rgb;
     float l = luma(c);
 
-    // Lift: raise shadows toward blue+red
-    c += vec3(0.05, 0.0, 0.08) * (1.0 - l);
+    // Lift: raise shadows toward blue+red (reduced so blacks stay deeper)
+    c += vec3(0.02, 0.0, 0.04) * (1.0 - l);
+
+    // Black-point crush: pull the toe down so anything below ~6% stays at 0
+    c = max(c - vec3(0.06), vec3(0.0)) / (1.0 - 0.06);
 
     // Gain: slight overall drop
     c *= 0.92;

@@ -15,6 +15,7 @@ import { MapPage } from './pages/MapPage'
 import { LorePage } from './pages/LorePage'
 import { ReportPage } from './pages/ReportPage'
 import { RedactedPage } from './pages/RedactedPage'
+import { CreditsPage } from './pages/CreditsPage'
 import { usePageScroll } from './hooks/usePageScroll'
 import { ariaVex } from './data/characters/aria-vex'
 import { yaelMox } from './data/characters/yael-mox'
@@ -32,7 +33,6 @@ import { glassLitany } from './data/reports/glass-litany'
 import styles from './styles/App.module.css'
 
 const MuseumPage = lazy(() => import('./pages/MuseumPage').then(m => ({ default: m.MuseumPage })))
-const CarcosaPage = lazy(() => import('./pages/CarcosaPage').then(m => ({ default: m.CarcosaPage })))
 
 const PAGES = [
   { path: '/', component: SplashScreen },
@@ -52,6 +52,7 @@ const PAGES = [
   { path: '/lore/threshold-accords', component: () => <LorePage {...thresholdAccords} />, isPlaceholder: true },
   { path: '/report/sable-threshold', component: () => <ReportPage {...sableThreshold} />, isPlaceholder: true },
   { path: '/report/glass-litany', component: () => <ReportPage {...glassLitany} />, isPlaceholder: true },
+  { path: '/credits', component: CreditsPage },
 ]
 
 export function App() {
@@ -258,16 +259,6 @@ export function App() {
       <NavigateProvider value={navigate}>
         <Suspense fallback={<div style={{ background: '#0a0a0a', position: 'fixed', inset: 0 }} />}>
           <MuseumPage />
-        </Suspense>
-      </NavigateProvider>
-    )
-  }
-
-  if (pathname === '/carcosa') {
-    return (
-      <NavigateProvider value={navigate}>
-        <Suspense fallback={<div style={{ background: '#ffffff', position: 'fixed', inset: 0 }} />}>
-          <CarcosaPage />
         </Suspense>
       </NavigateProvider>
     )
