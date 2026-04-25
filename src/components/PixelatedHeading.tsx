@@ -69,7 +69,7 @@ export function PixelatedHeading({
 
   return (
     <div
-      className={`${styles.wrapper} ${className || ''}`}
+      className={`${styles.wrapper} ca-fx ${className || ''}`}
       aria-hidden="true"
       style={align === 'center' ? { textAlign: 'center' } : undefined}
     >

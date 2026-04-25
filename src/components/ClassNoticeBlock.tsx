@@ -19,8 +19,7 @@ export function ClassNoticeBlock({ classNotice }: { classNotice: ClassNotice }) 
         <p className={styles.classNoticeFooter}>
           {classNotice.footer.split('\n').map((line, i) => (
             <span key={i}>
-              <span className="visually-hidden">{line}</span>
-              <PixelatedText letterSpacing={0.8}>{line}</PixelatedText>
+              {line}
               {i < classNotice.footer.split('\n').length - 1 && <br />}
             </span>
           ))}

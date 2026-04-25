@@ -21,9 +21,8 @@
   font-weight: 700;
   letter-spacing: 0.15em;
   line-height: 1;
-  color: #fff;
+  color: #000;
   background: var(--color-accent);
-  mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 10;
 }

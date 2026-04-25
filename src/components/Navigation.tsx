@@ -98,7 +98,7 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
   return (
     <>
       <button
-        className={styles.toggle}
+        className={`${styles.toggle} ca-fx`}
         onClick={() => toggle(!open)}
         aria-label="Toggle navigation"
       >
@@ -142,7 +142,12 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
           <span className="visually-hidden">ver 0.2 // classified</span>
           <PixelatedText letterSpacing={0.8}>ver 0.2 // classified</PixelatedText>
         </div>
-        <div className={styles.copyright}>
+        <a
+          className={styles.copyright}
+          href="https://defnf.com"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <span>
             <span className="visually-hidden">{`\u00A9 ${new Date().getFullYear()}`}</span>
             <PixelatedText renderSize={7}>{`\u00A9 ${new Date().getFullYear()}`}</PixelatedText>
@@ -152,7 +157,7 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
             <span className="visually-hidden">DEFNF</span>
             <PixelatedText renderSize={7}>DEFNF</PixelatedText>
           </span>
-        </div>
+        </a>
       </nav>
     </>
   );

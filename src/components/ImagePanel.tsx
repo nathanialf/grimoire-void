@@ -19,7 +19,7 @@ export function ImagePanel({
   placeholderLabel = 'illustration pending',
 }: ImagePanelProps) {
   return (
-    <figure className={styles.panel}>
+    <figure className={`${styles.panel} ca-fx`}>
       {src ? (
         <img className={styles.image} src={src} alt={alt || ''} />
       ) : (

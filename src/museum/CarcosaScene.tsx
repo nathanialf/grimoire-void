@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { BufferAttribute, BufferGeometry } from 'three'
+import { BufferAttribute, BufferGeometry, Group, Matrix4, Quaternion, Vector3 } from 'three'
 import { useFrame } from '@react-three/fiber'
 import { DOOR_W, DOOR_H, DOOR_CY, FrameTicker, makeDebugTickerCanvas } from './frameTicker'
 import { useRevealedArtifactTexture, DOOR_ANIM_RADIUS } from './Scene'
@@ -88,6 +88,9 @@ function makeDiscBasis(): {
   }
 }
 
+// Galaxy stars in disc-local coordinates: x along the disc's u axis, y along
+// v, z = 0. The parent group applies GALAXY_OFFSET + the disc basis, so this
+// geometry can be spun around its local z (the disc normal) without rebuilding.
 function makeGalaxyGeometry(): BufferGeometry {
   const COUNT = 7000
   const BULGE_FRAC = 0.08
@@ -98,8 +101,6 @@ function makeGalaxyGeometry(): BufferGeometry {
   // elongated oval along u (the disc's horizontal axis).
   const STRETCH_U = 1.7
   const STRETCH_V = 0.85
-
-  const { u, v } = makeDiscBasis()
 
   const positions = new Float32Array(COUNT * 3)
   const rand = seeded(7)
@@ -124,13 +125,9 @@ function makeGalaxyGeometry(): BufferGeometry {
       dy = Math.sin(theta) * r
     }
 
-    // Map disc-plane (dx, dy) to world using the orthonormal basis, with
-    // an anisotropic stretch applied in the disc plane.
-    const sx = dx * STRETCH_U
-    const sy = dy * STRETCH_V
-    positions[i * 3 + 0] = GALAXY_OFFSET[0] + sx * u[0] + sy * v[0]
-    positions[i * 3 + 1] = GALAXY_OFFSET[1] + sx * u[1] + sy * v[1]
-    positions[i * 3 + 2] = GALAXY_OFFSET[2] + sx * u[2] + sy * v[2]
+    positions[i * 3 + 0] = dx * STRETCH_U
+    positions[i * 3 + 1] = dy * STRETCH_V
+    positions[i * 3 + 2] = 0
   }
 
   const geo = new BufferGeometry()
@@ -170,42 +167,17 @@ function makeSkyStarsGeometry(): BufferGeometry {
   return geo
 }
 
-// Cosmic-dust cloud — dense excess of small star-like points clustered around
-// the galaxy and trailing across the sky. Same visual language as the sky
-// stars (small black dots) just much denser, so it reads as a star excess /
-// dust lane rather than separate fuzzy blobs.
-function makeDustGeometry(): BufferGeometry {
-  const COUNT = 35000
+// Disc-plane dust cluster — densifies the spiral arms. Disc-local coordinates
+// (x = u, y = v, z = n), so the parent group orients + spins it with the galaxy.
+function makeDustDiscGeometry(): BufferGeometry {
+  const COUNT = 26000
   const positions = new Float32Array(COUNT * 3)
   const rand = seeded(53)
-  const { u, v, n } = makeDiscBasis()
 
   for (let i = 0; i < COUNT; i++) {
-    // 75% cluster in the galaxy disc plane (thin along the normal) to
-    // densify the spiral arms; 25% drift across the rest of the sky dome
-    // for ambient density.
-    if (rand() < 0.75) {
-      const du = gaussian(rand) * 90
-      const dv = gaussian(rand) * 90
-      const dn = gaussian(rand) * 12
-      positions[i * 3 + 0] = GALAXY_OFFSET[0] + du * u[0] + dv * v[0] + dn * n[0]
-      positions[i * 3 + 1] = GALAXY_OFFSET[1] + du * u[1] + dv * v[1] + dn * n[1]
-      positions[i * 3 + 2] = GALAXY_OFFSET[2] + du * u[2] + dv * v[2] + dn * n[2]
-    } else {
-      // Random dome direction.
-      let x = 0, y = 0, z = 0, len = 0
-      do {
-        x = rand() * 2 - 1
-        y = rand() * 0.9 + 0.1
-        z = rand() * 2 - 1
-        len = Math.hypot(x, y, z)
-      } while (len < 1e-6 || len > 1)
-      x /= len; y /= len; z /= len
-      const r = 250 + rand() * 500
-      positions[i * 3 + 0] = x * r
-      positions[i * 3 + 1] = y * r + 30
-      positions[i * 3 + 2] = z * r
-    }
+    positions[i * 3 + 0] = gaussian(rand) * 90
+    positions[i * 3 + 1] = gaussian(rand) * 90
+    positions[i * 3 + 2] = gaussian(rand) * 12
   }
 
   const geo = new BufferGeometry()
@@ -213,7 +185,37 @@ function makeDustGeometry(): BufferGeometry {
   return geo
 }
 
-const PORTAL_PALETTE = { base: '#000000', ink: '#ffffff', accent: '#444444' }
+// Static dome dust — ambient density across the upper hemisphere, world-space.
+// Stays put while the galaxy spins.
+function makeDustDomeGeometry(): BufferGeometry {
+  const COUNT = 9000
+  const positions = new Float32Array(COUNT * 3)
+  const rand = seeded(54)
+
+  for (let i = 0; i < COUNT; i++) {
+    let x = 0, y = 0, z = 0, len = 0
+    do {
+      x = rand() * 2 - 1
+      y = rand() * 0.9 + 0.1
+      z = rand() * 2 - 1
+      len = Math.hypot(x, y, z)
+    } while (len < 1e-6 || len > 1)
+    x /= len; y /= len; z /= len
+    const r = 250 + rand() * 500
+    positions[i * 3 + 0] = x * r
+    positions[i * 3 + 1] = y * r + 30
+    positions[i * 3 + 2] = z * r
+  }
+
+  const geo = new BufferGeometry()
+  geo.setAttribute('position', new BufferAttribute(positions, 3))
+  return geo
+}
+
+// Black base + white ink + saturated yellow accent. The previous gray accent
+// (#444) was reading as drab/transparent next to the white ink — yellow gives
+// the portal pop highlights a complementary tone against the red ground.
+const PORTAL_PALETTE = { base: '#000000', ink: '#ffffff', accent: '#ffd400' }
 
 function ReturnPortal() {
   const [idx, setIdx] = useState(0)
@@ -274,10 +276,32 @@ function ReturnPortalFrame() {
   )
 }
 
+// Frisbee-disc spin rate — radians/sec around the disc normal. ~0.015 rad/s
+// is roughly one revolution every ~7 minutes: a slow celestial drift.
+const GALAXY_SPIN_RAD_PER_SEC = 0.015
+
 export function CarcosaScene() {
   const galaxyGeo = useMemo(() => makeGalaxyGeometry(), [])
   const skyStarsGeo = useMemo(() => makeSkyStarsGeometry(), [])
-  const dustGeo = useMemo(() => makeDustGeometry(), [])
+  const dustDiscGeo = useMemo(() => makeDustDiscGeometry(), [])
+  const dustDomeGeo = useMemo(() => makeDustDomeGeometry(), [])
+
+  // Quaternion that maps local (x, y, z) onto the disc basis (u, v, n) so the
+  // spin axis (local z) coincides with the disc normal. Computed once.
+  const discQuat = useMemo(() => {
+    const { u, v, n } = makeDiscBasis()
+    const m = new Matrix4().makeBasis(
+      new Vector3(u[0], u[1], u[2]),
+      new Vector3(v[0], v[1], v[2]),
+      new Vector3(n[0], n[1], n[2]),
+    )
+    return new Quaternion().setFromRotationMatrix(m)
+  }, [])
+
+  const spinRef = useRef<Group>(null!)
+  useFrame((_, delta) => {
+    if (spinRef.current) spinRef.current.rotation.z += delta * GALAXY_SPIN_RAD_PER_SEC
+  })
 
   return (
     <>
@@ -291,17 +315,9 @@ export function CarcosaScene() {
         <meshBasicMaterial color="#e8202a" toneMapped={false} />
       </mesh>
 
-      {/* Cosmic dust — dense small star-like points concentrated around the
-          galaxy, reading as an excess of stars / nebular speckle rather than
-          discrete blobs. Sized larger than ambient stars so they punch
-          through the bloom halo without smearing into the white sky. */}
-      <points geometry={dustGeo}>
-        <pointsMaterial
-          color="#000000"
-          size={2}
-          sizeAttenuation
-          toneMapped={false}
-        />
+      {/* Static ambient dust across the dome — does not rotate with galaxy. */}
+      <points geometry={dustDomeGeo}>
+        <pointsMaterial color="#000000" size={2} sizeAttenuation toneMapped={false} />
       </points>
 
       {/* Sky stars — black points filling the whole upper hemisphere. */}
@@ -309,10 +325,19 @@ export function CarcosaScene() {
         <pointsMaterial color="#000000" size={2.5} sizeAttenuation toneMapped={false} />
       </points>
 
-      {/* Galaxy — denser cluster of stars off in a corner of the sky. */}
-      <points geometry={galaxyGeo}>
-        <pointsMaterial color="#000000" size={3} sizeAttenuation toneMapped={false} />
-      </points>
+      {/* Rotating galaxy assembly: outer group positions + orients the disc;
+          inner group spins around local z (the disc normal), carrying the
+          spiral stars and the in-plane dust cluster with it. */}
+      <group position={GALAXY_OFFSET} quaternion={discQuat}>
+        <group ref={spinRef}>
+          <points geometry={dustDiscGeo}>
+            <pointsMaterial color="#000000" size={2} sizeAttenuation toneMapped={false} />
+          </points>
+          <points geometry={galaxyGeo}>
+            <pointsMaterial color="#000000" size={3} sizeAttenuation toneMapped={false} />
+          </points>
+        </group>
+      </group>
 
       <ReturnPortal />
       <ReturnPortalFrame />

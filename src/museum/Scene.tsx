@@ -15,6 +15,7 @@ import {
   Shape,
   ShapeGeometry,
   SRGBColorSpace,
+  TextureLoader,
   type Group,
 } from 'three'
 import { useFrame } from '@react-three/fiber'
@@ -32,6 +33,7 @@ import {
   FrameTicker,
   makeDebugTickerCanvas,
 } from './frameTicker'
+import { renderPixelBitmap } from '../utils/renderPixelBitmap'
 
 const BAND_HEIGHT = 0.11
 
@@ -381,13 +383,21 @@ function ExitDoor() {
       setIdx((n) => (n + 1) % 5)
     }
   })
+  // Derive a palette that fills unfilled cells with the seed's accent color
+  // instead of white — same fix as ChipPanel, so the door reads as a saturated
+  // colored panel with dark and light pops rather than a mostly-white field.
+  const seedPalette = ARTIFACT_PALETTES[(99 + idx * 17) % ARTIFACT_PALETTES.length]
+  const doorPalette = {
+    base: seedPalette.accent,
+    ink: '#000000',
+    accent: lerpHexColor(seedPalette.accent, '#ffffff', 0.5),
+  }
   const tex = useRevealedArtifactTexture(
     99 + idx * 17,
     {
       ombre: false,
       aspect: DOOR_H / DOOR_W,
-      // Perimeter cells use ink color so the noise reads as a darker frame
-      // matching the SealFrame's strips, with accent pops in the interior.
+      palette: doorPalette,
       edgeInk: { thickness: 12 },
     },
     1100,
@@ -423,12 +433,20 @@ function DebugDoor() {
       setIdx((n) => (n + 1) % 5)
     }
   })
+  // Same accent-as-base treatment as ExitDoor, with the red edgeInk perimeter
+  // preserved so the carcosa door still reads as red-framed from a distance.
+  const seedPalette = ARTIFACT_PALETTES[(311 + idx * 13) % ARTIFACT_PALETTES.length]
+  const doorPalette = {
+    base: seedPalette.accent,
+    ink: '#000000',
+    accent: lerpHexColor(seedPalette.accent, '#ffffff', 0.5),
+  }
   const tex = useRevealedArtifactTexture(
     311 + idx * 13,
     {
       ombre: false,
       aspect: DOOR_H / DOOR_W,
-      // Red perimeter ink — matches the carcosa door's red FrameTicker.
+      palette: doorPalette,
       edgeInk: { thickness: 12, color: '#ff0000' },
     },
     900,
@@ -504,9 +522,20 @@ const COLOR_PHASE_START = 0.5
 // than tall, thin slab, with rounded shoulders / arched top. Casing is
 // tinted with the palette's accent color so each pedestal's cartridge
 // matches its pixel pattern.
-function ChipPanel({ x, z, seed }: { x: number; z: number; seed: number }) {
+function ChipPanel({ seed, name }: { seed: number; name: string }) {
   const W = 0.22, H = 0.32, D = 0.025
-  const palette = ARTIFACT_PALETTES[seed % ARTIFACT_PALETTES.length]
+  // Thin title bar; thicker (z) than the cart so its faces sit clearly forward
+  // of the cart's faces. Combined with polygonOffset on the bar materials,
+  // this guarantees the title bar wins the depth test wherever it overlaps
+  // the cart label planes — no flicker as the cart spins.
+  const BAR_W = 0.04
+  const BAR_D = D + 0.012
+  // The Spectral Caul pedestal (seed 5) lands on the amber palette, which
+  // reads as muddy brown under the museum's warm lighting. Override with
+  // a pale spectral teal so the cart matches the artifact's ghostly theme.
+  const palette = seed === 5
+    ? { base: '#ffffff', ink: '#0a141a', accent: '#9ec8c2' }
+    : ARTIFACT_PALETTES[seed % ARTIFACT_PALETTES.length]
   const casingColor = palette.accent
 
   // Build the cartridge outline — N64-style: straight bottom + sides, then
@@ -569,35 +598,108 @@ function ChipPanel({ x, z, seed }: { x: number; z: number; seed: number }) {
     }),
     [seed, palette.accent],
   )
-  const len = Math.hypot(x, z) || 1
-  const cx = -x / len
-  const cz = -z / len
-  const facingY = Math.atan2(cx, cz)
-  const edgeOffset = PEDESTAL_SIZE / 2 - 0.05
-  const yAbove = PEDESTAL_SIZE + 0.28
-  const tiltX = -Math.PI / 8
+  // Title bar texture — pixelated artifact name in the wiki's heading style
+  // (Playfair Display 17px, 1-bit alpha threshold). Loaded async via dataURL
+  // so the texture object exists synchronously and populates once the image
+  // decodes. Aspect = displayHeight / displayWidth of the rendered text.
+  const { titleTex, titleAspect } = useMemo(() => {
+    const result = renderPixelBitmap({
+      lines: [name],
+      font: '900 17px "Playfair Display", Georgia, serif',
+      renderSize: 17,
+      lineHeight: 1.05,
+      align: 'left',
+      color: '#ffffff',
+      alphaThreshold: 80,
+    })
+    const tex = new TextureLoader().load(result.dataUrl)
+    tex.magFilter = NearestFilter
+    tex.minFilter = NearestFilter
+    tex.generateMipmaps = false
+    tex.colorSpace = SRGBColorSpace
+    return { titleTex: tex, titleAspect: result.displayHeight / result.displayWidth }
+  }, [name])
+
+  // Fit the rotated title text inside the bar: text height (along the bar's
+  // narrow axis) capped at 75% of BAR_W, text width (along the bar's tall
+  // axis) capped at 88% of cart H. Pick whichever constraint binds.
+  const maxTextWorldH = BAR_W * 0.75
+  const maxTextWorldW = H * 0.88
+  let textWorldH = Math.min(maxTextWorldH, maxTextWorldW * titleAspect)
+  if (textWorldH <= 0) textWorldH = maxTextWorldH
+  const textWorldW = textWorldH / Math.max(titleAspect, 1e-6)
+
+  const baseY = PEDESTAL_SIZE + 0.55
+
+  // Bob the cartridge up/down and spin it slowly around Y so the floating
+  // artifact reads from every angle as the player walks past.
+  const groupRef = useRef<Group>(null)
+  useFrame(({ clock }) => {
+    if (!groupRef.current) return
+    const t = clock.elapsedTime + seed
+    groupRef.current.position.y = baseY + Math.sin(t * 1.2) * 0.04
+    groupRef.current.rotation.y = t * 0.4
+  })
+
+  // Label flush with the cart's left edge: bar's left face sits at -W/2 so
+  // its right half overlaps inward into the cart. BAR_D > D ensures the
+  // bar's front and back faces sit just outside the cart's faces.
+  const barCenterX = -W / 2 + BAR_W / 2
 
   return (
-    <group position={[cx * edgeOffset, yAbove, cz * edgeOffset]} rotation={[0, facingY, 0]}>
-      <group rotation={[tiltX, 0, 0]}>
-        {/* Cartridge body — tinted accent-color casing visible on the side
-            walls and behind the textured face planes. metalness=0 so the
-            color renders as a saturated diffuse instead of a dark metallic
-            (the previous 0.4 was reading as a gray sheen with no envMap). */}
-        <mesh geometry={bodyGeo}>
-          <meshStandardMaterial color={casingColor} roughness={0.55} metalness={0} />
-        </mesh>
-        {/* Front label — masked to the arched outline, frontTex on it. */}
-        <mesh geometry={faceGeo} position={[0, 0, D / 2 + 0.0005]}>
-          <meshStandardMaterial map={frontTex} roughness={0.85} metalness={0} />
-        </mesh>
-        {/* Back label — uses backFaceGeo (UV.x flipped so the texture reads
-            correctly when viewed from -Z) and BackSide so the geometry
-            renders on its back side without rotating the mesh. */}
-        <mesh geometry={backFaceGeo} position={[0, 0, -D / 2 - 0.0005]}>
-          <meshStandardMaterial map={backTex} side={BackSide} roughness={0.85} metalness={0} />
-        </mesh>
-      </group>
+    <group ref={groupRef} position={[0, baseY, 0]}>
+      {/* Cartridge body — tinted accent-color casing visible on the side
+          walls and behind the textured face planes. */}
+      <mesh geometry={bodyGeo}>
+        <meshStandardMaterial color={casingColor} roughness={0.55} metalness={0} />
+      </mesh>
+      {/* Front label — masked to the arched outline, frontTex on it. */}
+      <mesh geometry={faceGeo} position={[0, 0, D / 2 + 0.0005]}>
+        <meshStandardMaterial map={frontTex} roughness={0.85} metalness={0} />
+      </mesh>
+      {/* Back label — uses backFaceGeo (UV.x flipped so the texture reads
+          correctly when viewed from -Z) and BackSide so the geometry
+          renders on its back side without rotating the mesh. */}
+      <mesh geometry={backFaceGeo} position={[0, 0, -D / 2 - 0.0005]}>
+        <meshStandardMaterial map={backTex} side={BackSide} roughness={0.85} metalness={0} />
+      </mesh>
+      {/* Vertical black title bar flush with the cart's left edge, with
+          the wiki-style pixelated title rendered vertically inside it.
+          Front + back text planes; the back is rotated 180° around Y so
+          the title reads correctly from either side. */}
+      <mesh position={[barCenterX, 0, 0]} renderOrder={1}>
+        <boxGeometry args={[BAR_W, H, BAR_D]} />
+        <meshStandardMaterial
+          color="#000000"
+          roughness={0.7}
+          metalness={0}
+          polygonOffset
+          polygonOffsetFactor={-2}
+          polygonOffsetUnits={-2}
+        />
+      </mesh>
+      <mesh position={[barCenterX, 0, BAR_D / 2 + 0.002]} rotation={[0, 0, Math.PI / 2]} renderOrder={2}>
+        <planeGeometry args={[textWorldW, textWorldH]} />
+        <meshBasicMaterial
+          map={titleTex}
+          transparent
+          toneMapped={false}
+          polygonOffset
+          polygonOffsetFactor={-4}
+          polygonOffsetUnits={-4}
+        />
+      </mesh>
+      <mesh position={[barCenterX, 0, -BAR_D / 2 - 0.002]} rotation={[0, Math.PI, -Math.PI / 2]} renderOrder={2}>
+        <planeGeometry args={[textWorldW, textWorldH]} />
+        <meshBasicMaterial
+          map={titleTex}
+          transparent
+          toneMapped={false}
+          polygonOffset
+          polygonOffsetFactor={-4}
+          polygonOffsetUnits={-4}
+        />
+      </mesh>
     </group>
   )
 }
@@ -778,106 +880,20 @@ function VoxelPedestal({ x, z, seed, name }: { x: number; z: number; seed: numbe
         <boxGeometry args={[PEDESTAL_SIZE, PEDESTAL_SIZE, PEDESTAL_SIZE]} />
         <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.7} roughness={0.85} metalness={0} />
       </mesh>
-      <instancedMesh ref={inkMeshRef} args={[undefined, undefined, data.inkVoxels.length]}>
+      <instancedMesh ref={inkMeshRef} args={[undefined, undefined, data.inkVoxels.length]} visible={false}>
         <boxGeometry args={[1, 1, 1]} />
         <primitive object={inkMaterial} attach="material" />
       </instancedMesh>
-      <instancedMesh ref={accentMeshRef} args={[undefined, undefined, data.accentVoxels.length]}>
+      <instancedMesh ref={accentMeshRef} args={[undefined, undefined, data.accentVoxels.length]} visible={false}>
         <boxGeometry args={[1, 1, 1]} />
         <primitive object={accentMaterial} attach="material" />
       </instancedMesh>
       <PedestalTicker />
-      <FloatingLabel name={name} seed={seed} />
-      <ChipPanel x={x} z={z} seed={seed} />
+      <ChipPanel seed={seed} name={name} />
     </group>
   )
 }
 
-
-const LABEL_SIZE = 0.32
-const LABEL_BAND_H = LABEL_SIZE / 3
-
-function makeLabelCanvas(name: string): HTMLCanvasElement {
-  const font = '900 54px "JetBrains Mono", ui-monospace, monospace'
-  const h = 96
-  const measure = document.createElement('canvas').getContext('2d')!
-  measure.font = font
-  const textW = Math.ceil(measure.measureText(name).width)
-  const padding = 48
-  const w = textW + padding * 2
-  const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
-  const ctx = canvas.getContext('2d')!
-  ctx.fillStyle = '#bfff00'
-  ctx.fillRect(0, 0, w, h)
-  ctx.font = font
-  ctx.fillStyle = '#000'
-  ctx.textBaseline = 'middle'
-  ctx.textAlign = 'center'
-  ctx.fillText(name, w / 2, h / 2)
-  // Thicken with a stroke pass so letters hold up against bloom + CA.
-  ctx.strokeStyle = '#000'
-  ctx.lineWidth = 5
-  ctx.strokeText(name, w / 2, h / 2)
-  return canvas
-}
-
-function FloatingLabel({ name, seed }: { name: string; seed: number }) {
-  const groupRef = useRef<Group>(null)
-  const canvas = useMemo(() => makeLabelCanvas(name), [name])
-  const tex = useMemo(() => {
-    const t = new CanvasTexture(canvas)
-    t.wrapS = RepeatWrapping
-    t.wrapT = RepeatWrapping
-    t.anisotropy = 4
-    t.needsUpdate = true
-    return t
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvas])
-
-  useFrame(({ clock }, dt) => {
-    if (groupRef.current) {
-      const t = clock.elapsedTime + seed
-      groupRef.current.position.y = PEDESTAL_SIZE + 0.55 + Math.sin(t * 1.4) * 0.04
-      groupRef.current.rotation.y = t * 0.4
-    }
-    tex.offset.x = (tex.offset.x + dt * 0.1) % 1
-  })
-
-  const half = LABEL_SIZE / 2
-  // Top-aligned: strip's top edge flush with the cube's top, matching the
-  // pedestal ticker anchoring.
-  const bandY = LABEL_SIZE / 2 - LABEL_BAND_H / 2
-  const faces: { pos: [number, number, number]; rotY: number }[] = [
-    { pos: [0, bandY, half], rotY: 0 },
-    { pos: [half, bandY, 0], rotY: Math.PI / 2 },
-    { pos: [0, bandY, -half], rotY: Math.PI },
-    { pos: [-half, bandY, 0], rotY: -Math.PI / 2 },
-  ]
-
-  return (
-    <group ref={groupRef} position={[0, PEDESTAL_SIZE + 0.55, 0]}>
-      {/* Dark cube body — only the middle ticker strip is accent green. */}
-      <mesh>
-        <boxGeometry args={[LABEL_SIZE, LABEL_SIZE, LABEL_SIZE]} />
-        <meshBasicMaterial color="#0a0a0a" toneMapped={false} />
-      </mesh>
-      {faces.map((f, i) => (
-        <mesh key={i} position={f.pos} rotation={[0, f.rotY, 0]}>
-          <planeGeometry args={[LABEL_SIZE, LABEL_BAND_H]} />
-          <meshBasicMaterial
-            map={tex}
-            toneMapped={false}
-            polygonOffset
-            polygonOffsetFactor={-2}
-            polygonOffsetUnits={-2}
-          />
-        </mesh>
-      ))}
-    </group>
-  )
-}
 
 function PedestalTicker() {
   const { canvas } = useMemo(() => makePedestalTickerCanvas(), [])

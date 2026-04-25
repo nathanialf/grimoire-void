@@ -124,6 +124,13 @@ button {
 }
 
 /* ── Utility ── */
+/* Chromatic aberration utility — apply to specific elements where the
+   RGB-split is decorative (page titles, sidebar header, image panels).
+   Filter id #wiki-ca is defined once in App.tsx. */
+.ca-fx {
+  filter: url(#wiki-ca);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

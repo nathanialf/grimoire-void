@@ -269,6 +269,7 @@ export function App() {
       <NavigateProvider value={navigate}>
         <RedactedPage />
         <SignalTear ref={tearRef} effectsOn={effectsOn} />
+        <ChromaticAberrationFilter />
       </NavigateProvider>
     )
   }
@@ -292,6 +293,51 @@ export function App() {
       {showTicker && <Ticker position="top" />}
       {showTicker && <Ticker position="bottom" />}
       <SignalTear ref={tearRef} effectsOn={effectsOn} />
+      <ChromaticAberrationFilter />
     </NavigateProvider>
+  )
+}
+
+// Hidden SVG filter used by .contentInnerCA. Splits the source into R/G/B
+// channel-isolated layers, offsets red left and blue right by a fraction of
+// a pixel, and additively recombines (feBlend screen on isolated channels is
+// equivalent to addition since each layer only carries one channel). Sized
+// region overflow so the offset edges aren't clipped at the filter bounds.
+function ChromaticAberrationFilter() {
+  return (
+    <svg
+      width="0"
+      height="0"
+      style={{ position: 'fixed', pointerEvents: 'none' }}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <filter id="wiki-ca" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+          <feColorMatrix
+            in="SourceGraphic"
+            type="matrix"
+            values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+            result="rOnly"
+          />
+          <feOffset in="rOnly" dx="-2.5" dy="0" result="rShift" />
+          <feColorMatrix
+            in="SourceGraphic"
+            type="matrix"
+            values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
+            result="gOnly"
+          />
+          <feColorMatrix
+            in="SourceGraphic"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
+            result="bOnly"
+          />
+          <feOffset in="bOnly" dx="2.5" dy="0" result="bShift" />
+          <feBlend in="rShift" in2="gOnly" mode="screen" result="rg" />
+          <feBlend in="rg" in2="bShift" mode="screen" />
+        </filter>
+      </defs>
+    </svg>
   )
 }

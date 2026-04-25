@@ -61,17 +61,30 @@ export function PixelatedText({
   const w = result.displayWidth * scale;
   const h = result.displayHeight * scale;
 
+  // The chromatic aberration filter must live on an OUTER wrapper, not on
+  // the masked element itself — `filter` is applied before `mask-image`, so
+  // putting both on the same node splits a uniform color rectangle (no
+  // internal fringes) before the mask clips it to the text shape, losing
+  // the CA. By nesting the masked span inside a ca-fx wrapper, the wrapper
+  // renders the masked text first, then the filter splits the visible
+  // text-shape edges.
   return (
     <Tag
-      className={`${styles.mask} ${className || ''}`}
+      className={`${styles.wrap} ca-fx ${className || ''}`}
       aria-hidden="true"
       style={{
         width: w,
         maxWidth: '100%',
         aspectRatio: `${w} / ${h}`,
-        maskImage: `url(${result.dataUrl})`,
-        WebkitMaskImage: `url(${result.dataUrl})`,
       }}
-    />
+    >
+      <span
+        className={styles.mask}
+        style={{
+          maskImage: `url(${result.dataUrl})`,
+          WebkitMaskImage: `url(${result.dataUrl})`,
+        }}
+      />
+    </Tag>
   );
 }
