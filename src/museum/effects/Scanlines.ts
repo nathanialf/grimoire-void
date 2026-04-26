@@ -39,7 +39,9 @@ export class ScanlinesEffect extends Effect {
   }
 
   override update(renderer: WebGLRenderer, inputBuffer: WebGLRenderTarget, deltaTime: number) {
-    this.uniforms.get('time')!.value += deltaTime ?? 0.016
+    // Wrap time to keep sin() args small — unbounded growth produces visible diagonal banding past ~3min (float32 precision loss in the hash).
+    const t = this.uniforms.get('time')!
+    t.value = (t.value + (deltaTime ?? 0.016)) % 10
     const res = this.uniforms.get('resolution')!.value as Float32Array
     res[0] = inputBuffer.width || renderer.domElement.width
     res[1] = inputBuffer.height || renderer.domElement.height

@@ -20,6 +20,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: 0.15em;
+  text-indent: 0.15em;
   line-height: 1;
   color: #000;
   background: var(--color-accent);
@@ -49,6 +50,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: 0.15em;
+  text-indent: 0.15em;
   line-height: 1;
   color: #000;
   background: var(--color-accent);
@@ -61,19 +63,29 @@
 div.prompt { pointer-events: none; }
 button.prompt { pointer-events: auto; cursor: pointer; }
 
-.hint {
+.hintRow {
   position: fixed;
   bottom: var(--space-md);
   left: 50%;
   transform: translateX(-50%);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--color-text-dim);
-  opacity: 0.5;
+  display: flex;
+  gap: 0.5rem;
   pointer-events: none;
   z-index: 10;
+}
+
+.hint {
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  line-height: 1;
+  color: #000;
+  background: var(--color-accent);
+  text-transform: uppercase;
+  user-select: none;
 }
 
 .touchLayer {

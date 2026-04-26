@@ -52,6 +52,8 @@ export class GlitchOutEffect extends Effect {
   }
 
   override update(_renderer: unknown, _inputBuffer: unknown, deltaTime: number) {
-    this.uniforms.get('time')!.value += deltaTime ?? 0.016
+    // Wrap time to keep sin() args small — unbounded growth produces visible diagonal banding past ~3min (float32 precision loss in the hash).
+    const t = this.uniforms.get('time')!
+    t.value = (t.value + (deltaTime ?? 0.016)) % 10
   }
 }

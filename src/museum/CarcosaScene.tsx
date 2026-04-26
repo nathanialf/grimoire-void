@@ -310,9 +310,12 @@ export function CarcosaScene() {
 
       {/* Bright red ground. Basic material so saturation holds across the
           whole horizon (no lighting falloff darkening distant ground). */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+      {/* renderOrder + depthTest:false keeps the ground painted over the
+          galaxy points so the horizon stays intact even when the galaxy disc
+          intersects the ground plane in 3D space. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} renderOrder={10}>
         <planeGeometry args={[2000, 2000]} />
-        <meshBasicMaterial color="#e8202a" toneMapped={false} />
+        <meshBasicMaterial color="#e8202a" toneMapped={false} depthTest={false} />
       </mesh>
 
       {/* Static ambient dust across the dome — does not rotate with galaxy. */}

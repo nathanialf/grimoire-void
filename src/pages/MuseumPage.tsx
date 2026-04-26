@@ -185,10 +185,10 @@ export function MuseumPage() {
         />
       )}
       {!touch && (
-        <div className={styles.hint}>
-          {activeScene === 'museum'
-            ? 'CLICK TO ENTER · WASD · E INTERACT · ESC EXITS'
-            : 'WASD · E INTERACT · ESC EXITS'}
+        <div className={styles.hintRow}>
+          <span className={styles.hint}>WASD/ARROWS</span>
+          <span className={styles.hint}>MOUSE LOOK</span>
+          <span className={styles.hint}>E INTERACT</span>
         </div>
       )}
       {/* Fade overlay shared by door-to-cover fades and scene-swap fades. */}
