@@ -10,13 +10,13 @@ export function CoverPage() {
     <PageFrame locked>
       <div className={styles.cover}>
         <span className={styles.emblem}>
-          <span className="visually-hidden">// Sector 9 Archives — Restricted //</span>
+          <span className="visually-hidden">// Sector 9 Archives — Reconstruction //</span>
           <span className={styles.desktopOnly}>
-            <PixelatedText letterSpacing={4} textTransform="uppercase">// Sector 9 Archives — Restricted //</PixelatedText>
+            <PixelatedText letterSpacing={4} textTransform="uppercase">// Sector 9 Archives — Reconstruction //</PixelatedText>
           </span>
           <span className={styles.mobileOnly}>
             <PixelatedText letterSpacing={4} textTransform="uppercase">// Sector 9 Archives —</PixelatedText>
-            <PixelatedText letterSpacing={4} textTransform="uppercase">Restricted //</PixelatedText>
+            <PixelatedText letterSpacing={4} textTransform="uppercase">Reconstruction //</PixelatedText>
           </span>
         </span>
         <h1 className="visually-hidden">Grimoire Void</h1>
@@ -27,18 +27,6 @@ export function CoverPage() {
           align="center"
           lineHeight={0.95}
           className={styles.title}
-        />
-        <p className={`${styles.subtitle} visually-hidden`}>A Restricted Archive of the Lost</p>
-        <PixelatedHeading
-          lines={['A Restricted Archive of the Lost']}
-          renderSize={14}
-          scale={2}
-          fontStyle="italic"
-          fontWeight={400}
-          align="center"
-          alphaThreshold={60}
-          color={getComputedStyle(document.documentElement).getPropertyValue('--color-text-dim').trim()}
-          className={styles.subtitle}
         />
         <div className={styles.rule} />
         <div className={styles.actions}>

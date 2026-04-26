@@ -15,10 +15,6 @@
 }
 
 .title {
-  margin-bottom: var(--space-sm);
-}
-
-.subtitle {
   margin-bottom: var(--space-2xl);
 }
 
