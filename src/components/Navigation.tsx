@@ -139,8 +139,13 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
           </ul>
         </div>
         <div className={styles.footer}>
-          <span className="visually-hidden">ver 0.2 // classified</span>
-          <PixelatedText letterSpacing={0.8}>ver 0.2 // classified</PixelatedText>
+          <span className="visually-hidden">0.2 // classified</span>
+          <span className={styles.footerInner}>
+            <span className={`${styles.footerLogo} ca-fx`} role="img" aria-hidden="true">
+              <span className={styles.footerLogoMask} />
+            </span>
+            <PixelatedText renderSize={7} letterSpacing={0.8}>0.2 // classified</PixelatedText>
+          </span>
         </div>
         <a
           className={styles.copyright}

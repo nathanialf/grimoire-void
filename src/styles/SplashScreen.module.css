@@ -18,7 +18,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-xl);
 }
 
 .rings {
@@ -36,12 +35,7 @@
   image-rendering: pixelated;
 }
 
-.corp {
-  margin-bottom: var(--space-2xl);
-}
-
 .enterLabel {
-  position: absolute;
-  bottom: var(--space-xl);
+  margin-top: var(--space-xl);
   color: var(--color-text-dim);
 }

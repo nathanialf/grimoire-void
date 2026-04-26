@@ -35,16 +35,16 @@ export function CoverPage() {
             className={styles.enter}
             onClick={(e) => { e.preventDefault(); navigate('/blank'); }}
           >
-            <span className="visually-hidden">Begin Reading</span>
-            <PixelatedText letterSpacing={2} textTransform="uppercase">Begin Reading</PixelatedText>
+            <span className="visually-hidden">Examine Archive</span>
+            <PixelatedText letterSpacing={2} textTransform="uppercase">Examine Archive</PixelatedText>
           </a>
           <a
             href="/museum"
             className={styles.enter}
             onClick={(e) => { e.preventDefault(); navigate('/museum'); }}
           >
-            <span className="visually-hidden">Reconstitute</span>
-            <PixelatedText letterSpacing={2} textTransform="uppercase">Reconstitute</PixelatedText>
+            <span className="visually-hidden">Survey Site</span>
+            <PixelatedText letterSpacing={2} textTransform="uppercase">Survey Site</PixelatedText>
           </a>
         </div>
         <span className={styles.meta}>
