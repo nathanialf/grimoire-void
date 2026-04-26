@@ -5,13 +5,13 @@ const fragment = /* glsl */ `
   uniform float k1;
 
   void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-    vec2 p = uv - 0.5;
+    // Overscan: shrink the source region so the warped output fills the
+    // screen exactly at the corners. Without this, the curvature pushes
+    // sampled UVs past [0,1] and the screen edges read as black.
+    float scale = 1.0 / (1.0 + 0.5 * k1);
+    vec2 p = (uv - 0.5) * scale;
     float r2 = dot(p, p);
     vec2 warped = p * (1.0 + k1 * r2) + 0.5;
-    if (warped.x < 0.0 || warped.x > 1.0 || warped.y < 0.0 || warped.y > 1.0) {
-      outputColor = vec4(0.0, 0.0, 0.0, inputColor.a);
-      return;
-    }
     outputColor = vec4(texture2D(inputBuffer, warped).rgb, inputColor.a);
   }
 `

@@ -16,7 +16,7 @@ const fragment = /* glsl */ `
 
   void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
     vec3 c = inputColor.rgb * exposure;
-    vec3 curr = uncharted2(c * 2.0);
+    vec3 curr = uncharted2(c);
     vec3 whiteScale = 1.0 / uncharted2(vec3(11.2));
     outputColor = vec4(curr * whiteScale, inputColor.a);
   }
@@ -26,7 +26,7 @@ export class ToneMapEffect extends Effect {
   constructor() {
     super('ToneMapEffect', fragment, {
       uniforms: new Map<string, Uniform>([
-        ['exposure', new Uniform(1.6)],
+        ['exposure', new Uniform(1.2)],
       ]),
     })
   }

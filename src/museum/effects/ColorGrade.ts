@@ -26,10 +26,6 @@ const fragment = /* glsl */ `
     c.b += c.r * 0.05 * shadowMask;
     c.g += c.r * 0.03 * highlightMask;
 
-    // U-shaped saturation curve: desaturate midtones
-    float satFactor = mix(0.75, 1.0, abs(l - 0.5) * 2.0);
-    c = mix(vec3(luma(c)), c, satFactor);
-
     outputColor = vec4(c, inputColor.a);
   }
 `

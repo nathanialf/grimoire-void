@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import {
+  AdditiveBlending,
   BackSide,
   BufferAttribute,
   CanvasTexture,
@@ -19,6 +20,7 @@ import {
   type Group,
 } from 'three'
 import { useFrame } from '@react-three/fiber'
+import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js'
 import {
   ROOM,
   PEDESTAL_SIZE,
@@ -34,6 +36,9 @@ import {
   makeDebugTickerCanvas,
 } from './frameTicker'
 import { renderPixelBitmap } from '../utils/renderPixelBitmap'
+
+// RectAreaLight requires a one-time uniform texture LUT init before use.
+RectAreaLightUniformsLib.init()
 
 const BAND_HEIGHT = 0.11
 
@@ -365,100 +370,28 @@ function makePedestalTickerCanvas(): { canvas: HTMLCanvasElement; msgWidth: numb
 export const DOOR_ANIM_RADIUS = 3
 
 function ExitDoor() {
-  // Cycle through a handful of seeds; each swap re-reveals the new pattern
-  // pixel-by-pixel via useRevealedArtifactTexture so the door visibly
-  // "re-scans" instead of hard-cutting between baked images. Cycling only
-  // advances while the player is close — saves work and stops the doors
-  // animating constantly across the room.
-  const [idx, setIdx] = useState(0)
-  const cycleAccum = useRef(0)
-  useFrame(({ camera }, delta) => {
-    const dx = camera.position.x - 0
-    const dy = camera.position.y - DOOR_CY
-    const dz = camera.position.z - (EXIT_Z_POS - 0.001)
-    if (Math.hypot(dx, dy, dz) >= DOOR_ANIM_RADIUS) return
-    cycleAccum.current += delta * 1000
-    if (cycleAccum.current >= 3000) {
-      cycleAccum.current = 0
-      setIdx((n) => (n + 1) % 5)
-    }
-  })
-  // Derive a palette that fills unfilled cells with the seed's accent color
-  // instead of white — same fix as ChipPanel, so the door reads as a saturated
-  // colored panel with dark and light pops rather than a mostly-white field.
-  const seedPalette = ARTIFACT_PALETTES[(99 + idx * 17) % ARTIFACT_PALETTES.length]
-  const doorPalette = {
-    base: seedPalette.accent,
-    ink: '#000000',
-    accent: lerpHexColor(seedPalette.accent, '#ffffff', 0.5),
-  }
-  const tex = useRevealedArtifactTexture(
-    99 + idx * 17,
-    {
-      ombre: false,
-      aspect: DOOR_H / DOOR_W,
-      palette: doorPalette,
-      edgeInk: { thickness: 12 },
-    },
-    1100,
-  )
-
   // Position the door just in front of the wall but BEHIND the seal strips,
   // so the strips (at zFront = EXIT_Z_POS - 0.005) render on top and the
   // bottom strip isn't occluded by the door.
   return (
     <mesh position={[0, DOOR_CY, EXIT_Z_POS - 0.001]} rotation={[0, Math.PI, 0]}>
       <planeGeometry args={[DOOR_W, DOOR_H]} />
-      <meshStandardMaterial map={tex} roughness={0.9} metalness={0} />
+      <meshStandardMaterial color="#d8d4cc" roughness={0.9} metalness={0} />
     </mesh>
   )
 }
 
 function DebugDoor() {
-  // Pulsing-noise carcosa door. Sits flush in the -X wall opening; the door
+  // Solid red carcosa door panel. Sits flush in the -X wall opening; the
   // panel is positioned slightly toward the museum interior to fill the cut
-  // doorway shape from the player-visible side. Each cycle re-reveals the
-  // new pattern via useRevealedArtifactTexture, but cycling only advances
-  // while the player is close to the door.
-  const [idx, setIdx] = useState(0)
-  const cycleAccum = useRef(0)
-  useFrame(({ camera }, delta) => {
-    const dx = camera.position.x - (-ROOM.w / 2 + 0.001)
-    const dy = camera.position.y - DOOR_CY
-    const dz = camera.position.z - 0
-    if (Math.hypot(dx, dy, dz) >= DOOR_ANIM_RADIUS) return
-    cycleAccum.current += delta * 1000
-    if (cycleAccum.current >= 2200) {
-      cycleAccum.current = 0
-      setIdx((n) => (n + 1) % 5)
-    }
-  })
-  // Same accent-as-base treatment as ExitDoor, with the red edgeInk perimeter
-  // preserved so the carcosa door still reads as red-framed from a distance.
-  const seedPalette = ARTIFACT_PALETTES[(311 + idx * 13) % ARTIFACT_PALETTES.length]
-  const doorPalette = {
-    base: seedPalette.accent,
-    ink: '#000000',
-    accent: lerpHexColor(seedPalette.accent, '#ffffff', 0.5),
-  }
-  const tex = useRevealedArtifactTexture(
-    311 + idx * 13,
-    {
-      ombre: false,
-      aspect: DOOR_H / DOOR_W,
-      palette: doorPalette,
-      edgeInk: { thickness: 12, color: '#ff0000' },
-    },
-    900,
-  )
-
+  // doorway shape from the player-visible side.
   return (
     <mesh
       position={[-ROOM.w / 2 + 0.001, DOOR_CY, 0]}
       rotation={[0, Math.PI / 2, 0]}
     >
       <planeGeometry args={[DOOR_W, DOOR_H]} />
-      <meshStandardMaterial map={tex} roughness={0.9} metalness={0} />
+      <meshStandardMaterial color="#cc1818" roughness={0.9} metalness={0} />
     </mesh>
   )
 }
@@ -468,16 +401,18 @@ function SealFrame() {
   // Museum exit door on +Z wall, facing -Z (rotationY = π). Strips sit at
   // EXIT_Z_POS - 0.005 (slightly into the room).
   return (
-    <FrameTicker
-      canvas={canvas}
-      centerX={0}
-      centerY={DOOR_CY}
-      centerZ={EXIT_Z_POS}
-      rotationY={Math.PI}
-      outwardOffset={-0.005}
-      wallAxis="x"
-      cornerColor="#ffffff"
-    />
+    <>
+      <FrameTicker
+        canvas={canvas}
+        centerX={0}
+        centerY={DOOR_CY}
+        centerZ={EXIT_Z_POS}
+        rotationY={Math.PI}
+        outwardOffset={-0.005}
+        wallAxis="x"
+        cornerColor="#ffffff"
+      />
+    </>
   )
 }
 
@@ -486,16 +421,18 @@ function DebugFrame() {
   // Carcosa door on the museum's -X wall, facing +X (rotationY = π/2). Strips
   // sit at -ROOM.w/2 + 0.005 (slightly into the museum interior).
   return (
-    <FrameTicker
-      canvas={canvas}
-      centerX={-ROOM.w / 2}
-      centerY={DOOR_CY}
-      centerZ={0}
-      rotationY={Math.PI / 2}
-      outwardOffset={0.005}
-      wallAxis="z"
-      cornerColor="#ff0000"
-    />
+    <>
+      <FrameTicker
+        canvas={canvas}
+        centerX={-ROOM.w / 2}
+        centerY={DOOR_CY}
+        centerZ={0}
+        rotationY={Math.PI / 2}
+        outwardOffset={0.005}
+        wallAxis="z"
+        cornerColor="#ff0000"
+      />
+    </>
   )
 }
 
@@ -704,7 +641,7 @@ function ChipPanel({ seed, name }: { seed: number; name: string }) {
   )
 }
 
-function VoxelPedestal({ x, z, seed, name }: { x: number; z: number; seed: number; name: string }) {
+function VoxelPedestal({ x, z, seed, name, topGlow }: { x: number; z: number; seed: number; name: string; topGlow: CanvasTexture }) {
   const opts: ArtifactOpts = { ombre: true, cellsX: 44, pixel: 18 }
   const pattern = useMemo(() => computeArtifactPattern(seed, opts), [seed])
   const cellSize = PEDESTAL_SIZE / pattern.cellsX
@@ -878,7 +815,7 @@ function VoxelPedestal({ x, z, seed, name }: { x: number; z: number; seed: numbe
     <group position={[x, 0, z]}>
       <mesh position={[0, PEDESTAL_SIZE / 2, 0]}>
         <boxGeometry args={[PEDESTAL_SIZE, PEDESTAL_SIZE, PEDESTAL_SIZE]} />
-        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.7} roughness={0.85} metalness={0} />
+        <meshStandardMaterial color={WALL_COLOR} roughness={0.95} metalness={0} />
       </mesh>
       <instancedMesh ref={inkMeshRef} args={[undefined, undefined, data.inkVoxels.length]} visible={false}>
         <boxGeometry args={[1, 1, 1]} />
@@ -890,10 +827,36 @@ function VoxelPedestal({ x, z, seed, name }: { x: number; z: number; seed: numbe
       </instancedMesh>
       <PedestalTicker />
       <ChipPanel seed={seed} name={name} />
+      {/* Soft warm glow on top of the pedestal — radial gradient, additive,
+          so it reads as light dissipating outward from the surface. */}
+      <mesh
+        position={[0, PEDESTAL_SIZE + 0.002, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[PEDESTAL_SIZE * 0.8, PEDESTAL_SIZE * 0.8]} />
+        <meshBasicMaterial
+          map={topGlow}
+          transparent
+          blending={AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Upward-facing area light from the pedestal top — its width gives
+          the cartridge faces grazing illumination at non-zero N·L, so the
+          warm color actually tints the labels (a point light here would
+          only hit the cartridge underside). */}
+      <rectAreaLight
+        position={[0, PEDESTAL_SIZE + 0.05, 0]}
+        rotation={[Math.PI / 2, 0, 0]}
+        width={PEDESTAL_SIZE * 0.9}
+        height={PEDESTAL_SIZE * 0.9}
+        intensity={1}
+        color="#fff4dd"
+      />
     </group>
   )
 }
-
 
 function PedestalTicker() {
   const { canvas } = useMemo(() => makePedestalTickerCanvas(), [])
@@ -951,6 +914,25 @@ function PedestalTicker() {
       ))}
     </>
   )
+}
+
+// Soft radial glow rendered on top of each pedestal — bright warm center
+// fading to transparent, additively blended so the pedestal top reads as
+// if it's emitting light from within.
+function makePedestalGlowTexture(): CanvasTexture {
+  const size = 256
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = size
+  const ctx = canvas.getContext('2d')!
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
+  g.addColorStop(0.0,  'rgba(255, 244, 220, 0.95)')
+  g.addColorStop(0.6,  'rgba(255, 240, 210, 0.85)')
+  g.addColorStop(0.85, 'rgba(255, 230, 190, 0.45)')
+  g.addColorStop(1.0,  'rgba(255, 220, 170, 0)')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, size, size)
+  const tex = new CanvasTexture(canvas)
+  return tex
 }
 
 function makeRoomLightmap(): CanvasTexture {
@@ -1042,7 +1024,7 @@ function FlatPlane({ position, rotation, size, color = WALL_COLOR, lightMap, map
         roughness={0.95}
         metalness={0}
         lightMap={lightMap}
-        lightMapIntensity={1.0}
+        lightMapIntensity={0.35}
         map={map}
       />
     </mesh>
@@ -1108,7 +1090,7 @@ function MuseumRoom({ lightMap, floorLightMap }: { lightMap: CanvasTexture; floo
           roughness={0.95}
           metalness={0}
           lightMap={lightMap}
-          lightMapIntensity={1.0}
+          lightMapIntensity={0.35}
         />
       </mesh>
     </>
@@ -1118,17 +1100,30 @@ function MuseumRoom({ lightMap, floorLightMap }: { lightMap: CanvasTexture; floo
 export function Scene() {
   const roomLightmap = useMemo(() => makeRoomLightmap(), [])
   const floorLightmap = useMemo(() => makeFloorLightmap(), [])
+  const pedestalGlow = useMemo(() => makePedestalGlowTexture(), [])
 
   return (
     <>
-      <ambientLight intensity={0.75} />
-      <hemisphereLight args={[0xffffff, 0xdadada, 0.55]} />
+      <ambientLight intensity={0.18} />
+      <hemisphereLight args={[0xffffff, 0xdadada, 0.12]} />
+
+      {/* Long thin fluorescent panel on the ceiling. Rotated so the rectangle
+          lies flat against the ceiling and emits straight down (-Y). */}
+      <rectAreaLight
+        position={[0, ROOM.h - 0.02, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        width={2.5}
+        height={0.4}
+        intensity={14}
+        color="#fff4dd"
+      />
 
       <MuseumRoom lightMap={roomLightmap} floorLightMap={floorLightmap} />
 
       {pedestalPositions.map(([x, z], i) => (
-        <VoxelPedestal key={i} x={x} z={z} seed={i} name={ARTIFACT_NAMES[i % ARTIFACT_NAMES.length]} />
+        <VoxelPedestal key={i} x={x} z={z} seed={i} name={ARTIFACT_NAMES[i % ARTIFACT_NAMES.length]} topGlow={pedestalGlow} />
       ))}
+
 
       <ExitDoor />
       <SealFrame />
