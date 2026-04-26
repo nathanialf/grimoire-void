@@ -310,34 +310,30 @@ export function CarcosaScene() {
 
       {/* Bright red ground. Basic material so saturation holds across the
           whole horizon (no lighting falloff darkening distant ground). */}
-      {/* renderOrder + depthTest:false keeps the ground painted over the
-          galaxy points so the horizon stays intact even when the galaxy disc
-          intersects the ground plane in 3D space. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} renderOrder={10}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <planeGeometry args={[2000, 2000]} />
-        <meshBasicMaterial color="#e8202a" toneMapped={false} depthTest={false} />
+        <meshBasicMaterial color="#e8202a" toneMapped={false} />
       </mesh>
 
-      {/* Static ambient dust across the dome — does not rotate with galaxy. */}
-      <points geometry={dustDomeGeo}>
-        <pointsMaterial color="#000000" size={2} sizeAttenuation toneMapped={false} />
+      {/* Galaxy + sky points are pushed to renderOrder=-10 with depthWrite
+          off so they paint first without contributing to the depth buffer.
+          The ground (and door) then draw normally over them at the horizon —
+          no depth fighting, and the door stays opaque. */}
+      <points geometry={dustDomeGeo} renderOrder={-10}>
+        <pointsMaterial color="#000000" size={2} sizeAttenuation toneMapped={false} depthWrite={false} />
       </points>
 
-      {/* Sky stars — black points filling the whole upper hemisphere. */}
-      <points geometry={skyStarsGeo}>
-        <pointsMaterial color="#000000" size={2.5} sizeAttenuation toneMapped={false} />
+      <points geometry={skyStarsGeo} renderOrder={-10}>
+        <pointsMaterial color="#000000" size={2.5} sizeAttenuation toneMapped={false} depthWrite={false} />
       </points>
 
-      {/* Rotating galaxy assembly: outer group positions + orients the disc;
-          inner group spins around local z (the disc normal), carrying the
-          spiral stars and the in-plane dust cluster with it. */}
       <group position={GALAXY_OFFSET} quaternion={discQuat}>
         <group ref={spinRef}>
-          <points geometry={dustDiscGeo}>
-            <pointsMaterial color="#000000" size={2} sizeAttenuation toneMapped={false} />
+          <points geometry={dustDiscGeo} renderOrder={-10}>
+            <pointsMaterial color="#000000" size={2} sizeAttenuation toneMapped={false} depthWrite={false} />
           </points>
-          <points geometry={galaxyGeo}>
-            <pointsMaterial color="#000000" size={3} sizeAttenuation toneMapped={false} />
+          <points geometry={galaxyGeo} renderOrder={-10}>
+            <pointsMaterial color="#000000" size={3} sizeAttenuation toneMapped={false} depthWrite={false} />
           </points>
         </group>
       </group>

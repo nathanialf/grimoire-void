@@ -2,7 +2,8 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Scene } from '../museum/Scene'
 import { CarcosaScene, returnPortalZone } from '../museum/CarcosaScene'
-import { walkableRects, pedestalPositions, exitZone, carcosaDoorZone } from '../museum/sceneConstants'
+import { walkableRects, pedestalPositions, exitZone, carcosaDoorZone, EXIT_Z_POS } from '../museum/sceneConstants'
+import { DOOR_W, DOOR_H } from '../museum/frameTicker'
 import { Controls, type InputState, type Trigger } from '../museum/Controls'
 import { TouchControls } from '../museum/TouchControls'
 import { Effects } from '../museum/Effects'
@@ -125,8 +126,18 @@ export function MuseumPage() {
   const doors: Trigger[] = useMemo(() => {
     if (activeScene === 'museum') {
       return [
-        // Exit on +Z wall — E-prompt + fade to /cover.
-        { zone: exitZone, onActivate: () => runFadeThen('/cover'), label: 'EXIT', facing: [0, 1] },
+        // Exit on +Z wall — aim-based: prompt shows whenever the reticle is
+        // on the door panel within maxDist, regardless of player position.
+        {
+          zone: exitZone,
+          onActivate: () => runFadeThen('/cover'),
+          label: 'EXIT',
+          aim: {
+            min: [-DOOR_W / 2, 0, EXIT_Z_POS - 0.05],
+            max: [ DOOR_W / 2, DOOR_H, EXIT_Z_POS + 0.05],
+            maxDist: 3,
+          },
+        },
         // Carcosa door — walk through to teleport, no prompt and no fade.
         { zone: carcosaDoorZone, onActivate: () => swapToScene('carcosa', CARCOSA_SPAWN), facing: [-1, 0], instant: true },
       ]
@@ -161,7 +172,17 @@ export function MuseumPage() {
       >
         <color attach="background" args={[sceneBackground]} />
         <Suspense fallback={null}>
-          {activeScene === 'museum' ? <Scene /> : <CarcosaScene />}
+          {/* Both scenes stay mounted so swapping between them is instant —
+              re-mounting Scene on return rebuilds every voxel pedestal +
+              cartridge label canvas, which is what made the museum
+              re-entry feel laggy. visible=false skips draw + most
+              traversal but preserves all useMemo state. */}
+          <group visible={activeScene === 'museum'}>
+            <Scene />
+          </group>
+          <group visible={activeScene === 'carcosa'}>
+            <CarcosaScene />
+          </group>
           <Effects />
         </Suspense>
         <Controls
@@ -184,6 +205,7 @@ export function MuseumPage() {
           onActivate={doors[activeDoor].onActivate}
         />
       )}
+      {!touch && <div className={styles.cursor} />}
       {!touch && (
         <div className={styles.hintRow}>
           <span className={styles.hint}>WASD/ARROWS</span>
