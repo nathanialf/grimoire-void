@@ -1,5 +1,4 @@
-export const ROOM = { w: 12, d: 12, h: 4 }
-export const PEDESTAL_COUNT = 10
+export const ROOM = { w: 24, d: 24, h: 5 }
 export const PEDESTAL_SIZE = 1
 
 // Artifact names — one per pedestal, drawn from the existing Grimoire
@@ -15,26 +14,24 @@ export const ARTIFACT_NAMES = [
   'THE OMICRON COLLAPSE',
   'THE WASTING EXPANSE',
   'OPERATION SABLE THRESHOLD',
+  'THE SUNKEN RELAY',
+  'THE THRESHOLD ACCORDS',
+  'THE GLASS LITANY',
 ]
 
-// Pedestals line the walls plus sit in each corner of the room.
-const PEDESTAL_WALL_INSET = ROOM.w / 2 - PEDESTAL_SIZE / 2  // 5.5
-export const pedestalPositions: [number, number][] = [
-  [ 2, -PEDESTAL_WALL_INSET],
-  [-2, -PEDESTAL_WALL_INSET],
-  [ PEDESTAL_WALL_INSET, -2],
-  [ PEDESTAL_WALL_INSET,  2],
-  [ 1.5, 0],
-  [-1.5, 0],
-  [ PEDESTAL_WALL_INSET,  PEDESTAL_WALL_INSET],
-  [ PEDESTAL_WALL_INSET, -PEDESTAL_WALL_INSET],
-  [-PEDESTAL_WALL_INSET, -PEDESTAL_WALL_INSET],
-  [-PEDESTAL_WALL_INSET,  PEDESTAL_WALL_INSET],
-]
+// 4×4 floor grid (16 pedestals). Pedestals are inset from every wall and
+// offset from the x=0 axis so the entry (+Z) and Carcosa (-Z) doors share
+// a clear path. Slots beyond ARTIFACT_NAMES.length render as bare empty
+// pedestals — no chip, voxels, ticker, or top light.
+const PEDESTAL_GRID = [-7.5, -2.5, 2.5, 7.5] as const
+export const pedestalPositions: [number, number][] = PEDESTAL_GRID.flatMap(
+  (x) => PEDESTAL_GRID.map((z): [number, number] => [x, z]),
+)
+export const PEDESTAL_COUNT = pedestalPositions.length
 
 export type Rect = { minX: number; maxX: number; minZ: number; maxZ: number }
 
-// Exit door on the +Z wall (behind spawn at z=5).
+// Exit door on the +Z wall (behind spawn).
 const EXIT_Z = ROOM.d / 2 - 0.1
 export const exitZone: Rect = {
   minX: -0.9,
@@ -46,9 +43,6 @@ export const EXIT_Z_POS = EXIT_Z
 
 const PLAYER_INSET = 0.5
 
-// Walkable rects (player position must be inside at least one). Just the
-// museum interior — the antechamber + corridor were collapsed into a single
-// portal door cut into the museum's -X wall.
 export const walkableRects: Rect[] = [
   {
     minX: -ROOM.w / 2 + PLAYER_INSET,
@@ -115,12 +109,13 @@ export function clampToWalkable(
   return best
 }
 
-// Carcosa door now sits on the museum's -X wall (x = -ROOM.w/2). Trigger zone
-// is the strip just inside the wall in front of the door.
-const CARCOSA_DOOR_X_INNER = -ROOM.w / 2 + PLAYER_INSET // -5.5
+// Carcosa door sits on the -Z wall (z = -ROOM.d/2), directly across the
+// museum from the entry door. Trigger zone is the strip just inside the
+// wall in front of the door.
+const CARCOSA_DOOR_Z_INNER = -ROOM.d / 2 + PLAYER_INSET
 export const carcosaDoorZone: Rect = {
-  minX: CARCOSA_DOOR_X_INNER,
-  maxX: CARCOSA_DOOR_X_INNER + 0.8,
-  minZ: -0.6,
-  maxZ:  0.6,
+  minX: -0.6,
+  maxX:  0.6,
+  minZ: CARCOSA_DOOR_Z_INNER - 0.1,
+  maxZ: CARCOSA_DOOR_Z_INNER + 0.8,
 }

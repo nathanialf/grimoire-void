@@ -382,13 +382,13 @@ function ExitDoor() {
 }
 
 function DebugDoor() {
-  // Solid red carcosa door panel. Sits flush in the -X wall opening; the
-  // panel is positioned slightly toward the museum interior to fill the cut
-  // doorway shape from the player-visible side.
+  // Solid red carcosa door panel. Sits flush in the -Z wall opening (across
+  // the room from the entry door); positioned slightly toward the museum
+  // interior to fill the cut doorway shape from the player-visible side.
   return (
     <mesh
-      position={[-ROOM.w / 2 + 0.001, DOOR_CY, 0]}
-      rotation={[0, Math.PI / 2, 0]}
+      position={[0, DOOR_CY, -ROOM.d / 2 + 0.001]}
+      rotation={[0, 0, 0]}
     >
       <planeGeometry args={[DOOR_W, DOOR_H]} />
       <meshStandardMaterial color="#cc1818" roughness={0.9} metalness={0} />
@@ -418,19 +418,22 @@ function SealFrame() {
 
 function DebugFrame() {
   const { canvas } = useMemo(() => makeDebugTickerCanvas(), [])
-  // Carcosa door on the museum's -X wall, facing +X (rotationY = π/2). Strips
-  // sit at -ROOM.w/2 + 0.005 (slightly into the museum interior).
+  // Carcosa door on the museum's -Z wall, facing +Z (rotationY = 0). Strips
+  // sit at -ROOM.d/2 + 0.005 (slightly into the museum interior). The door's
+  // +Z normal mirrors the exit door's -Z normal, so the side strips need
+  // mirrorSides to keep the perimeter scroll reading correctly.
   return (
     <>
       <FrameTicker
         canvas={canvas}
-        centerX={-ROOM.w / 2}
+        centerX={0}
         centerY={DOOR_CY}
-        centerZ={0}
-        rotationY={Math.PI / 2}
+        centerZ={-ROOM.d / 2}
+        rotationY={0}
         outwardOffset={0.005}
-        wallAxis="z"
+        wallAxis="x"
         cornerColor="#ff0000"
+        mirrorSides
       />
     </>
   )
@@ -641,7 +644,24 @@ function ChipPanel({ seed, name }: { seed: number; name: string }) {
   )
 }
 
-function VoxelPedestal({ x, z, seed, name, topGlow }: { x: number; z: number; seed: number; name: string; topGlow: CanvasTexture }) {
+function VoxelPedestal({ x, z, seed, name, topGlow }: { x: number; z: number; seed: number; name: string | undefined; topGlow: CanvasTexture }) {
+  const emissiveIntensity = pedestalEmissiveIntensity(x, z)
+  if (!name) {
+    return (
+      <group position={[x, 0, z]}>
+        <mesh position={[0, PEDESTAL_SIZE / 2, 0]}>
+          <boxGeometry args={[PEDESTAL_SIZE, PEDESTAL_SIZE, PEDESTAL_SIZE]} />
+          <meshStandardMaterial
+            color={PEDESTAL_COLOR}
+            roughness={0.95}
+            metalness={0}
+            emissive={PEDESTAL_EMISSIVE}
+            emissiveIntensity={emissiveIntensity}
+          />
+        </mesh>
+      </group>
+    )
+  }
   const opts: ArtifactOpts = { ombre: true, cellsX: 44, pixel: 18 }
   const pattern = useMemo(() => computeArtifactPattern(seed, opts), [seed])
   const cellSize = PEDESTAL_SIZE / pattern.cellsX
@@ -815,7 +835,13 @@ function VoxelPedestal({ x, z, seed, name, topGlow }: { x: number; z: number; se
     <group position={[x, 0, z]}>
       <mesh position={[0, PEDESTAL_SIZE / 2, 0]}>
         <boxGeometry args={[PEDESTAL_SIZE, PEDESTAL_SIZE, PEDESTAL_SIZE]} />
-        <meshStandardMaterial color={WALL_COLOR} roughness={0.95} metalness={0} />
+        <meshStandardMaterial
+          color={PEDESTAL_COLOR}
+          roughness={0.95}
+          metalness={0}
+          emissive={PEDESTAL_EMISSIVE}
+          emissiveIntensity={emissiveIntensity}
+        />
       </mesh>
       <instancedMesh ref={inkMeshRef} args={[undefined, undefined, data.inkVoxels.length]} visible={false}>
         <boxGeometry args={[1, 1, 1]} />
@@ -935,14 +961,24 @@ function makePedestalGlowTexture(): CanvasTexture {
   return tex
 }
 
-function makeRoomLightmap(): CanvasTexture {
+// Floor + ceiling lightmap: one bright radial pool centered under the lone
+// ceiling fixture, additive over a near-black base. The room's corners and
+// edges fall off into darkness, giving baked falloff in addition to the
+// rectAreaLight's direct contribution.
+function makeCenterSpotLightmap(): CanvasTexture {
   const size = 512
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = size
   const ctx = canvas.getContext('2d')!
-  const g = ctx.createRadialGradient(size / 2, size / 2, size * 0.1, size / 2, size / 2, size * 0.6)
-  g.addColorStop(0, '#ffffff')
-  g.addColorStop(1, '#7a7a7a')
+  ctx.fillStyle = '#080808'
+  ctx.fillRect(0, 0, size, size)
+  const cx = size / 2
+  const cy = size / 2
+  ctx.globalCompositeOperation = 'lighter'
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 0.55)
+  g.addColorStop(0,    'rgba(255,255,255,1.0)')
+  g.addColorStop(0.45, 'rgba(255,255,255,0.45)')
+  g.addColorStop(1,    'rgba(255,255,255,0.0)')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, size, size)
   const tex = new CanvasTexture(canvas)
@@ -950,16 +986,32 @@ function makeRoomLightmap(): CanvasTexture {
   return tex
 }
 
-function makeFloorLightmap(): CanvasTexture {
-  const size = 512
+// Wall lightmap: a radial pool centered on the wall's top-middle (the wall
+// point closest to the lone ceiling fixture). Brightness falls off both
+// horizontally toward the wall corners and vertically toward the floor, so
+// each wall's top edge fades into the ceiling's already-dark outer ring at
+// the seam instead of clashing with it.
+function makeWallLightmap(): CanvasTexture {
+  const w = 256, h = 256
   const canvas = document.createElement('canvas')
-  canvas.width = canvas.height = size
+  canvas.width = w
+  canvas.height = h
   const ctx = canvas.getContext('2d')!
-  const g = ctx.createRadialGradient(size / 2, size / 2, size * 0.1, size / 2, size / 2, size * 0.6)
-  g.addColorStop(0, '#ffffff')
-  g.addColorStop(1, '#7a7a7a')
+  ctx.fillStyle = '#080808'
+  ctx.fillRect(0, 0, w, h)
+  // Canvas y=0 maps to UV v=1 (wall top) after flipY. Hot spot peaks at
+  // the wall's top-middle; dim peak (~0.35 alpha) so that where the wall
+  // meets the ceiling's outer/dark ring at the corner the brightness is
+  // continuous instead of a bright wall stripe against a black ceiling.
+  const cx = w / 2
+  const cy = 0
+  ctx.globalCompositeOperation = 'lighter'
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, h * 0.7)
+  g.addColorStop(0,    'rgba(255,255,255,0.35)')
+  g.addColorStop(0.45, 'rgba(255,255,255,0.14)')
+  g.addColorStop(1,    'rgba(255,255,255,0.0)')
   ctx.fillStyle = g
-  ctx.fillRect(0, 0, size, size)
+  ctx.fillRect(0, 0, w, h)
   const tex = new CanvasTexture(canvas)
   tex.wrapS = tex.wrapT = RepeatWrapping
   return tex
@@ -967,6 +1019,22 @@ function makeFloorLightmap(): CanvasTexture {
 
 const WALL_COLOR = '#ffffff'
 const FLOOR_COLOR = '#f7f7f7'
+// Pedestals don't take the room lightmap, so the cube would otherwise read
+// pure-black on the faces turned away from the lone ceiling fixture. A warm
+// off-white base + a per-pedestal baseline emissive (computed from the
+// pedestal's distance to the room center, where the light pools on the
+// floor) give the inner pedestals walls that read appropriately bright
+// while the outer pedestals stay dim.
+const PEDESTAL_COLOR = '#e8e4dc'
+const PEDESTAL_EMISSIVE = '#1a1814'
+// Emissive multiplier as a function of normalized distance from room center
+// (0 = directly under the fixture, 1 = corner). Inner pedestals push the
+// emissive to ~8× so their walls catch up to the bright floor pool around
+// them; corners drop to ~0.5× so they fall off into the dark perimeter.
+function pedestalEmissiveIntensity(x: number, z: number): number {
+  const t = Math.min(1, Math.hypot(x, z) / Math.hypot(ROOM.w / 2, ROOM.d / 2))
+  return 0.5 + (1 - t) * 7.5
+}
 
 // Single-shape geometry for a wall with a rectangular doorway cut out of the
 // bottom-center. Shape coords span x ∈ [-wallW/2, wallW/2], y ∈ [0, wallH].
@@ -1024,23 +1092,23 @@ function FlatPlane({ position, rotation, size, color = WALL_COLOR, lightMap, map
         roughness={0.95}
         metalness={0}
         lightMap={lightMap}
-        lightMapIntensity={0.35}
+        lightMapIntensity={0.9}
         map={map}
       />
     </mesh>
   )
 }
 
-function MuseumRoom({ lightMap, floorLightMap }: { lightMap: CanvasTexture; floorLightMap: CanvasTexture }) {
-  // -X wall has the carcosa door cut out of it — opening sized to the door
-  // panel itself (no corridor or antechamber beyond).
+function MuseumRoom({ ceilingLightMap, floorLightMap, wallLightMap }: { ceilingLightMap: CanvasTexture; floorLightMap: CanvasTexture; wallLightMap: CanvasTexture }) {
+  // -Z wall has the carcosa door cut out of it (across from the entry door
+  // on +Z) — opening sized to the door panel itself.
   const openW = DOOR_W
   const openH = DOOR_H
-  const halfW = ROOM.w / 2  // 6
-  const halfD = ROOM.d / 2  // 6
+  const halfW = ROOM.w / 2
+  const halfD = ROOM.d / 2
   const halfH = ROOM.h / 2
   const carcosaWallGeo = useMemo(
-    () => makeWallWithDoorwayGeometry(ROOM.d, ROOM.h, openW, openH),
+    () => makeWallWithDoorwayGeometry(ROOM.w, ROOM.h, openW, openH),
     [openW, openH],
   )
 
@@ -1059,56 +1127,63 @@ function MuseumRoom({ lightMap, floorLightMap }: { lightMap: CanvasTexture; floo
         position={[0, ROOM.h, 0]}
         rotation={[Math.PI / 2, 0, 0]}
         size={[ROOM.w, ROOM.d]}
-        lightMap={lightMap}
+        lightMap={ceilingLightMap}
       />
       {/* +Z wall (back wall, with sealed exit door) — facing -Z */}
       <FlatPlane
         position={[0, halfH, halfD]}
         rotation={[0, Math.PI, 0]}
         size={[ROOM.w, ROOM.h]}
-        lightMap={lightMap}
+        lightMap={wallLightMap}
       />
-      {/* -Z wall — facing +Z */}
-      <FlatPlane
-        position={[0, halfH, -halfD]}
-        rotation={[0, 0, 0]}
-        size={[ROOM.w, ROOM.h]}
-        lightMap={lightMap}
-      />
+      {/* -Z wall — single shape with the carcosa door opening cut out, so the
+          wall texture + lightmap span the whole surface continuously. */}
+      <mesh position={[0, 0, -halfD]} rotation={[0, 0, 0]} geometry={carcosaWallGeo}>
+        <meshStandardMaterial
+          color={WALL_COLOR}
+          roughness={0.95}
+          metalness={0}
+          lightMap={wallLightMap}
+          lightMapIntensity={0.9}
+        />
+      </mesh>
       {/* +X wall — facing -X */}
       <FlatPlane
         position={[halfW, halfH, 0]}
         rotation={[0, -Math.PI / 2, 0]}
         size={[ROOM.d, ROOM.h]}
-        lightMap={lightMap}
+        lightMap={wallLightMap}
       />
-      {/* -X wall — single shape with the carcosa door opening cut out, so the
-          wall texture + lightmap span the whole surface continuously. */}
-      <mesh position={[-halfW, 0, 0]} rotation={[0, Math.PI / 2, 0]} geometry={carcosaWallGeo}>
-        <meshStandardMaterial
-          color={WALL_COLOR}
-          roughness={0.95}
-          metalness={0}
-          lightMap={lightMap}
-          lightMapIntensity={0.35}
-        />
-      </mesh>
+      {/* -X wall — facing +X */}
+      <FlatPlane
+        position={[-halfW, halfH, 0]}
+        rotation={[0, Math.PI / 2, 0]}
+        size={[ROOM.d, ROOM.h]}
+        lightMap={wallLightMap}
+      />
     </>
   )
 }
 
 export function Scene() {
-  const roomLightmap = useMemo(() => makeRoomLightmap(), [])
-  const floorLightmap = useMemo(() => makeFloorLightmap(), [])
+  // Floor and ceiling share the same center-spot lightmap (room is
+  // symmetric about its mid-height). Walls use a vertical gradient so the
+  // lower portion of each wall reads dim and the top stays bright near
+  // the fixture.
+  const ceilingLightmap = useMemo(() => makeCenterSpotLightmap(), [])
+  const floorLightmap = useMemo(() => makeCenterSpotLightmap(), [])
+  const wallLightmap = useMemo(() => makeWallLightmap(), [])
   const pedestalGlow = useMemo(() => makePedestalGlowTexture(), [])
 
   return (
     <>
-      <ambientLight intensity={0.18} />
-      <hemisphereLight args={[0xffffff, 0xdadada, 0.12]} />
+      {/* Low ambient + hemisphere terms so areas the lightmap leaves dark
+          actually read dark, instead of being washed out by uniform fill. */}
+      <ambientLight intensity={0.05} />
+      <hemisphereLight args={[0xffffff, 0xdadada, 0.04]} />
 
-      {/* Long thin fluorescent panel on the ceiling. Rotated so the rectangle
-          lies flat against the ceiling and emits straight down (-Y). */}
+      {/* Single long thin fluorescent panel dead-center on the ceiling.
+          Rotated flat so it emits straight down (-Y). */}
       <rectAreaLight
         position={[0, ROOM.h - 0.02, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -1118,10 +1193,10 @@ export function Scene() {
         color="#fff4dd"
       />
 
-      <MuseumRoom lightMap={roomLightmap} floorLightMap={floorLightmap} />
+      <MuseumRoom ceilingLightMap={ceilingLightmap} floorLightMap={floorLightmap} wallLightMap={wallLightmap} />
 
       {pedestalPositions.map(([x, z], i) => (
-        <VoxelPedestal key={i} x={x} z={z} seed={i} name={ARTIFACT_NAMES[i % ARTIFACT_NAMES.length]} topGlow={pedestalGlow} />
+        <VoxelPedestal key={i} x={x} z={z} seed={i} name={ARTIFACT_NAMES[i]} topGlow={pedestalGlow} />
       ))}
 
 

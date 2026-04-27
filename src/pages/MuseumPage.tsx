@@ -19,8 +19,8 @@ const FADE_MS = 700           // door-to-cover fade
 type SceneId = 'museum' | 'carcosa'
 type SpawnPose = { pos: [number, number, number]; lookAt: [number, number, number] }
 
-const MUSEUM_SPAWN: SpawnPose = { pos: [0, 1.6, 5], lookAt: [0, 1.6, 0] }
-const MUSEUM_RETURN_SPAWN: SpawnPose = { pos: [-4.5, 1.6, 0], lookAt: [0, 1.6, 0] }
+const MUSEUM_SPAWN: SpawnPose = { pos: [0, 1.6, 11], lookAt: [0, 1.6, 0] }
+const MUSEUM_RETURN_SPAWN: SpawnPose = { pos: [0, 1.6, -10.5], lookAt: [0, 1.6, 0] }
 const CARCOSA_SPAWN: SpawnPose = { pos: [0, 1.6, -8.8], lookAt: [0, 1.6, 0] }
 
 // Carcosa play area (kept inline now that the scene lives inside the museum
@@ -139,7 +139,7 @@ export function MuseumPage() {
           },
         },
         // Carcosa door — walk through to teleport, no prompt and no fade.
-        { zone: carcosaDoorZone, onActivate: () => swapToScene('carcosa', CARCOSA_SPAWN), facing: [-1, 0], instant: true },
+        { zone: carcosaDoorZone, onActivate: () => swapToScene('carcosa', CARCOSA_SPAWN), facing: [0, -1], instant: true },
       ]
     }
     // In Carcosa: walk through the return portal to teleport back.
@@ -167,7 +167,7 @@ export function MuseumPage() {
     <div className={styles.museum}>
       <Canvas
         flat
-        camera={{ fov: 68, near: 0.05, far: 4000, position: [0, 1.6, 5] }}
+        camera={{ fov: 68, near: 0.05, far: 4000, position: [0, 1.6, 11] }}
         gl={{ antialias: false, powerPreference: 'high-performance' }}
       >
         <color attach="background" args={[sceneBackground]} />
@@ -205,14 +205,21 @@ export function MuseumPage() {
           onActivate={doors[activeDoor].onActivate}
         />
       )}
-      {!touch && <div className={styles.cursor} />}
-      {!touch && (
-        <div className={styles.hintRow}>
-          <span className={styles.hint}>WASD/ARROWS</span>
-          <span className={styles.hint}>MOUSE LOOK</span>
-          <span className={styles.hint}>E INTERACT</span>
-        </div>
-      )}
+      <div className={styles.cursor} />
+      <div className={styles.hintRow}>
+        {touch ? (
+          <>
+            <span className={styles.hint}>LEFT MOVE</span>
+            <span className={styles.hint}>RIGHT LOOK</span>
+          </>
+        ) : (
+          <>
+            <span className={styles.hint}>WASD/ARROWS</span>
+            <span className={styles.hint}>MOUSE LOOK</span>
+            <span className={styles.hint}>E INTERACT</span>
+          </>
+        )}
+      </div>
       {/* Fade overlay shared by door-to-cover fades and scene-swap fades. */}
       <div
         style={{
