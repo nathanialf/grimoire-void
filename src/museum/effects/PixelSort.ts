@@ -45,6 +45,36 @@ const fragment = /* glsl */ `
 // Points cloud — RawShaderMaterial, declare every attribute / uniform
 // explicitly. This proved to be the rendering path that actually drew
 // points; ShaderMaterial silently dropped them.
+//
+// Migration animation: currently a cheap visual approximation — each
+// pixel moves at uniform visual speed toward its sorted destination, so
+// shorter-distance pixels finish first. This minimizes the perceived
+// "everything cross-fades through everything" effect of a pure lerp but
+// does not strictly prevent overlap (e.g. two pixels with equal
+// distance swapping positions still cross at t=0.5).
+//
+// If a stricter no-overlap look is wanted in the future:
+//
+//   1. Precomputed odd-even transposition sort. Per column, simulate H
+//      passes of parallel-friendly bubble sort on CPU and store every
+//      intermediate Y position. Exact, but O(W*H*H) memory — at
+//      1920x1080 that's ~2 GB, so this only works at sharply reduced
+//      resolution or with chunked passes streamed to a 3D texture.
+//
+//   2. GPU collision-aware march. Each frame, advance every pixel one
+//      step toward sortedY only if the neighbor in front has already
+//      moved (or is past). This is a per-column prefix/scan problem,
+//      doable with a compute shader or a ping-pong of N small fragment
+//      passes per column. Real GPU work but produces true bubble-sort
+//      visuals with zero overlap.
+//
+//   3. Staggered start times (alternative read of the current "method
+//      3"). Give each pixel a delay derived from its distance —
+//      e.g. `delay = (1 - normDist) * stagger` so far-movers leave
+//      first, then short-distance pixels settle into the gaps. Just a
+//      vertex-shader change; produces a "structure rearranges, fine
+//      detail settles" cadence rather than the current uniform-speed
+//      look.
 const pointsVertex = /* glsl */ `
   precision highp float;
   attribute vec3 position;
@@ -59,7 +89,16 @@ const pointsVertex = /* glsl */ `
   void main() {
     float origX = position.x;
     float origY = position.y;
-    float interpY = mix(origY, sortedY, ramp);
+
+    // Uniform-speed migration: every pixel moves at the same visual rate
+    // (one column-height per unit ramp), so pixels with shorter travel
+    // distances finish earlier and those with longer ones are still
+    // moving at ramp=1. Reduces the synchronized cross-through overlap
+    // that pure lerp produces when a column's pixels swap places en masse.
+    float dist = abs(sortedY - origY);
+    float normDist = dist / resolution.y;
+    float tLocal = (normDist > 0.0001) ? min(ramp / normDist, 1.0) : 0.0;
+    float interpY = mix(origY, sortedY, tLocal);
 
     float ndcX = (origX + 0.5) / resolution.x * 2.0 - 1.0;
     float ndcY = (interpY + 0.5) / resolution.y * 2.0 - 1.0;

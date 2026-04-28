@@ -15,7 +15,7 @@ import { useNavigate } from '../hooks/useNavigate'
 import styles from '../styles/Museum.module.css'
 
 const TOTAL_MS = 5 * 60 * 1000
-const DEREZ_MS = 3500         // pixel-sort ramp on timer expiry / ESC
+const DEREZ_MS = 1600         // pixel-sort ramp on timer expiry / ESC
 const DEREZ_HOLD_MS = 1500    // hold the fully-sorted output before navigating
 const FADE_MS = 700           // door-to-cover fade
 type SceneId = 'museum' | 'carcosa'
