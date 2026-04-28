@@ -382,7 +382,7 @@ function ExitDoor() {
 }
 
 function DebugDoor() {
-  // Solid red carcosa door panel. Sits flush in the -Z wall opening (across
+  // Solid black carcosa door panel. Sits flush in the -Z wall opening (across
   // the room from the entry door); positioned slightly toward the museum
   // interior to fill the cut doorway shape from the player-visible side.
   return (
@@ -391,7 +391,7 @@ function DebugDoor() {
       rotation={[0, 0, 0]}
     >
       <planeGeometry args={[DOOR_W, DOOR_H]} />
-      <meshStandardMaterial color="#cc1818" roughness={0.9} metalness={0} />
+      <meshStandardMaterial color="#000000" roughness={0.9} metalness={0} />
     </mesh>
   )
 }
@@ -432,7 +432,7 @@ function DebugFrame() {
         rotationY={0}
         outwardOffset={0.005}
         wallAxis="x"
-        cornerColor="#ff0000"
+        cornerColor="#ffffff"
         mirrorSides
       />
     </>
@@ -859,7 +859,7 @@ function VoxelPedestal({ x, z, seed, name, topGlow }: { x: number; z: number; se
         position={[0, PEDESTAL_SIZE + 0.002, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[PEDESTAL_SIZE * 0.8, PEDESTAL_SIZE * 0.8]} />
+        <planeGeometry args={[PEDESTAL_SIZE, PEDESTAL_SIZE]} />
         <meshBasicMaterial
           map={topGlow}
           transparent
@@ -950,13 +950,37 @@ function makePedestalGlowTexture(): CanvasTexture {
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = size
   const ctx = canvas.getContext('2d')!
-  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
-  g.addColorStop(0.0,  'rgba(255, 244, 220, 0.95)')
-  g.addColorStop(0.6,  'rgba(255, 240, 210, 0.85)')
-  g.addColorStop(0.85, 'rgba(255, 230, 190, 0.45)')
-  g.addColorStop(1.0,  'rgba(255, 220, 170, 0)')
-  ctx.fillStyle = g
-  ctx.fillRect(0, 0, size, size)
+  // Square falloff: iso-bright contours are squares, not circles. Use the
+  // Chebyshev distance from center so the gradient front advances as a
+  // square outward to the edge of the plane.
+  const stops: Array<[number, [number, number, number, number]]> = [
+    [0.0,  [255, 244, 220, 0.95]],
+    [0.6,  [255, 240, 210, 0.85]],
+    [0.85, [255, 230, 190, 0.45]],
+    [1.0,  [255, 220, 170, 0.0]],
+  ]
+  const img = ctx.createImageData(size, size)
+  const half = size / 2
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const d = Math.min(1, Math.max(Math.abs(x - half), Math.abs(y - half)) / half)
+      let i = 0
+      while (i < stops.length - 1 && d > stops[i + 1][0]) i++
+      const [t0, c0] = stops[i]
+      const [t1, c1] = stops[Math.min(i + 1, stops.length - 1)]
+      const k = t1 === t0 ? 0 : (d - t0) / (t1 - t0)
+      const r = c0[0] + (c1[0] - c0[0]) * k
+      const gC = c0[1] + (c1[1] - c0[1]) * k
+      const b = c0[2] + (c1[2] - c0[2]) * k
+      const a = c0[3] + (c1[3] - c0[3]) * k
+      const idx = (y * size + x) * 4
+      img.data[idx + 0] = r
+      img.data[idx + 1] = gC
+      img.data[idx + 2] = b
+      img.data[idx + 3] = Math.round(a * 255)
+    }
+  }
+  ctx.putImageData(img, 0, 0)
   const tex = new CanvasTexture(canvas)
   return tex
 }

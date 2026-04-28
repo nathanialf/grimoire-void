@@ -8,23 +8,23 @@ export const DOOR_CY = 1.1
 export const FRAME_W = 0.12
 
 export function makeDebugTickerCanvas(): { canvas: HTMLCanvasElement } {
-  const msg = 'DEBUG █ DO NOT DEPLOY █ '
+  const msg = 'ATTACH █ '
   const font = '900 44px "JetBrains Mono", ui-monospace, monospace'
   const h = 64
   const measure = document.createElement('canvas').getContext('2d')!
   measure.font = font
   const msgWidth = Math.ceil(measure.measureText(msg).width)
-  const copies = 4
+  const copies = 8
   const w = msgWidth * copies
 
   const canvas = document.createElement('canvas')
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d')!
-  ctx.fillStyle = '#ff0000'
+  ctx.fillStyle = '#000'
   ctx.fillRect(0, 0, w, h)
   ctx.font = font
-  ctx.fillStyle = '#000'
+  ctx.fillStyle = '#fff'
   ctx.textBaseline = 'middle'
   for (let i = 0; i < copies; i++) {
     ctx.fillText(msg, i * msgWidth, h / 2)

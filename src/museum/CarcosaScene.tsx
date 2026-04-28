@@ -270,7 +270,7 @@ function ReturnPortalFrame() {
       rotationY={0}
       outwardOffset={0.005}
       wallAxis="x"
-      cornerColor="#ff0000"
+      cornerColor="#ffffff"
       mirrorSides
     />
   )
