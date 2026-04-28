@@ -41,7 +41,15 @@ export function CoverPage() {
           <a
             href="/museum"
             className={styles.enter}
-            onClick={(e) => { e.preventDefault(); navigate('/museum'); }}
+            onClick={(e) => {
+              e.preventDefault();
+              // Forward user activation into the museum scene: PointerLockControls
+              // mounts its lock target on the canvas, which doesn't exist yet, so
+              // we set a flag and let the museum claim the still-valid transient
+              // activation (browser keeps it alive ~5s post-gesture).
+              try { sessionStorage.setItem('museum.autolock', '1'); } catch {}
+              navigate('/museum');
+            }}
           >
             <span className="visually-hidden">Survey Site</span>
             <PixelatedText letterSpacing={2} textTransform="uppercase">Survey Site</PixelatedText>

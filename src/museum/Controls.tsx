@@ -95,7 +95,7 @@ export function Controls({
 }: ControlsProps) {
   const lockedRef = useRef(locked)
   useEffect(() => { lockedRef.current = locked }, [locked])
-  const { camera } = useThree()
+  const { camera, gl } = useThree()
   const velocity = useRef(new Vector3())
   const forward = useRef(new Vector3())
   const forward3 = useRef(new Vector3())
@@ -106,6 +106,27 @@ export function Controls({
   useEffect(() => { triggersRef.current = triggers }, [triggers])
   const onActiveTriggerChangeRef = useRef(onActiveTriggerChange)
   useEffect(() => { onActiveTriggerChangeRef.current = onActiveTriggerChange }, [onActiveTriggerChange])
+
+  // Auto-engage pointer lock if the user hit "Survey Site" on the cover
+  // page. We can't request the lock from that click directly because the
+  // canvas doesn't exist yet; the flag rides through the SPA navigation
+  // and we claim the still-valid transient activation here on mount.
+  // Drei's PointerLockControls listens to pointerlockchange globally, so
+  // it picks up the lock once the canvas becomes pointerLockElement.
+  useEffect(() => {
+    if (touch) return
+    let flag: string | null = null
+    try {
+      flag = sessionStorage.getItem('museum.autolock')
+      if (flag === '1') sessionStorage.removeItem('museum.autolock')
+    } catch { return }
+    if (flag !== '1') return
+    if (document.pointerLockElement === gl.domElement) return
+    const req = (gl.domElement as HTMLElement).requestPointerLock?.()
+    if (req && typeof (req as Promise<void>).catch === 'function') {
+      (req as Promise<void>).catch(() => {})
+    }
+  }, [touch, gl])
 
   // 'E' key activates the currently-inside trigger (desktop only — mobile
   // uses the DoorPrompt button directly).
