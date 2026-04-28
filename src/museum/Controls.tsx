@@ -73,6 +73,10 @@ export interface ControlsProps {
   spawn?: [number, number, number]
   spawnLookAt?: [number, number, number]
   onActiveTriggerChange?: (index: number | null) => void
+  // When true, all input is ignored: no movement, no look, no triggers.
+  // PointerLockControls is also unmounted so mouse-look stops affecting
+  // the camera. Used to freeze the player during the derez animation.
+  locked?: boolean
 }
 
 const MOVE_SPEED = 2.5
@@ -87,7 +91,10 @@ export function Controls({
   spawn = [0, 1.6, 5],
   spawnLookAt = [0, 1.6, 0],
   onActiveTriggerChange,
+  locked = false,
 }: ControlsProps) {
+  const lockedRef = useRef(locked)
+  useEffect(() => { lockedRef.current = locked }, [locked])
   const { camera } = useThree()
   const velocity = useRef(new Vector3())
   const forward = useRef(new Vector3())
@@ -154,6 +161,14 @@ export function Controls({
   }, [touch, input])
 
   useFrame((_, dt) => {
+    if (lockedRef.current) {
+      // Freeze movement, look, and triggers while exiting / derezing.
+      input.current.forward = 0
+      input.current.strafe = 0
+      input.current.yaw = 0
+      input.current.pitch = 0
+      return
+    }
     camera.getWorldDirection(forward3.current)
     forward.current.copy(forward3.current)
     forward.current.y = 0
@@ -249,5 +264,9 @@ export function Controls({
   })
 
   if (touch) return null
+  // Unmount PointerLockControls while locked so mouse motion stops
+  // rotating the camera (drei's wrapper attaches its own listeners that we
+  // can't gate from inside useFrame).
+  if (locked) return null
   return <PointerLockControls />
 }

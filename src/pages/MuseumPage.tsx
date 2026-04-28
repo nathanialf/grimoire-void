@@ -7,14 +7,16 @@ import { DOOR_W, DOOR_H } from '../museum/frameTicker'
 import { Controls, type InputState, type Trigger } from '../museum/Controls'
 import { TouchControls } from '../museum/TouchControls'
 import { Effects } from '../museum/Effects'
-import { Timer } from '../museum/Timer'
+import { TerminalLog } from '../museum/TerminalLog'
 import { DoorPrompt } from '../museum/DoorPrompt'
-import { glitchOut } from '../museum/effects/glitchOutUniform'
+import { pixelSort } from '../museum/effects/pixelSortUniform'
+import { datamosh } from '../museum/effects/datamoshUniform'
 import { useNavigate } from '../hooks/useNavigate'
 import styles from '../styles/Museum.module.css'
 
 const TOTAL_MS = 5 * 60 * 1000
-const GLITCH_MS = 1400
+const DEREZ_MS = 3500         // pixel-sort ramp on timer expiry / ESC
+const DEREZ_HOLD_MS = 1500    // hold the fully-sorted output before navigating
 const FADE_MS = 700           // door-to-cover fade
 type SceneId = 'museum' | 'carcosa'
 type SpawnPose = { pos: [number, number, number]; lookAt: [number, number, number] }
@@ -43,6 +45,7 @@ export function MuseumPage() {
   const [fadeProgress, setFadeProgress] = useState(0)
   const [activeScene, setActiveScene] = useState<SceneId>('museum')
   const [spawn, setSpawn] = useState<SpawnPose>(MUSEUM_SPAWN)
+  const [isExiting, setIsExiting] = useState(false)
 
   // Countdown loop (rAF-based) — keeps running through scene swaps so the
   // timer persists when the player is in Carcosa.
@@ -54,7 +57,7 @@ export function MuseumPage() {
       last = now
       setMsLeft((prev) => {
         const next = prev - dt
-        if (next <= 0 && !exitingRef.current) runGlitchThen('/cover')
+        if (next <= 0 && !exitingRef.current) runDerezThen('/cover')
         return Math.max(0, next)
       })
       raf = requestAnimationFrame(tick)
@@ -64,17 +67,24 @@ export function MuseumPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const runGlitchThen = (to: string) => {
+  const runDerezThen = (to: string) => {
     if (exitingRef.current) return
     exitingRef.current = true
+    setIsExiting(true)
     const start = performance.now()
     const ramp = (now: number) => {
-      const t = Math.min(1, (now - start) / GLITCH_MS)
-      glitchOut.value = t
-      if (t < 1) {
+      const elapsed = now - start
+      if (elapsed < DEREZ_MS) {
+        // Phase 1: ramp 0 → 1.
+        pixelSort.value = elapsed / DEREZ_MS
+        requestAnimationFrame(ramp)
+      } else if (elapsed < DEREZ_MS + DEREZ_HOLD_MS) {
+        // Phase 2: hold at full sort.
+        pixelSort.value = 1
         requestAnimationFrame(ramp)
       } else {
-        glitchOut.value = 0
+        // Phase 3: release and navigate.
+        pixelSort.value = 0
         navigate(to)
       }
     }
@@ -84,6 +94,7 @@ export function MuseumPage() {
   const runFadeThen = (to: string) => {
     if (exitingRef.current) return
     exitingRef.current = true
+    setIsExiting(true)
     const start = performance.now()
     const ramp = (now: number) => {
       const t = Math.min(1, (now - start) / FADE_MS)
@@ -94,21 +105,21 @@ export function MuseumPage() {
     requestAnimationFrame(ramp)
   }
 
-  // In-page scene swap with a brief glitch flicker — Timer + Effects pipeline
-  // persist. The glitch peaks halfway through, where the scene + spawn pose
-  // are swapped, so the swap itself is hidden inside the noise.
-  const SWAP_GLITCH_MS = 320
-  const SWAP_GLITCH_PEAK = 0.45
+  // In-page scene swap with a brief datamosh flicker — Timer + Effects
+  // pipeline persist. The mosh peaks halfway through, where the scene +
+  // spawn pose are swapped, so the swap itself is hidden inside the noise.
+  const SWAP_MOSH_MS = 320
+  const SWAP_MOSH_PEAK = 0.45
   const swapToScene = (scene: SceneId, nextSpawn: SpawnPose) => {
     if (exitingRef.current || swappingRef.current) return
     swappingRef.current = true
     const start = performance.now()
     let swapped = false
     const ramp = (now: number) => {
-      const t = (now - start) / SWAP_GLITCH_MS
+      const t = (now - start) / SWAP_MOSH_MS
       if (t < 1) {
         // Triangle: 0 → peak at t=0.5 → 0. Swap at the peak.
-        glitchOut.value = SWAP_GLITCH_PEAK * (1 - Math.abs(t * 2 - 1))
+        datamosh.value = SWAP_MOSH_PEAK * (1 - Math.abs(t * 2 - 1))
         if (!swapped && t >= 0.5) {
           swapped = true
           setActiveScene(scene)
@@ -116,7 +127,7 @@ export function MuseumPage() {
         }
         requestAnimationFrame(ramp)
       } else {
-        glitchOut.value = 0
+        datamosh.value = 0
         swappingRef.current = false
       }
     }
@@ -148,16 +159,6 @@ export function MuseumPage() {
     ]
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeScene])
-
-  // ESC exits immediately via glitch-out from any scene.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') runGlitchThen('/cover')
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const sceneWalkable = activeScene === 'museum' ? walkableRects : CARCOSA_BOUNDS
   const scenePedestals = activeScene === 'museum' ? pedestalPositions : []
@@ -194,9 +195,10 @@ export function MuseumPage() {
           spawn={spawn.pos}
           spawnLookAt={spawn.lookAt}
           onActiveTriggerChange={setActiveDoor}
+          locked={isExiting}
         />
       </Canvas>
-      <Timer ms={msLeft} />
+      <TerminalLog ms={msLeft} />
       {touch && <TouchControls input={inputRef} />}
       {activeDoor !== null && (
         <DoorPrompt

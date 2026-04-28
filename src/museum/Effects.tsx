@@ -1,15 +1,16 @@
 import { useMemo } from 'react'
 import { EffectComposer, Bloom, ChromaticAberration, Vignette } from '@react-three/postprocessing'
 import { BlendFunction, KernelSize, Effect } from 'postprocessing'
-import { Vector2 } from 'three'
+import { UnsignedByteType, Vector2 } from 'three'
 import { ColorGradeEffect } from './effects/ColorGrade'
-import { GlitchOutEffect } from './effects/GlitchOut'
 import { HalationEffect } from './effects/Halation'
 import { ToneMapEffect } from './effects/ToneMap'
 import { BarrelEffect } from './effects/Barrel'
 import { ScanlinesEffect } from './effects/Scanlines'
 import { GrainChromaEffect } from './effects/GrainChroma'
 import { DitherEffect } from './effects/Dither'
+import { PixelSortEffect } from './effects/PixelSort'
+import { DatamoshEffect } from './effects/Datamosh'
 
 function EffectWrapper({ effect }: { effect: Effect }) {
   return <primitive object={effect} dispose={null} />
@@ -23,7 +24,8 @@ export function Effects() {
   const scanlines = useMemo(() => new ScanlinesEffect(), [])
   const grain = useMemo(() => new GrainChromaEffect(), [])
   const dither = useMemo(() => new DitherEffect(), [])
-  const glitch = useMemo(() => new GlitchOutEffect(), [])
+  const pixelSort = useMemo(() => new PixelSortEffect(), [])
+  const datamosh = useMemo(() => new DatamoshEffect(), [])
   // Chromatic aberration offset is in UV space, so a fixed value is much
   // more visible on a 4K monitor than a 720p laptop. Scale it so the CA
   // shift stays around a constant pixel count instead of blowing out on
@@ -36,7 +38,7 @@ export function Effects() {
   }, [])
 
   return (
-    <EffectComposer multisampling={0}>
+    <EffectComposer multisampling={0} frameBufferType={UnsignedByteType}>
       <EffectWrapper effect={halation} />
       <Bloom
         intensity={1.1}
@@ -56,7 +58,8 @@ export function Effects() {
       <EffectWrapper effect={scanlines} />
       <EffectWrapper effect={grain} />
       <EffectWrapper effect={dither} />
-      <EffectWrapper effect={glitch} />
+      <EffectWrapper effect={pixelSort} />
+      <EffectWrapper effect={datamosh} />
       <Vignette eskil={false} offset={0.25} darkness={0.55} />
     </EffectComposer>
   )

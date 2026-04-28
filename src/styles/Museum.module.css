@@ -11,28 +11,42 @@
   height: 100%;
 }
 
-.timer {
+.terminal {
   position: fixed;
-  top: var(--space-md);
   left: var(--space-md);
-  padding: 0.25rem 0.6rem;
+  bottom: var(--space-md);
   font-family: var(--font-mono);
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-indent: 0.15em;
-  line-height: 1;
-  color: #000;
-  background: var(--color-accent);
+  font-size: 0.78rem;
+  line-height: 1.15;
+  color: rgba(170, 170, 170, 0.55);
   pointer-events: none;
+  user-select: none;
   z-index: 10;
+  width: clamp(360px, 38vw, 560px);
+  max-height: 50vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
-.timer_ok { background: var(--color-accent); }
-.timer_amber { background: #ffb84d; }
-.timer_danger { background: var(--color-danger); }
-.timer_blink {
-  background: var(--color-danger);
+.terminalLine {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+.terminalTimerLine {
+  align-self: flex-start;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 0 0.4em;
+}
+
+.terminalTimer_ok     { color: var(--color-accent); }
+.terminalTimer_amber  { color: #ffb84d; }
+.terminalTimer_danger { color: var(--color-danger); }
+.terminalTimer_blink  {
+  color: var(--color-danger);
   animation: blink 0.5s steps(2, end) infinite;
 }
 
@@ -84,6 +98,9 @@ button.prompt { pointer-events: auto; cursor: pointer; }
   gap: 0.5rem;
   pointer-events: none;
   z-index: 10;
+  max-width: calc(100vw - var(--space-md) * 2);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .hint {
@@ -98,6 +115,26 @@ button.prompt { pointer-events: auto; cursor: pointer; }
   background: var(--color-accent);
   text-transform: uppercase;
   user-select: none;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* Mobile portrait: move the controls hints to the top so they don't
+   overlap the terminal log / timer at the bottom-left. Force them
+   side-by-side and shrink padding so two chips fit on one row. */
+@media (orientation: portrait) and (max-width: 900px) {
+  .hintRow {
+    top: var(--space-md);
+    bottom: auto;
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+  }
+  .hint {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-indent: 0.15em;
+  }
 }
 
 .touchLayer {
