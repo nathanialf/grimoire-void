@@ -16,7 +16,7 @@
   left: var(--space-md);
   bottom: var(--space-md);
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 12px;
   line-height: 1.15;
   color: rgba(170, 170, 170, 0.55);
   pointer-events: none;
@@ -28,12 +28,18 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .terminalLine {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: clip;
+  font-size: 12px;
+  max-height: 1em;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .terminalTimerLine {
