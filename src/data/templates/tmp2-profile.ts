@@ -1,11 +1,11 @@
 import type { ProfileTemplate } from '../../types'
 
-// TMP3 — Employee Profile schema reference. Demonstrates the profile
+// TMP2 — Employee Profile schema reference. Demonstrates the profile
 // chrome (intranet phonebook style) and lists what goes in each field.
 
-export const tmp3Profile: ProfileTemplate = {
+export const tmp2Profile: ProfileTemplate = {
   kind: 'profile',
-  pageNumber: 'TMP3',
+  pageNumber: 'TMP2',
   drift: 0.0,
   name: '{Employee Full Name}',
   employeeNumber: '{A-NNNNN}',

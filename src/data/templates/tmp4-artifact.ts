@@ -1,11 +1,11 @@
 import type { ArtifactTemplate } from '../../types'
 
-// TMP5 — Artifact / Accession Record. Sections locked to match the
+// TMP4 — Artifact / Accession Record. Sections locked to match the
 // existing wiki artifact structure (see hollow-blade.ts, spectral-caul.ts).
 
-export const tmp5Artifact: ArtifactTemplate = {
+export const tmp4Artifact: ArtifactTemplate = {
   kind: 'artifact',
-  pageNumber: 'TMP5',
+  pageNumber: 'TMP4',
   drift: 0.0,
   header: {
     classification: '{Artifact classification — e.g. "Artifact — Void-Touched"}',

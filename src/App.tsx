@@ -25,11 +25,10 @@ import { thresholdAccords } from './data/lore/threshold-accords'
 import { sableThreshold } from './data/reports/sable-threshold'
 import { glassLitany } from './data/reports/glass-litany'
 import { tmp1Email } from './data/templates/tmp1-email'
-import { tmp2Transfer } from './data/templates/tmp2-transfer'
-import { tmp3Profile } from './data/templates/tmp3-profile'
-import { tmp4COE } from './data/templates/tmp4-coe'
-import { tmp5Artifact } from './data/templates/tmp5-artifact'
-import { tmp6Survey } from './data/templates/tmp6-survey'
+import { tmp2Profile } from './data/templates/tmp2-profile'
+import { tmp3COE } from './data/templates/tmp3-coe'
+import { tmp4Artifact } from './data/templates/tmp4-artifact'
+import { tmp5Survey } from './data/templates/tmp5-survey'
 import styles from './styles/App.module.css'
 import type { TickerVariant } from './components/Ticker'
 
@@ -61,11 +60,10 @@ const PAGES: PageEntry[] = [
   { path: '/report/sable-threshold', component: () => <TemplatePage {...sableThreshold} />, isPlaceholder: true, ticker: 'placeholder' },
   { path: '/report/glass-litany', component: () => <TemplatePage {...glassLitany} />, isPlaceholder: true, ticker: 'placeholder' },
   { path: '/template/tmp1-email', component: () => <TemplatePage {...tmp1Email} />, isPlaceholder: true, ticker: 'template' },
-  { path: '/template/tmp2-transfer', component: () => <TemplatePage {...tmp2Transfer} />, isPlaceholder: true, ticker: 'template' },
-  { path: '/template/tmp3-profile', component: () => <TemplatePage {...tmp3Profile} />, isPlaceholder: true, ticker: 'template' },
-  { path: '/template/tmp4-coe', component: () => <TemplatePage {...tmp4COE} />, isPlaceholder: true, ticker: 'template' },
-  { path: '/template/tmp5-artifact', component: () => <TemplatePage {...tmp5Artifact} />, isPlaceholder: true, ticker: 'template' },
-  { path: '/template/tmp6-survey', component: () => <TemplatePage {...tmp6Survey} />, isPlaceholder: true, ticker: 'template' },
+  { path: '/template/tmp2-profile', component: () => <TemplatePage {...tmp2Profile} />, isPlaceholder: true, ticker: 'template' },
+  { path: '/template/tmp3-coe', component: () => <TemplatePage {...tmp3COE} />, isPlaceholder: true, ticker: 'template' },
+  { path: '/template/tmp4-artifact', component: () => <TemplatePage {...tmp4Artifact} />, isPlaceholder: true, ticker: 'template' },
+  { path: '/template/tmp5-survey', component: () => <TemplatePage {...tmp5Survey} />, isPlaceholder: true, ticker: 'template' },
   { path: '/credits', component: CreditsPage },
 ]
 

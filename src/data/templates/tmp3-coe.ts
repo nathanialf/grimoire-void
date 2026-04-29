@@ -1,13 +1,13 @@
 import type { COETemplate } from '../../types'
 
-// TMP4 — Correction of Error / Retrospective schema reference. Structured
+// TMP3 — Correction of Error / Retrospective schema reference. Structured
 // per Amazon's COE guidelines: Issue Summary → Customer Impact →
 // Incident Response Analysis (TTD/TTE/TTR) → Timeline → Five Whys →
 // Lessons Learned → Action Items → Related Items.
 
-export const tmp4COE: COETemplate = {
+export const tmp3COE: COETemplate = {
   kind: 'coe',
-  pageNumber: 'TMP4',
+  pageNumber: 'TMP3',
   drift: 0.0,
   incidentId: '{COE-XXXX-NNN}',
   title: 'COE — Document Template',

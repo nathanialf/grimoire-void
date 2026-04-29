@@ -1,12 +1,12 @@
 import type { SurveyTemplate } from '../../types'
 
-// TMP6 — Field Survey / Site Report. Sections locked to match the
+// TMP5 — Field Survey / Site Report. Sections locked to match the
 // existing wiki survey/report structure (see sable-threshold.ts,
 // glass-litany.ts).
 
-export const tmp6Survey: SurveyTemplate = {
+export const tmp5Survey: SurveyTemplate = {
   kind: 'survey',
-  pageNumber: 'TMP6',
+  pageNumber: 'TMP5',
   drift: 0.0,
   header: {
     classification: '{Survey classification — e.g. "Field Survey · Site Report"}',

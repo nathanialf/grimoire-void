@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Scene } from '../museum/Scene'
 import { CarcosaScene, returnPortalZone } from '../museum/CarcosaScene'
@@ -46,6 +46,10 @@ export function MuseumPage() {
   const [activeScene, setActiveScene] = useState<SceneId>('museum')
   const [spawn, setSpawn] = useState<SpawnPose>(MUSEUM_SPAWN)
   const [isExiting, setIsExiting] = useState(false)
+  const canvasContainerRef = useRef<HTMLDivElement>(null)
+  // Brief flash overlay shown the instant a screenshot is taken so the
+  // player has visual feedback that the capture fired.
+  const [flashOpacity, setFlashOpacity] = useState(0)
 
   // Countdown loop (rAF-based) — keeps running through scene swaps so the
   // timer persists when the player is in Carcosa.
@@ -104,6 +108,44 @@ export function MuseumPage() {
     }
     requestAnimationFrame(ramp)
   }
+
+  // Screenshot capture. The HUD elements (TerminalLog, hint row, cursor,
+  // touch joysticks) are DOM overlays outside the WebGL canvas, so reading
+  // from canvas.toBlob() naturally excludes them — the resulting image is
+  // the post-processed scene only. Triggered via the P key (or the screen
+  // tap-and-hold gesture on touch devices is not yet wired).
+  const captureScreenshot = useCallback(() => {
+    const canvas = canvasContainerRef.current?.querySelector('canvas')
+    if (!canvas) return
+    canvas.toBlob((blob) => {
+      if (!blob) return
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `grimoire-${activeScene}-${Date.now()}.png`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }, 'image/png')
+    // 120ms white flash for capture feedback.
+    setFlashOpacity(0.45)
+    requestAnimationFrame(() => {
+      setTimeout(() => setFlashOpacity(0), 120)
+    })
+  }, [activeScene])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'p' && e.key !== 'P') return
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      e.preventDefault()
+      captureScreenshot()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [captureScreenshot])
 
   // In-page scene swap with a brief datamosh flicker — Timer + Effects
   // pipeline persist. The mosh peaks halfway through, where the scene +
@@ -166,10 +208,11 @@ export function MuseumPage() {
 
   return (
     <div className={styles.museum}>
+      <div ref={canvasContainerRef} style={{ position: 'absolute', inset: 0 }}>
       <Canvas
         flat
         camera={{ fov: 68, near: 0.05, far: 4000, position: [0, 1.6, 11] }}
-        gl={{ antialias: false, powerPreference: 'high-performance' }}
+        gl={{ antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
       >
         <color attach="background" args={[sceneBackground]} />
         <Suspense fallback={null}>
@@ -198,6 +241,7 @@ export function MuseumPage() {
           locked={isExiting}
         />
       </Canvas>
+      </div>
       <TerminalLog ms={msLeft} />
       {touch && <TouchControls input={inputRef} />}
       {activeDoor !== null && (
@@ -213,12 +257,21 @@ export function MuseumPage() {
           <>
             <span className={styles.hint}>LEFT MOVE</span>
             <span className={styles.hint}>RIGHT LOOK</span>
+            <button
+              type="button"
+              className={styles.hintButton}
+              onPointerDown={(e) => { e.stopPropagation(); captureScreenshot() }}
+              aria-label="Take photo"
+            >
+              PHOTO
+            </button>
           </>
         ) : (
           <>
             <span className={styles.hint}>WASD/ARROWS</span>
             <span className={styles.hint}>MOUSE LOOK</span>
             <span className={styles.hint}>E INTERACT</span>
+            <span className={styles.hint}>P PHOTO</span>
           </>
         )}
       </div>
@@ -231,6 +284,18 @@ export function MuseumPage() {
           opacity: fadeProgress,
           pointerEvents: 'none',
           zIndex: 20,
+        }}
+      />
+      {/* Screenshot flash overlay — brief white pulse for capture feedback. */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#fff',
+          opacity: flashOpacity,
+          pointerEvents: 'none',
+          transition: 'opacity 120ms ease-out',
+          zIndex: 21,
         }}
       />
     </div>

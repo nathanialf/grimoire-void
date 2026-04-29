@@ -125,6 +125,20 @@ button.prompt { pointer-events: auto; cursor: pointer; }
   text-align: center;
 }
 
+.hintButton {
+  composes: hint;
+  border: none;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: opacity 0.1s ease-out;
+}
+
+.hintButton:active {
+  opacity: 0.6;
+}
+
 /* Mobile portrait: move the controls hints to the top so they don't
    overlap the terminal log / timer at the bottom-left. Force them
    side-by-side and shrink padding so two chips fit on one row. */

@@ -28,11 +28,10 @@ const entries: NavEntry[] = [
   { label: 'Operation Glass Litany', to: '/report/glass-litany', pageNumber: '090' },
   { label: '\u2588\u2588\u2588\u2588\u2588\u2588 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588', to: '/redacted/067', pageNumber: '067', redacted: true },
   { label: 'Email 1:1', to: '/template/tmp1-email', pageNumber: 'TMP1' },
-  { label: 'Transfer', to: '/template/tmp2-transfer', pageNumber: 'TMP2' },
-  { label: 'Profile', to: '/template/tmp3-profile', pageNumber: 'TMP3' },
-  { label: 'COE', to: '/template/tmp4-coe', pageNumber: 'TMP4' },
-  { label: 'Artifact', to: '/template/tmp5-artifact', pageNumber: 'TMP5' },
-  { label: 'Survey', to: '/template/tmp6-survey', pageNumber: 'TMP6' },
+  { label: 'Profile', to: '/template/tmp2-profile', pageNumber: 'TMP2' },
+  { label: 'COE', to: '/template/tmp3-coe', pageNumber: 'TMP3' },
+  { label: 'Artifact', to: '/template/tmp4-artifact', pageNumber: 'TMP4' },
+  { label: 'Survey', to: '/template/tmp5-survey', pageNumber: 'TMP5' },
   { label: 'Credits', to: '/credits', pageNumber: '999' },
 ].sort((a, b) => a.pageNumber.localeCompare(b.pageNumber));
 
