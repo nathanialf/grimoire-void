@@ -17,17 +17,6 @@ export interface ImageConfig {
   placeholderLabel?: string
 }
 
-export interface PoiItem {
-  marker: string
-  name: string
-  desc: string
-}
-
-export interface EquipItem {
-  name: string
-  desc: string
-}
-
 export type ContentBlock =
   | { type: 'paragraph'; text: string }
   | { type: 'quote'; text: string; source: string }
@@ -51,25 +40,8 @@ export interface EntryHeaderData {
   tags?: string[]
 }
 
-export interface CharacterData {
-  pageNumber: string
-  header: EntryHeaderData
-  image: ImageConfig
-  sections: Section[]
-  equipment: EquipItem[]
-  statBlocks: StatBlockData[]
-  classNotice?: ClassNotice
-}
-
-export interface BestiaryData {
-  pageNumber: string
-  header: EntryHeaderData
-  image: ImageConfig
-  sections: Section[]
-  statBlocks: StatBlockData[]
-  classNotice?: ClassNotice
-}
-
+// Foundation interface shared by Artifact templates. Kept for the
+// `Omit<ItemData, 'image'>` extension on ArtifactTemplate.
 export interface ItemData {
   pageNumber: string
   header: EntryHeaderData
@@ -79,32 +51,8 @@ export interface ItemData {
   classNotice?: ClassNotice
 }
 
-export interface LocationData {
-  pageNumber: string
-  header: EntryHeaderData
-  image: ImageConfig
-  sections: Section[]
-  poi: PoiItem[]
-  statBlocks: StatBlockData[]
-  classNotice?: ClassNotice
-}
-
-export interface MapData {
-  pageNumber: string
-  header: EntryHeaderData
-  image: ImageConfig
-  sections: Section[]
-  poi: PoiItem[]
-  classNotice?: ClassNotice
-}
-
-export interface LoreData {
-  pageNumber: string
-  header: EntryHeaderData
-  sections: Section[]
-  classNotice?: ClassNotice
-}
-
+// Foundation interface shared by Survey templates. Kept for the
+// `extends ReportData` on SurveyTemplate.
 export interface ReportData {
   pageNumber: string
   header: EntryHeaderData
