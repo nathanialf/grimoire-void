@@ -9,11 +9,12 @@
   </head>
   <body>
     <div id="root">
-      <div style="background:#0a0a0a;height:100dvh;display:flex;align-items:center;justify-content:center">
-        <div style="color:#bfff00;font-family:monospace;font-size:0.85rem;letter-spacing:0.3em;text-transform:uppercase;animation:pulse 1.5s ease-in-out infinite">LOADING</div>
+      <div style="position:fixed;inset:0;background:#0a0a0a;display:flex;align-items:center;justify-content:center;gap:0.6em">
+        <span style="display:inline-block;width:1.4em;height:1.4em;background-color:#bfff00;mask-image:url('/images/rings.png');-webkit-mask-image:url('/images/rings.png');mask-size:contain;-webkit-mask-size:contain;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;mask-position:center;-webkit-mask-position:center;animation:loadingSpin 1.6s linear infinite"></span>
+        <span style="font-family:monospace;font-size:0.85rem;letter-spacing:0.3em;color:#bfff00;text-transform:uppercase">Loading</span>
       </div>
     </div>
-    <style>@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}</style>
+    <style>html,body{margin:0;padding:0;background:#0a0a0a}@keyframes loadingSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

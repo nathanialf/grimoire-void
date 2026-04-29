@@ -8,6 +8,47 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+
+.loadingOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  pointer-events: auto;
+}
+
+.loadingRing {
+  display: inline-block;
+  width: 1.4em;
+  height: 1.4em;
+  background-color: #bfff00;
+  mask-image: url('/images/rings.png');
+  -webkit-mask-image: url('/images/rings.png');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  animation: loadingSpin 1.6s linear infinite;
+}
+
+.loadingText {
+  font-family: monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  color: #bfff00;
+  text-transform: uppercase;
+}
+
+@keyframes loadingSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 .content::-webkit-scrollbar {
   display: none;
 }

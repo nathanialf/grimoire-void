@@ -62,51 +62,57 @@ export function App() {
   const [pathname, setPathname] = useState(window.location.pathname)
   const [effectsOn] = useState(false)
   const [fontsReady, setFontsReady] = useState(false)
+  // bitmapsReady gates the loading overlay: flips true once the post-fonts
+  // MutationObserver settle fires, signalling that PixelatedText/Heading
+  // bitmaps have finished their async render → setState dance and the DOM
+  // is stable. Resets to false on every pathname change so the overlay
+  // re-shows during wiki-page navigation while new bitmaps render.
+  const [bitmapsReady, setBitmapsReady] = useState(false)
 
   useEffect(() => {
     document.fonts.ready.then(() => setFontsReady(true))
   }, [])
 
-  // Reclone SignalTear after fonts load so the initial clone has full DOM.
-  // PixelatedText renders async (fonts.ready → setState → render), so we need
-  // to wait for the DOM to stabilize. Use a MutationObserver to detect when
-  // rendering settles, with a fallback timeout.
+  // Reset the bitmap-ready gate on every navigation so the loading overlay
+  // re-appears while the new page's PixelatedText bitmaps render.
+  useEffect(() => {
+    setBitmapsReady(false)
+  }, [pathname])
+
+  // Reclone SignalTear after fonts load AND set bitmapsReady=true once the
+  // page's DOM has settled. PixelatedText/Heading render async (fonts.ready
+  // → setState → render), so we use a MutationObserver to detect when the
+  // staircase reflow stops, with a 1s hard fallback in case it never does.
+  // Re-runs on pathname change to catch each new page's render settle.
   useEffect(() => {
     if (!fontsReady) return
     let done = false
     let timer: number
     let fallback: number
 
+    const settle = () => {
+      if (done) return
+      done = true
+      observer?.disconnect()
+      tearRef.current?.reclone()
+      setBitmapsReady(true)
+    }
+
     const root = document.getElementById('root')
     const observer = root ? new MutationObserver(() => {
       // Each mutation means React is still rendering — reset the debounce
       clearTimeout(timer)
-      timer = window.setTimeout(() => {
-        if (done) return
-        done = true
-        observer?.disconnect()
-        tearRef.current?.reclone()
-      }, 150)
+      timer = window.setTimeout(settle, 150)
     }) : null
 
     if (observer && root) {
       observer.observe(root, { childList: true, subtree: true })
       // Kick off the debounce in case no mutations fire (everything already rendered)
-      timer = window.setTimeout(() => {
-        if (done) return
-        done = true
-        observer.disconnect()
-        tearRef.current?.reclone()
-      }, 150)
+      timer = window.setTimeout(settle, 150)
     }
 
     // Hard fallback in case observer misses something
-    fallback = window.setTimeout(() => {
-      if (done) return
-      done = true
-      observer?.disconnect()
-      tearRef.current?.reclone()
-    }, 1000)
+    fallback = window.setTimeout(settle, 1000)
 
     return () => {
       done = true
@@ -114,7 +120,7 @@ export function App() {
       clearTimeout(timer)
       clearTimeout(fallback)
     }
-  }, [fontsReady])
+  }, [fontsReady, pathname])
 
   const navigate = useCallback((to: string) => {
     window.history.pushState({}, '', to)
@@ -244,15 +250,18 @@ export function App() {
 
   const isKnownPage = PAGES.some(({ path }) => path === pathname)
 
-  if (!fontsReady) {
-    return (
-      <div style={{ background: '#0a0a0a', height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontFamily: 'monospace', fontSize: '0.85rem', letterSpacing: '0.3em', color: '#bfff00', textTransform: 'uppercase' }}>
-          Loading
-        </span>
-      </div>
-    )
-  }
+  // Loading overlay sits above content while fonts are loading or the
+  // page's PixelatedText bitmaps haven't finished their async render →
+  // setState dance. Mounting this as an overlay (z-index 9999) instead of
+  // an early-return lets the wiki content mount underneath so its effects
+  // run; the overlay covers the staircase reflow until the MutationObserver
+  // signals settle.
+  const loadingOverlay = !fontsReady || !bitmapsReady ? (
+    <div className={styles.loadingOverlay}>
+      <span className={styles.loadingRing} role="img" aria-hidden="true" />
+      <span className={styles.loadingText}>Loading</span>
+    </div>
+  ) : null
 
   if (pathname === '/museum') {
     return (
@@ -260,6 +269,7 @@ export function App() {
         <Suspense fallback={<div style={{ background: '#0a0a0a', position: 'fixed', inset: 0 }} />}>
           <MuseumPage />
         </Suspense>
+        {loadingOverlay}
       </NavigateProvider>
     )
   }
@@ -270,6 +280,7 @@ export function App() {
         <RedactedPage />
         <SignalTear ref={tearRef} effectsOn={effectsOn} />
         <ChromaticAberrationFilter />
+        {loadingOverlay}
       </NavigateProvider>
     )
   }
@@ -294,6 +305,7 @@ export function App() {
       {showTicker && <Ticker position="bottom" />}
       <SignalTear ref={tearRef} effectsOn={effectsOn} />
       <ChromaticAberrationFilter />
+      {loadingOverlay}
     </NavigateProvider>
   )
 }
