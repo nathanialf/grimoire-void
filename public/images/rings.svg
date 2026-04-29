@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#000">
+  <!-- R1=48 (outer), R2=36 (middle), R3=22 (inner). Outer cutouts:
+       bottom 25°, top 215°. 12° wide, radial walls. Inner cutouts: left
+       160°, right 335°. 24° wide on R3 mouth, 19.5° wide on R2. -->
+  <path fill-rule="evenodd" d="
+    M 98 50
+    A 48 48 0 0 1 95.39 65.63
+    L 84.04 61.72
+    A 36 36 0 0 1 80.86 68.54
+    L 91.14 74.72
+    A 48 48 0 0 1 8.02 26.73
+    L 18.51 32.55
+    A 36 36 0 0 1 22.83 26.38
+    L 13.77 18.51
+    A 48 48 0 0 1 98 50
+    Z
+    M 50 72
+    A 22 22 0 0 1 31.34 61.66
+    L 18.74 67.86
+    A 36 36 0 0 1 14.58 56.42
+    L 28.21 53.06
+    A 22 22 0 0 1 67.57 36.76
+    L 79.59 29.50
+    A 36 36 0 0 1 84.74 40.56
+    L 71.44 45.05
+    A 22 22 0 0 1 50 72
+    Z
+  "/>
+</svg>

@@ -1,7 +1,13 @@
-import type { LoreData } from '../../types'
+import type { ArtifactTemplate } from '../../types'
 
-export const thresholdAccords: LoreData = {
+// The Threshold Accords are an institutional treaty held in archive —
+// paper document, no image. Renders as an artifact-contents entry: the
+// sections are the document's actual articles and surrounding text.
+
+export const thresholdAccords: ArtifactTemplate = {
+  kind: 'artifact',
   pageNumber: '075',
+  drift: 0.12,
   header: {
     classification: 'Archive Fragment — Ratified Treaty',
     title: 'The Threshold Accords',
@@ -14,7 +20,7 @@ export const thresholdAccords: LoreData = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'The Threshold Accords are the foundational legal and military framework governing all human interaction with void-born phenomena. Ratified in Cycle 4418 by the Meridian Compact Directorate in closed emergency session, the Accords were drafted in direct response to the [[Omicron Collapse|/lore/omicron-collapse]] and represent the first formal acknowledgment by a governing body that extradimensional threats constitute a permanent and existential risk to human civilization.',
+          text: 'The Threshold Accords are the foundational legal and military framework governing all human interaction with void-born phenomena. Ratified in Cycle 4418 by the Meridian Compact Directorate in closed emergency session, the Accords were drafted in direct response to [[the Omicron Collapse|/lore/omicron-collapse]] and represent the first formal acknowledgment by a governing body that extradimensional threats constitute a permanent and existential risk to human civilization.',
         },
       ],
     },
@@ -27,7 +33,7 @@ export const thresholdAccords: LoreData = {
         },
         {
           type: 'paragraph',
-          text: "The political response was chaotic. The Directorate's initial instinct was suppression — the Collapse was classified at the highest level, and all surviving records were sealed. But suppression proved untenable. The [[Wasting Expanse|/map/wasting-expanse]] was expanding. Void-contamination readings were rising across the sector. And [[Operative Yael Mox|/character/yael-mox]], the sole survivor, was producing testimony that demanded institutional response.",
+          text: "The political response was chaotic. The Directorate's initial instinct was suppression — the Collapse was classified at the highest level, and all surviving records were sealed. But suppression proved untenable. [[The Wasting Expanse|/map/wasting-expanse]] was expanding. Void-contamination readings were rising across the sector. And [[Operative Yael Mox|/character/yael-mox]], the sole survivor, was producing testimony that demanded institutional response.",
         },
         {
           type: 'quote',
@@ -45,7 +51,7 @@ export const thresholdAccords: LoreData = {
         },
         {
           type: 'paragraph',
-          text: "Article 1 — Formation of Sector 9: A dedicated division within the Meridian Compact military apparatus, granted autonomous operational authority for all void-related reconnaissance, containment, and research. Sector 9 reports directly to the Directorate and is exempt from standard chain-of-command oversight. This exemption has been a source of ongoing political friction.",
+          text: 'Article 1 — Formation of Sector 9: A dedicated division within the Meridian Compact military apparatus, granted autonomous operational authority for all void-related reconnaissance, containment, and research. Sector 9 reports directly to the Directorate and is exempt from standard chain-of-command oversight. This exemption has been a source of ongoing political friction.',
         },
         {
           type: 'paragraph',
@@ -61,7 +67,7 @@ export const thresholdAccords: LoreData = {
         },
         {
           type: 'paragraph',
-          text: 'Article 9 — Research Ethics: The use of void-derived materials in equipment development requires oversight committee approval. This provision was added after controversy surrounding the development of the [[Spectral Caul|/item/spectral-caul]], whose psi-shielding frequency was calibrated using neural tissue from void-exposure casualties.',
+          text: 'Article 9 — Research Ethics: The use of void-derived materials in equipment development requires oversight committee approval. This provision was added after controversy surrounding the development of [[the Spectral Caul|/item/spectral-caul]], whose psi-shielding frequency was calibrated using neural tissue from void-exposure casualties.',
         },
       ],
     },
@@ -74,7 +80,7 @@ export const thresholdAccords: LoreData = {
         },
         {
           type: 'paragraph',
-          text: 'The most contentious debate concerns Article 12 — the so-called \"Closing Provision\" — which authorizes the Directorate to approve \"permanent neutralization measures\" for void-contaminated zones if containment is deemed impossible. Critics argue this is a euphemism for the destruction of entire regions, including any surviving personnel or civilians within them. Proponents counter that the provision exists precisely because the alternative — allowing void contamination to spread unchecked — is worse.',
+          text: 'The most contentious debate concerns Article 12 — the so-called "Closing Provision" — which authorizes the Directorate to approve "permanent neutralization measures" for void-contaminated zones if containment is deemed impossible. Critics argue this is a euphemism for the destruction of entire regions, including any surviving personnel or civilians within them. Proponents counter that the provision exists precisely because the alternative — allowing void contamination to spread unchecked — is worse.',
         },
         {
           type: 'quote',
@@ -84,4 +90,31 @@ export const thresholdAccords: LoreData = {
       ],
     },
   ],
+  statBlocks: [
+    {
+      title: 'Treaty',
+      stats: [
+        { label: 'Ratified', value: 'Cycle 4418' },
+        { label: 'Authority', value: 'Meridian Compact Directorate' },
+        { label: 'Articles', value: '12' },
+        { label: 'Status', value: 'In Force', variant: 'accent' },
+      ],
+    },
+    {
+      title: 'Custody',
+      stats: [
+        { label: 'Held', value: 'Floor 2 · Vault A' },
+        { label: 'Custodian', value: 'Office of the Directorate' },
+        { label: 'Clearance', value: 'Omega', variant: 'accent' },
+      ],
+    },
+  ],
+  footer: {
+    media: ['text'],
+    viewingHistory: [
+      { who: 'Dir. H. Mire', when: 'C4427 D192 · 09:30' },
+      { who: 'Cpt. N. Solenne', when: 'C4420 D210 · 14:00' },
+      { who: 'archive.legal', when: 'C4418 D305 · 18:00' },
+    ],
+  },
 }

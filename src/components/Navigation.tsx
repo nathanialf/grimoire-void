@@ -27,6 +27,12 @@ const entries: NavEntry[] = [
   { label: 'Operation Sable Threshold', to: '/report/sable-threshold', pageNumber: '085' },
   { label: 'Operation Glass Litany', to: '/report/glass-litany', pageNumber: '090' },
   { label: '\u2588\u2588\u2588\u2588\u2588\u2588 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588', to: '/redacted/067', pageNumber: '067', redacted: true },
+  { label: 'Email 1:1', to: '/template/tmp1-email', pageNumber: 'TMP1' },
+  { label: 'Transfer', to: '/template/tmp2-transfer', pageNumber: 'TMP2' },
+  { label: 'Profile', to: '/template/tmp3-profile', pageNumber: 'TMP3' },
+  { label: 'COE', to: '/template/tmp4-coe', pageNumber: 'TMP4' },
+  { label: 'Artifact', to: '/template/tmp5-artifact', pageNumber: 'TMP5' },
+  { label: 'Survey', to: '/template/tmp6-survey', pageNumber: 'TMP6' },
   { label: 'Credits', to: '/credits', pageNumber: '999' },
 ].sort((a, b) => a.pageNumber.localeCompare(b.pageNumber));
 
@@ -153,14 +159,17 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span>
+          <span className={styles.copyrightYear}>
             <span className="visually-hidden">{`\u00A9 ${new Date().getFullYear()}`}</span>
-            <PixelatedText renderSize={7}>{`\u00A9 ${new Date().getFullYear()}`}</PixelatedText>
+            <span className={styles.copyrightSymbol}>
+              <PixelatedText renderSize={11}>{'\u00A9'}</PixelatedText>
+            </span>
+            <PixelatedText renderSize={7}>{`${new Date().getFullYear()}`}</PixelatedText>
           </span>
           <span className={`${styles.copyrightLogo} ca-fx`} role="img" aria-label="defnf">
             <span className={styles.copyrightLogoMask} />
           </span>
-          <span>
+          <span className={styles.copyrightCell}>
             <span className="visually-hidden">DEFNF</span>
             <PixelatedText renderSize={7}>DEFNF</PixelatedText>
           </span>

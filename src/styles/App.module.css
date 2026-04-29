@@ -50,8 +50,8 @@
   width: 1.4em;
   height: 1.4em;
   background-color: #bfff00;
-  mask-image: url('/images/rings.png');
-  -webkit-mask-image: url('/images/rings.png');
+  mask-image: url('/images/rings.svg');
+  -webkit-mask-image: url('/images/rings.svg');
   mask-size: contain;
   -webkit-mask-size: contain;
   mask-repeat: no-repeat;

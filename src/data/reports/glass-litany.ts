@@ -1,60 +1,65 @@
-import type { ReportData } from '../../types'
+import type { COETemplate } from '../../types'
 
-export const glassLitany: ReportData = {
+export const glassLitany: COETemplate = {
+  kind: 'coe',
   pageNumber: '090',
-  header: {
-    classification: 'After-Action Report — CLASSIFIED',
-    title: 'Operation Glass Litany',
-    subtitle: 'Cycle 4422.1 — Glass Flats Reconnaissance Theater (W1)',
-  },
-  sections: [
+  drift: 0.55,
+  incidentId: 'OP-LITANY-4422',
+  title: 'Operation Glass Litany — Greyfield Choir Observation, Partial Success',
+  service: 'Sector 9 · Field Operations',
+  status: 'CLOSED · Glass Flats observation continues with revised protocols',
+  severity: 'SEV-2',
+  detected: 'Cycle 4422.1.2.8 (Choir directed-attention response observed)',
+  mitigated: 'Cycle 4422.1.3.2 (extraction complete, 1 KIA / 1 MIA)',
+  resolved: 'Cycle 4422.1.3.2',
+  filed: 'Cycle 4422 · Day 305 · 21:00 standard',
+  authors: ['Lt. Cmdr. Ossa Dray (Sector 9 Field Operations)'],
+  reviewers: ['Dir. Halcyon Mire (Sector 9 Command)'],
+
+  issueSummary: [
     {
-      heading: 'Executive Summary',
-      blocks: [
-        {
-          type: 'paragraph',
-          text: 'On Cycle 4422.1, a four-operative fireteam designated LITANY was deployed to the Glass Flats region (grid reference W1) of the [[Wasting Expanse|/map/wasting-expanse]] with orders to observe and document [[Greyfield Choir|/bestiary/greyfield-choir]] activity, assess the viability of sustained field operations in the region, and test the Mark IV [[Spectral Caul|/item/spectral-caul]] under active void-contamination conditions.',
-        },
-        {
-          type: 'paragraph',
-          text: "The operation is classified as a partial success. Primary observation objectives were met: the team recorded 14 hours of continuous Choir behavioral data, including the first documented reconstitution event. Caul performance exceeded projections, with all four operatives maintaining cognitive baseline throughout the observation phase. However, the mission's extraction phase was compromised by an unanticipated Choir response, resulting in one operative KIA and one critically injured.",
-        },
-        {
-          type: 'paragraph',
-          text: 'This report recommends continued observation operations in the Glass Flats sector with revised extraction protocols and increased team size. The Greyfield Choir, while less individually threatening than the [[Pallid Watcher|/bestiary/pallid-watcher]], represents a persistent and adaptable hazard whose behavioral patterns require further study.',
-        },
-      ],
+      type: 'paragraph',
+      text: 'On Cycle 4422.1, a four-operative fireteam designated LITANY was deployed to the Glass Flats region (W1) of [[the Wasting Expanse|/map/wasting-expanse]] to observe and document [[Greyfield Choir|/bestiary/greyfield-choir]] activity, assess sustained-operations viability, and field-test the Mark IV [[Spectral Caul|/item/spectral-caul]] under active void-contamination conditions.',
     },
     {
-      heading: 'Findings',
-      blocks: [
-        {
-          type: 'paragraph',
-          text: "The [[Greyfield Choir|/bestiary/greyfield-choir]] operates on a cyclical pattern. The formation observed at W1 consisted of nineteen figures maintaining a static position for approximately 6 hours before simultaneously collapsing into particulate matter. Reconstitution occurred 4.7 hours later at a position 800 meters northwest of the original formation. The reconstituted Choir contained the same number of figures — nineteen — suggesting the swarm's count is fixed rather than variable.",
-        },
-        {
-          type: 'paragraph',
-          text: 'The subsonic harmonic emitted by the Choir was measured at 16.3 Hz — consistent with prior readings but notably stable across the full observation period. Previous reports described the frequency as variable; this stability may indicate the Choir was in a resting or passive state during observation. The Mark IV [[Spectral Caul|/item/spectral-caul]] effectively dampened the harmonic, with operatives reporting only mild unease rather than the progressive cognitive degradation documented in unshielded encounters.',
-        },
-        {
-          type: 'paragraph',
-          text: 'The critical finding: the Choir responded to the team\'s extraction movement. When the fireteam initiated withdrawal at hour 14, all nineteen figures rotated simultaneously to face the team — the first recorded instance of directed Choir attention toward a specific target. The subsonic frequency shifted from 16.3 Hz to 11.7 Hz, a range associated with acute panic response in humans. Operative Marsh, positioned at the rear, removed his Caul due to a calibration fault and was exposed to the shifted frequency for approximately ninety seconds.',
-        },
-      ],
+      type: 'paragraph',
+      text: 'Primary observation objectives were met. The team recorded 14 hours of continuous Choir behavioral data, including the first documented reconstitution event. Caul performance exceeded projections. However, the extraction phase was compromised by an unanticipated Choir directed-attention response, resulting in 1 KIA and 1 critically injured. SEV-2: significant personnel impact, but mission objectives substantially achieved and threat profile clarified.',
     },
   ],
-  missionStats: {
-    title: 'Operation Details',
-    stats: [
-      { label: 'Designation', value: 'GLASS LITANY' },
-      { label: 'Authorization', value: 'Sector 9 Cmd // Lt. Cmdr. Ossa Dray' },
-      { label: 'Cycle', value: '4422.1 — 4422.1.3' },
-      { label: 'Theater', value: 'Glass Flats (W1), Wasting Expanse' },
-      { label: 'Objective', value: 'Choir observation, Caul field test' },
-      { label: 'Team Size', value: '4 operatives', variant: 'accent' },
-      { label: 'Status', value: 'PARTIAL SUCCESS', variant: 'accent' },
-    ],
+
+  customerImpact: [
+    {
+      type: 'paragraph',
+      text: 'Personnel: 1 KIA — Operative Lin Daro (rear guard, grey fugue from close-range harmonic exposure, body not recovered). 1 MIA — Operative Renn Marsh (recovered alive, severe cognitive impairment, ongoing treatment, prognosis uncertain).',
+    },
+    {
+      type: 'paragraph',
+      text: 'Material: One Mark IV [[Spectral Caul|/item/spectral-caul]] unit lost with Operative Daro. Telemetry from Daro\'s Caul during close-range harmonic exposure would significantly advance grey-fugue onset analysis if recoverable.',
+    },
+    {
+      type: 'paragraph',
+      text: 'Strategic: Glass Flats observation operations remain viable with revised protocols. The Choir is now understood to operate on cyclical reconstitution patterns and to exhibit directed-attention response upon target withdrawal.',
+    },
+  ],
+
+  incidentResponseAnalysis: {
+    ttd: {
+      value: '0h 0m',
+      rationale: 'The Choir directed-attention response was detected in real time at extraction initiation. Subsonic frequency shift (16.3 Hz → 11.7 Hz) was observed instantly via Caul telemetry.',
+      improvement: 'None. TTD was within tolerance.',
+    },
+    tte: {
+      value: '0h 11m (Marsh) / 0h 4m (Daro)',
+      rationale: 'Marsh\'s eleven-minute cognitive recovery delay was caused by a Caul calibration fault (neural contact point 7 intermittent) at hour 13. Operative Kael replaced the Caul within ninety seconds of removal but full coherence was not restored for eleven minutes. Daro\'s exposure occurred at close range (<20m) to a previously undetected second formation; engagement was unavoidable given the team\'s extraction vector.',
+      improvement: 'Mandatory Caul diagnostic at 8-hour intervals during active operations. Pre-extraction perimeter sweep using long-range subsonic detection. See Action Items 02 and 03.',
+    },
+    ttr: {
+      value: '0h 24m',
+      rationale: 'Total extraction window from directed-attention onset to transport departure. Daro lost during final approach; Corr and Kael successfully extracted Marsh.',
+      improvement: 'Larger team size (minimum 6) provides redundancy for similar future operations. See Action Item 01.',
+    },
   },
+
   timeline: [
     {
       timestamp: '4422.1.0',
@@ -62,46 +67,111 @@ export const glassLitany: ReportData = {
     },
     {
       timestamp: '4422.1.1',
-      event: 'Team establishes observation post at grid W1-7, approximately 200 meters from a nineteen-figure Choir formation. Subsonic harmonic detected at 16.3 Hz. Cauls active and performing within parameters. No Choir response to team presence. Observation phase begins.',
+      event: 'Team establishes observation post at grid W1-7, approximately 200m from a 19-figure Choir formation. Subsonic harmonic detected at 16.3 Hz. Cauls active and within parameters. Observation phase begins.',
     },
     {
       timestamp: '4422.1.1.6',
-      event: 'Choir formation collapses. All nineteen figures simultaneously lose structural cohesion, disintegrating into grey particulate over a 3-second interval. Particulate sublimates within 40 seconds. Ground temperature at the formation site drops 8°C. Team maintains position and continues recording.',
+      event: 'Choir formation collapses. All 19 figures simultaneously lose structural cohesion, disintegrating into grey particulate over 3 seconds. Particulate sublimates within 40 seconds. Ground temperature drops 8°C at the formation site. Team maintains position.',
     },
     {
       timestamp: '4422.1.2',
-      event: 'Reconstitution event observed at 800 meters northwest. Nineteen figures emerge from ground-level particulate condensation over a 12-second interval. Figures assume identical positions to pre-collapse formation. Subsonic harmonic resumes at 16.3 Hz. This is the first documented Choir reconstitution.',
+      event: 'Reconstitution event observed at 800m northwest. 19 figures emerge from ground-level particulate condensation over 12 seconds. Figures assume identical positions to pre-collapse formation. Subsonic harmonic resumes at 16.3 Hz. **First documented Choir reconstitution.**',
     },
     {
       timestamp: '4422.1.2.8',
-      event: "Team leader Operative Jace Corr initiates extraction protocol. Team begins withdrawal toward transport. All nineteen Choir figures rotate to face the team simultaneously. Harmonic frequency drops from 16.3 Hz to 11.7 Hz. Operative Renn Marsh's Caul reports calibration fault — neural contact point 7 intermittent.",
+      event: 'Team leader Operative Jace Corr initiates extraction. **All 19 Choir figures rotate to face the team simultaneously.** Harmonic frequency drops from 16.3 Hz to 11.7 Hz. Operative Renn Marsh\'s Caul reports calibration fault — neural contact point 7 intermittent.',
     },
     {
       timestamp: '4422.1.3',
-      event: "Marsh removes Caul to inspect the fault. Exposed to 11.7 Hz harmonic for approximately ninety seconds before Operative Desta Kael replaces the Caul on Marsh's head. During exposure, Marsh ceases withdrawal and turns toward the Choir. Kael physically restrains and redirects Marsh. Marsh is unresponsive for eleven minutes. Choir does not advance but maintains orientation toward the team throughout extraction.",
+      event: 'Marsh removes Caul to inspect the fault. Exposed to 11.7 Hz harmonic for ~90 seconds before Operative Desta Kael replaces the Caul. During exposure, Marsh ceases withdrawal and turns toward the Choir. Kael physically restrains and redirects Marsh. Marsh unresponsive for 11 minutes. Choir maintains orientation but does not advance.',
     },
     {
       timestamp: '4422.1.3.2',
-      event: "During final approach to transport, Operative Lin Daro — rear guard — reports a second Choir formation materializing between the team and the vehicle. Seven figures, previously undetected. Daro attempts to bypass. Contact with the second formation's harmonic at close range (<20m) causes immediate grey fugue despite active Caul. Daro walks into the formation. Corr and Kael extract Marsh to transport. Daro's transponder signal ceases 4 minutes after contact.",
+      event: 'During final approach to transport, Operative Lin Daro — rear guard — reports a second Choir formation materializing between the team and the vehicle. **7 figures, previously undetected.** Daro attempts to bypass. Contact at <20m causes immediate grey fugue despite active Caul. Daro walks into the formation. Corr and Kael extract Marsh to transport. Daro\'s transponder ceases 4m after contact.',
     },
   ],
-  casualties: [
-    { status: 'KIA', text: 'Operative Lin Daro — Rear guard. Grey fugue, close-range harmonic exposure. Body not recovered.' },
-    { status: 'MIA', text: 'Operative Renn Marsh — Observer. Recovered alive. Severe cognitive impairment, ongoing treatment. Prognosis: uncertain.' },
+
+  fiveWhys: [
+    'Why was Operative Daro lost? Because a second Choir formation materialized between the team and transport at close range, and the Caul provided insufficient protection at <20m harmonic exposure.',
+    'Why was the second formation undetected? Because pre-extraction perimeter sweep was not part of standard observation protocol; the team relied on initial-approach reconnaissance only.',
+    'Why was Marsh\'s Caul calibration fault not caught earlier? Because Caul diagnostics are scheduled at mission start and end, not at intervals during sustained operation. Hour 13 is within the rated 96h window but at the upper boundary of field-tested durations.',
+    'Why did the Choir respond to extraction with directed attention? Because the team\'s withdrawal triggered a previously-unobserved territorial-deterrent behavior. The Choir is not solely a passive presence; it has an awareness-and-response mode.',
+    'Why was this awareness-and-response mode not predicted? Because all prior Choir encounters had been brief or asymmetric (the entity was approached, not departed-from). Glass Litany was the first sustained observation followed by orderly withdrawal.',
   ],
-  recommendations: [
-    'Continue Glass Flats observation operations. The Greyfield Choir represents a tractable research target and the behavioral data gathered during LITANY is invaluable. However, all future missions must deploy with a minimum team size of six and redundant Caul units.',
-    'Investigate the Choir\'s directed-attention response during extraction. The simultaneous reorientation of all figures suggests a collective awareness or triggering mechanism that activates upon target withdrawal. This may indicate the Choir functions as a territorial deterrent rather than an active predator.',
-    'Revise Mark IV Spectral Caul maintenance protocols. The calibration fault experienced by Operative Marsh occurred at hour 13 of continuous use — within the rated 96-hour window but near the upper boundary of field-tested durations. Recommend mandatory Caul diagnostic at 8-hour intervals during active operations.',
-    'Commission recovery operation for Operative Daro\'s remains and equipment. The close-range harmonic exposure data from Daro\'s Caul telemetry — if recoverable — would significantly advance understanding of grey fugue onset mechanics.',
-    'Reassess Outpost Kaya as a forward staging area. The outpost\'s proximity to Choir patrol routes presents both risk and opportunity. The unauthorized occupants detected during Cycle 4422 surveys may possess intelligence relevant to Choir behavioral patterns.',
+
+  lessonsLearned: [
+    {
+      type: 'paragraph',
+      text: 'The Greyfield Choir exhibits cyclical reconstitution at approximately 4.7-hour intervals with fixed figure-counts (the formation observed maintained its 19-figure count after collapse and reconstitution). This stability suggests the swarm is a single distributed entity, not a population of individuals.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The Choir\'s directed-attention response may indicate a territorial-deterrent function rather than active predation. The harmonic shift from 16.3 Hz to 11.7 Hz on extraction is the first documented frequency change in response to a target. Future protocols should treat extraction as a higher-risk phase than observation.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The Mark IV [[Spectral Caul|/item/spectral-caul]] is effective at standard observation distances but does not protect against close-range (<20m) exposure to shifted harmonics. Caul ratings should be revised to specify both distance and harmonic-frequency operating envelopes.',
+    },
   ],
-  classNotice: {
-    header: '// CLEARANCE: SIGMA AND ABOVE //',
-    body: [
-      'This document is classified under Sector 9 Operational Directive 14-A. Unauthorized distribution constitutes a breach of the Threshold Accords and is subject to tribunal review. All personnel who have accessed this report are logged and subject to standard cognitive screening protocols.',
-      'Choir harmonic frequency data contained in this report is restricted to the Applied Psi-Defense Division. Unauthorized reproduction of frequency measurements may constitute a cognitohazard.',
+
+  actionItems: [
+    {
+      description: 'Continue Glass Flats observation operations with minimum team size of 6 and redundant Caul units. The Choir is a tractable research target.',
+      owner: 'Lt. Cmdr. O. Dray',
+      priority: 'P0',
+      dueDate: 'C4423 D060',
+      status: 'In Progress',
+    },
+    {
+      description: 'Revise Mark IV [[Spectral Caul|/item/spectral-caul]] maintenance protocols. Mandatory Caul diagnostic at 8-hour intervals during active operations.',
+      owner: 'Applied Psi-Defense',
+      priority: 'P0',
+      dueDate: 'C4423 D015',
+      status: 'Done',
+    },
+    {
+      description: 'Add pre-extraction long-range subsonic perimeter sweep to standard Choir-observation protocol.',
+      owner: 'Lt. Cmdr. O. Dray',
+      priority: 'P1',
+      dueDate: 'C4423 D030',
+      status: 'In Progress',
+    },
+    {
+      description: 'Investigate the Choir\'s directed-attention response. Determine whether it is a triggered territorial behavior or an emergent collective awareness.',
+      owner: 'Code STILLWATER',
+      priority: 'P1',
+      dueDate: 'C4423 D120',
+      status: 'In Progress',
+    },
+    {
+      description: 'Commission recovery operation for Operative Daro\'s remains and Caul telemetry. Close-range harmonic exposure data would advance grey-fugue understanding.',
+      owner: 'Sector 9 Cmd',
+      priority: 'P2',
+      dueDate: 'C4423 D090',
+      status: 'Not Started',
+    },
+    {
+      description: 'Reassess [[Outpost Kaya|/location/outpost-kaya]] as a forward staging area. The unauthorized occupants may possess intelligence relevant to Choir behavioral patterns.',
+      owner: 'Sector 9 Intel',
+      priority: 'P3',
+      dueDate: 'C4423 D180',
+      status: 'Not Started',
+    },
+  ],
+
+  relatedItems: [
+    { id: 'OP-SABLE-4417', title: 'Operation Sable Threshold — predecessor SEV-1', path: '/report/sable-threshold' },
+    { id: 'A-016', title: 'Greyfield Choir — entity record', path: '/bestiary/greyfield-choir' },
+    { id: 'A-030', title: 'Spectral Caul — countermeasure', path: '/item/spectral-caul' },
+    { id: 'A-048', title: 'Outpost Kaya — staging area', path: '/location/outpost-kaya' },
+  ],
+
+  footer: {
+    media: ['text'],
+    viewingHistory: [
+      { who: 'Dir. H. Mire', when: 'C4427 D196 · 11:30' },
+      { who: 'Lt. Cmdr. O. Dray', when: 'C4422 D305 · 21:00' },
+      { who: 'archive.audit', when: 'C4422 D305 · 21:00' },
     ],
-    footer: 'Filed by: Lt. Cmdr. Ossa Dray, Sector 9 Field Operations\nReviewed by: Dir. Halcyon Mire\nDistribution: SIGMA CLEARANCE — Sector 9 Command and Research Staff',
   },
 }

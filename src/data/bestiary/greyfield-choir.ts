@@ -1,7 +1,9 @@
-import type { BestiaryData } from '../../types'
+import type { ArtifactTemplate } from '../../types'
 
-export const greyfieldChoir: BestiaryData = {
+export const greyfieldChoir: ArtifactTemplate = {
+  kind: 'artifact',
   pageNumber: '016',
+  drift: 0.51,
   header: {
     classification: 'Hostile Entity — Class II (Swarm)',
     title: 'The Greyfield Choir',
@@ -79,4 +81,12 @@ export const greyfieldChoir: BestiaryData = {
       ],
     },
   ],
+  footer: {
+    media: ['text', 'image'],
+    viewingHistory: [
+      { who: 'Expanse Perimeter Watch', when: 'C4427 D195 · 06:30' },
+      { who: 'C. Wren', when: 'C4427 D188 · 22:14' },
+      { who: 'archive.bestiary', when: 'C4419 D203 · 04:00' },
+    ],
+  },
 }

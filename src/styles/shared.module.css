@@ -67,6 +67,49 @@
   margin: 0 calc(-1 * var(--space-lg));
 }
 
+/* ── Inline data table ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-md) 0;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.tableCaption {
+  text-align: left;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.72rem;
+  padding-bottom: var(--space-xs);
+  border-bottom: var(--border-width) solid var(--color-border);
+  caption-side: top;
+}
+
+.tableHeader {
+  text-align: left;
+  color: var(--color-accent);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  padding: var(--space-sm) var(--space-md) var(--space-sm) 0;
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.tableCell {
+  color: var(--color-text);
+  padding: var(--space-sm) var(--space-md) var(--space-sm) 0;
+  border-bottom: var(--border-width) solid var(--color-border);
+  vertical-align: top;
+}
+
+.table tbody tr:last-child .tableCell {
+  border-bottom: none;
+}
+
 /* ── Blockquote ── */
 .quote {
   font-family: var(--font-heading);

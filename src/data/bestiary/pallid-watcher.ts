@@ -1,7 +1,9 @@
-import type { BestiaryData } from '../../types'
+import type { ArtifactTemplate } from '../../types'
 
-export const pallidWatcher: BestiaryData = {
+export const pallidWatcher: ArtifactTemplate = {
+  kind: 'artifact',
   pageNumber: '013',
+  drift: 0.74,
   header: {
     classification: 'Hostile Entity — Class IV',
     title: 'The Pallid Watcher',
@@ -61,4 +63,12 @@ export const pallidWatcher: BestiaryData = {
       ],
     },
   ],
+  footer: {
+    media: ['text', 'image'],
+    viewingHistory: [
+      { who: 'Sector 9 Threat Index', when: 'C4427 D188 · 09:00' },
+      { who: 'L. Ashara', when: 'C4427 D170 · 14:30' },
+      { who: 'archive.bestiary', when: 'C4417 D250 · 06:00' },
+    ],
+  },
 }

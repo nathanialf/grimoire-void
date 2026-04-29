@@ -1,0 +1,49 @@
+/* Key/value metadata grid — extracted from ReportPage's mission stats so
+   any document type that wants a dense field/value chrome can drop one in
+   under a ChapterDivider. */
+
+.table {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+  line-height: 1.6;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.label {
+  color: var(--color-text-dim);
+  white-space: nowrap;
+  padding-top: 0.1em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.value {
+  color: var(--color-text-bright);
+  word-break: break-word;
+}
+
+.valueAccent {
+  composes: value;
+  color: var(--color-accent);
+}
+
+.valueDanger {
+  composes: value;
+  color: var(--color-danger);
+}

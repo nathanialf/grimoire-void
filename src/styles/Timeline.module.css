@@ -1,0 +1,50 @@
+/* Timestamp + event rows — extracted from ReportPage so COEs and any
+   future timeline-having doc share the same look. */
+
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-lg);
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+
+.timestamp {
+  color: var(--color-accent);
+  padding-top: 0.15em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+}
+
+.event {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--color-text);
+}
+
+.event em {
+  color: var(--color-text-bright);
+  font-style: italic;
+}
+
+@media (max-width: 480px) {
+  .timeline {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline li {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+}

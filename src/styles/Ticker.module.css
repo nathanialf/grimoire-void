@@ -18,6 +18,11 @@
   border-block: 1px solid #990000;
 }
 
+.template {
+  background: var(--color-accent);
+  border-block-color: color-mix(in srgb, var(--color-accent) 70%, black);
+}
+
 .top {
   top: 0;
 }
@@ -28,11 +33,22 @@
 
 .track {
   display: flex;
-  gap: 1ch;
   align-items: center;
   white-space: nowrap;
-  animation: scroll 30s linear infinite;
+  animation: scroll 60s linear infinite;
   will-change: transform;
+}
+
+/* Tightly packed items with the standard separator gap. Each half is sized
+   by its natural content; we render UNITS=16 pattern repeats per half, which
+   is enough to overflow even ultrawide viewports — so the seam between the
+   two halves (at translateX(-50%)) is always offscreen. */
+.half {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 1ch;
+  padding-inline-end: 1ch;
 }
 
 .item {

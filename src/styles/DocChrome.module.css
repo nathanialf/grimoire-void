@@ -1,0 +1,31 @@
+/* Document chrome shared across templates and the existing wiki pages.
+   The drift strip is a small dim metadata line in the header chrome.
+   The footer is a Viewing History section with a media-toggle indicator. */
+
+.driftStrip {
+  display: flex;
+  justify-content: flex-end;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  opacity: 0.55;
+  margin-top: calc(-1 * var(--space-md));
+  padding-top: 0;
+}
+
+.mediaRow {
+  display: flex;
+  gap: var(--space-lg);
+  font-family: var(--font-mono);
+  color: var(--color-text-dim);
+}
+
+.mediaTag {
+  display: inline-flex;
+  align-items: center;
+}
+
+.mediaTagOn {
+  color: var(--color-accent);
+}

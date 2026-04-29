@@ -13,7 +13,7 @@ export function SplashScreen() {
         onClick={(e) => { e.preventDefault(); navigate('/cover'); }}
       >
         <div className={`${styles.ringContainer} ca-fx`}>
-          <img src="/images/rings.png" alt="" className={styles.rings} />
+          <span className={styles.rings} aria-hidden="true" />
           <img
             src="/images/defnf-logo.png"
             alt="defnf logo"

@@ -1,7 +1,9 @@
-import type { LocationData } from '../../types'
+import type { SurveyTemplate } from '../../types'
 
-export const sunkenRelay: LocationData = {
+export const sunkenRelay: SurveyTemplate = {
+  kind: 'survey',
   pageNumber: '042',
+  drift: 0.66,
   header: {
     classification: 'Derelict Installation — Hazard Level: Severe',
     title: 'The Sunken Relay',
@@ -31,27 +33,45 @@ export const sunkenRelay: LocationData = {
         },
       ],
     },
-  ],
-  poi: [
-    { marker: 'A1', name: 'Main Antenna Array', desc: 'Collapsed. Residual EM emissions detected.' },
-    { marker: 'A2', name: 'Operations Center', desc: 'Partially flooded. Data cores may be recoverable.' },
-    { marker: 'B1', name: 'Crew Quarters', desc: 'Sealed since Cycle 4400. Bio-hazard likely.' },
-    { marker: 'B2', name: 'Reactor Chamber', desc: 'AVOID. Unstable void-matter containment.' },
-    { marker: 'C1', name: 'Docking Bay', desc: 'Structural integrity compromised. One shuttle remains.' },
-  ],
-  statBlocks: [
     {
-      title: 'Location Profile',
-      stats: [
-        { label: 'Hazard', value: 'SEVERE', variant: 'danger' },
-        { label: 'Type', value: 'Derelict' },
-        { label: 'Depth', value: '1.2 km' },
-        { label: 'Gravity', value: '0.3g' },
-        { label: 'Atmo', value: 'Toxic' },
-        { label: 'Void Level', value: 'High', variant: 'danger' },
-        { label: 'Access', value: 'Restricted', variant: 'accent' },
-        { label: 'Salvage', value: 'Priority', variant: 'accent' },
+      heading: 'Points of Interest',
+      blocks: [
+        {
+          type: 'table',
+          columns: ['Marker', 'Location', 'Notes'],
+          rows: [
+            ['A1', 'Main Antenna Array', 'Collapsed. Residual EM emissions detected.'],
+            ['A2', 'Operations Center', 'Partially flooded. Data cores may be recoverable.'],
+            ['B1', 'Crew Quarters', 'Sealed since Cycle 4400. Bio-hazard likely.'],
+            ['B2', 'Reactor Chamber', 'AVOID. Unstable void-matter containment.'],
+            ['C1', 'Docking Bay', 'Structural integrity compromised. One shuttle remains.'],
+          ],
+        },
       ],
     },
   ],
+  missionStats: {
+    title: 'Site Parameters',
+    stats: [
+      { label: 'Hazard', value: 'SEVERE', variant: 'danger' },
+      { label: 'Type', value: 'Derelict' },
+      { label: 'Depth', value: '1.2 km' },
+      { label: 'Gravity', value: '0.3g' },
+      { label: 'Atmo', value: 'Toxic' },
+      { label: 'Void Level', value: 'High', variant: 'danger' },
+      { label: 'Access', value: 'Restricted', variant: 'accent' },
+      { label: 'Salvage', value: 'Priority', variant: 'accent' },
+    ],
+  },
+  timeline: [],
+  casualties: [],
+  recommendations: [],
+  footer: {
+    media: ['text', 'image'],
+    viewingHistory: [
+      { who: 'Sector 9 Salvage', when: 'C4427 D192 · 08:00' },
+      { who: 'A. Vex (last on-site)', when: 'C4417 D085 · 03:30' },
+      { who: 'archive.cartography', when: 'C4422 D118 · 11:00' },
+    ],
+  },
 }

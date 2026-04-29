@@ -7,9 +7,13 @@ interface EntryHeaderProps {
   title: string;
   subtitle?: string;
   tags?: string[];
+  // Drift score, rendered as an unlabeled chip attached to the right end
+  // of the header's divider bar. Optional — only documents that carry a
+  // drift value (template chrome) pass it.
+  drift?: number;
 }
 
-export function EntryHeader({ classification, title, subtitle, tags }: EntryHeaderProps) {
+export function EntryHeader({ classification, title, subtitle, tags, drift }: EntryHeaderProps) {
   return (
     <header className={styles.header}>
       {classification && (
@@ -50,7 +54,14 @@ export function EntryHeader({ classification, title, subtitle, tags }: EntryHead
           ))}
         </div>
       )}
-      <div className={styles.divider} />
+      <div className={styles.divider}>
+        <span className={styles.dividerBar} />
+        {drift !== undefined && (
+          <span className={styles.driftAnchor} aria-hidden="true">
+            {`Δ ${drift.toFixed(2)}`}
+          </span>
+        )}
+      </div>
     </header>
   );
 }

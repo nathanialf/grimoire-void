@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useCallback, useEffect, lazy, Suspense } from 'react'
+import { useMemo, useRef, useState, useCallback, useEffect, lazy, Suspense, type ReactElement } from 'react'
 import { Navigation } from './components/Navigation'
 import { NavigateProvider } from './hooks/useNavigate'
 import { PageNavProvider } from './hooks/usePageNav'
@@ -7,15 +7,9 @@ import { Ticker } from './components/Ticker'
 import { SplashScreen } from './pages/SplashScreen'
 import { CoverPage } from './pages/CoverPage'
 import { BlankPage } from './pages/BlankPage'
-import { CharacterPage } from './pages/CharacterPage'
-import { BestiaryEntry } from './pages/BestiaryEntry'
-import { ItemPage } from './pages/ItemPage'
-import { LocationPage } from './pages/LocationPage'
-import { MapPage } from './pages/MapPage'
-import { LorePage } from './pages/LorePage'
-import { ReportPage } from './pages/ReportPage'
 import { RedactedPage } from './pages/RedactedPage'
 import { CreditsPage } from './pages/CreditsPage'
+import { TemplatePage } from './pages/TemplatePage'
 import { usePageScroll } from './hooks/usePageScroll'
 import { ariaVex } from './data/characters/aria-vex'
 import { yaelMox } from './data/characters/yael-mox'
@@ -30,28 +24,48 @@ import { omicronCollapse } from './data/lore/omicron-collapse'
 import { thresholdAccords } from './data/lore/threshold-accords'
 import { sableThreshold } from './data/reports/sable-threshold'
 import { glassLitany } from './data/reports/glass-litany'
+import { tmp1Email } from './data/templates/tmp1-email'
+import { tmp2Transfer } from './data/templates/tmp2-transfer'
+import { tmp3Profile } from './data/templates/tmp3-profile'
+import { tmp4COE } from './data/templates/tmp4-coe'
+import { tmp5Artifact } from './data/templates/tmp5-artifact'
+import { tmp6Survey } from './data/templates/tmp6-survey'
 import styles from './styles/App.module.css'
+import type { TickerVariant } from './components/Ticker'
 
 const MuseumPage = lazy(() => import('./pages/MuseumPage').then(m => ({ default: m.MuseumPage })))
 
-const PAGES = [
+interface PageEntry {
+  path: string
+  component: () => ReactElement
+  isPlaceholder?: boolean
+  ticker?: TickerVariant
+}
+
+const PAGES: PageEntry[] = [
   { path: '/', component: SplashScreen },
   { path: '/cover', component: CoverPage },
   { path: '/blank', component: BlankPage },
-  { path: '/character/aria-vex', component: () => <CharacterPage {...ariaVex} />, isPlaceholder: true },
-  { path: '/character/yael-mox', component: () => <CharacterPage {...yaelMox} />, isPlaceholder: true },
-  { path: '/bestiary/pallid-watcher', component: () => <BestiaryEntry {...pallidWatcher} />, isPlaceholder: true },
-  { path: '/bestiary/greyfield-choir', component: () => <BestiaryEntry {...greyfieldChoir} />, isPlaceholder: true },
-  { path: '/item/hollow-blade', component: () => <ItemPage {...hollowBlade} />, isPlaceholder: true },
-  { path: '/item/spectral-caul', component: () => <ItemPage {...spectralCaul} />, isPlaceholder: true },
-  { path: '/location/sunken-relay', component: () => <LocationPage {...sunkenRelay} />, isPlaceholder: true },
-  { path: '/location/outpost-kaya', component: () => <LocationPage {...outpostKaya} />, isPlaceholder: true },
-  { path: '/map/wasting-expanse', component: () => <MapPage {...wastingExpanse} />, isPlaceholder: true },
+  { path: '/character/aria-vex', component: () => <TemplatePage {...ariaVex} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/character/yael-mox', component: () => <TemplatePage {...yaelMox} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/bestiary/pallid-watcher', component: () => <TemplatePage {...pallidWatcher} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/bestiary/greyfield-choir', component: () => <TemplatePage {...greyfieldChoir} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/item/hollow-blade', component: () => <TemplatePage {...hollowBlade} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/item/spectral-caul', component: () => <TemplatePage {...spectralCaul} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/location/sunken-relay', component: () => <TemplatePage {...sunkenRelay} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/location/outpost-kaya', component: () => <TemplatePage {...outpostKaya} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/map/wasting-expanse', component: () => <TemplatePage {...wastingExpanse} />, isPlaceholder: true, ticker: 'placeholder' },
   { path: '/redacted/067', component: RedactedPage },
-  { path: '/lore/omicron-collapse', component: () => <LorePage {...omicronCollapse} />, isPlaceholder: true },
-  { path: '/lore/threshold-accords', component: () => <LorePage {...thresholdAccords} />, isPlaceholder: true },
-  { path: '/report/sable-threshold', component: () => <ReportPage {...sableThreshold} />, isPlaceholder: true },
-  { path: '/report/glass-litany', component: () => <ReportPage {...glassLitany} />, isPlaceholder: true },
+  { path: '/lore/omicron-collapse', component: () => <TemplatePage {...omicronCollapse} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/lore/threshold-accords', component: () => <TemplatePage {...thresholdAccords} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/report/sable-threshold', component: () => <TemplatePage {...sableThreshold} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/report/glass-litany', component: () => <TemplatePage {...glassLitany} />, isPlaceholder: true, ticker: 'placeholder' },
+  { path: '/template/tmp1-email', component: () => <TemplatePage {...tmp1Email} />, isPlaceholder: true, ticker: 'template' },
+  { path: '/template/tmp2-transfer', component: () => <TemplatePage {...tmp2Transfer} />, isPlaceholder: true, ticker: 'template' },
+  { path: '/template/tmp3-profile', component: () => <TemplatePage {...tmp3Profile} />, isPlaceholder: true, ticker: 'template' },
+  { path: '/template/tmp4-coe', component: () => <TemplatePage {...tmp4COE} />, isPlaceholder: true, ticker: 'template' },
+  { path: '/template/tmp5-artifact', component: () => <TemplatePage {...tmp5Artifact} />, isPlaceholder: true, ticker: 'template' },
+  { path: '/template/tmp6-survey', component: () => <TemplatePage {...tmp6Survey} />, isPlaceholder: true, ticker: 'template' },
   { path: '/credits', component: CreditsPage },
 ]
 
@@ -297,7 +311,9 @@ export function App() {
     )
   }
 
-  const showTicker = PAGES.find(({ path }) => path === pathname)?.isPlaceholder ?? false
+  const currentPage = PAGES.find(({ path }) => path === pathname)
+  const showTicker = currentPage?.isPlaceholder ?? false
+  const tickerVariant = currentPage?.ticker ?? 'placeholder'
 
   return (
     <NavigateProvider value={navigate}>
@@ -313,8 +329,8 @@ export function App() {
             ))}
           </div>
         </div>
-      {showTicker && <Ticker position="top" />}
-      {showTicker && <Ticker position="bottom" />}
+      {showTicker && <Ticker position="top" variant={tickerVariant} />}
+      {showTicker && <Ticker position="bottom" variant={tickerVariant} />}
       <SignalTear ref={tearRef} effectsOn={effectsOn} />
       <ChromaticAberrationFilter />
       {mainOverlay}

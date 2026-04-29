@@ -1,0 +1,423 @@
+/* TemplatePage-specific bits only. The header / metadata / timeline /
+   numbered-list / section-divider chrome is all shared via EntryHeader,
+   ChapterDivider, MetaTable, Timeline, NumberedList. The drift strip and
+   media-toggle footer chrome live in DocChrome.module.css. */
+
+/* ── Profile reporting-chain tree ── */
+
+.chainTree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.chainNode {
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-bg-inset);
+  padding: var(--space-sm) var(--space-md);
+  text-align: center;
+  min-width: 11rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.3;
+}
+
+.chainNodeSubject {
+  border-color: var(--color-accent);
+  background: var(--color-bg);
+}
+
+.chainName {
+  color: var(--color-text-bright);
+  font-weight: 600;
+}
+
+.chainRole {
+  color: var(--color-text-dim);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.chainEmpId {
+  color: var(--color-text-dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.chainBar {
+  width: 2px;
+  height: var(--space-md);
+  background: var(--color-accent);
+  opacity: 0.4;
+}
+
+/* Reports row. No flex gap — visual spacing comes from per-slot padding so
+   the per-slot bus segments touch and form one continuous horizontal line
+   between the leftmost and rightmost slot midpoints. */
+.chainReports {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chainReportSlot {
+  position: relative;
+  padding-top: var(--space-md);
+  padding-inline: calc(var(--space-md) / 2);
+}
+
+/* Horizontal bus segment along the top of each slot. Edge slots get a
+   half-segment so the bus terminates at the first/last node midpoint. */
+.chainReportSlot::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-accent);
+  opacity: 0.4;
+}
+
+.chainReportSlot:first-child::before {
+  left: 50%;
+}
+
+.chainReportSlot:last-child::before {
+  right: 50%;
+}
+
+.chainReportSlot:only-child::before {
+  display: none;
+}
+
+/* Vertical drop from bus midpoint to the node top. */
+.chainReportSlot::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: var(--space-md);
+  background: var(--color-accent);
+  opacity: 0.4;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 600px) {
+  .chainReports {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .chainReports::before {
+    display: none;
+  }
+}
+
+/* ── Survey casualty list ── */
+
+.casualtyList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.casualtyRow {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--color-text);
+  padding: var(--space-sm) 0;
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.casualtyRow:last-child {
+  border-bottom: none;
+}
+
+.casualtyKia {
+  color: var(--color-danger);
+  margin-right: var(--space-sm);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.casualtyLost {
+  color: var(--color-accent);
+  margin-right: var(--space-sm);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+/* ── Profile small portrait + meta header ── */
+
+.profileLayout {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.profilePortrait {
+  width: 120px;
+  height: 150px;
+  border: var(--border-width) solid var(--color-border);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      var(--color-bg-inset) 0,
+      var(--color-bg-inset) 4px,
+      transparent 4px,
+      transparent 8px
+    );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-dim);
+}
+
+.profilePortraitLabel {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 600px) {
+  .profileLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Profile service record (sidebar) ── */
+/* Visual conventions match the shared StatBlock: accent monospaced
+   header, dashed dividers, dim labels. No pixelated text. */
+
+.serviceRecord {
+  display: flex;
+  flex-direction: column;
+}
+
+.serviceRecordHeading {
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.serviceRecordList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.serviceRecordRow {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  padding: var(--space-sm) 0;
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.serviceRecordRow:last-child {
+  border-bottom: none;
+}
+
+.serviceRecordDate {
+  color: var(--color-accent);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.serviceRecordEntry {
+  color: var(--color-text);
+}
+
+
+/* ── COE: Incident Response Analysis ── */
+
+.responseTable {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  font-family: var(--font-mono);
+}
+
+.responseRow {
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-bg-inset);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.responseMetric {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content;
+  gap: var(--space-md);
+  align-items: baseline;
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.responseAbbr {
+  color: var(--color-accent);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  font-size: 0.85rem;
+}
+
+.responseMetricLabel {
+  color: var(--color-text-bright);
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
+.responseValue {
+  color: var(--color-danger);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.responseDetail {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: var(--space-md);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.responseDetailLabel {
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.75rem;
+  padding-top: 0.15em;
+}
+
+.responseDetailText {
+  color: var(--color-text);
+}
+
+@media (max-width: 700px) {
+  .responseMetric {
+    grid-template-columns: 1fr;
+    gap: var(--space-xs);
+  }
+  .responseDetail {
+    grid-template-columns: 1fr;
+    gap: var(--space-xs);
+  }
+}
+
+/* ── COE: Action Items table ── */
+
+.actionsTable {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  border: var(--border-width) solid var(--color-border);
+}
+
+.actionsRow {
+  display: grid;
+  grid-template-columns:
+    3rem
+    minmax(0, 1fr)
+    minmax(8rem, max-content)
+    5rem
+    8rem
+    7rem;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  align-items: baseline;
+  line-height: 1.5;
+}
+
+.actionsRow:last-child {
+  border-bottom: none;
+}
+
+.actionsHeader {
+  background: var(--color-bg-inset);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-text-dim);
+}
+
+.actionsCellNum {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.actionsCellAction {
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.actionsCellOwner,
+.actionsCellDue,
+.actionsCellPriority,
+.actionsCellStatus {
+  color: var(--color-text);
+}
+
+.priorityP0 {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.priorityP1 {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.statusDone {
+  color: var(--color-text-dim);
+}
+
+.statusBlocked {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .actionsRow {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    padding: var(--space-sm) var(--space-md);
+  }
+  .actionsHeader {
+    display: none;
+  }
+  .actionsCellNum::after { content: ''; }
+  .actionsCellAction { font-weight: 600; color: var(--color-text-bright); }
+  .actionsCellOwner::before { content: 'Owner: '; color: var(--color-text-dim); }
+  .actionsCellPriority::before { content: 'Priority: '; color: var(--color-text-dim); font-weight: 400; }
+  .actionsCellDue::before { content: 'Due: '; color: var(--color-text-dim); }
+  .actionsCellStatus::before { content: 'Status: '; color: var(--color-text-dim); font-weight: 400; }
+}
+

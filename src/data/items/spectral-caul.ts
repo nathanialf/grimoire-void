@@ -1,7 +1,9 @@
-import type { ItemData } from '../../types'
+import type { ArtifactTemplate } from '../../types'
 
-export const spectralCaul: ItemData = {
+export const spectralCaul: ArtifactTemplate = {
+  kind: 'artifact',
   pageNumber: '030',
+  drift: 0.22,
   header: {
     classification: 'Standard Issue — Psi-Shielding',
     title: 'The Spectral Caul',
@@ -78,4 +80,12 @@ export const spectralCaul: ItemData = {
       ],
     },
   ],
+  footer: {
+    media: ['text', 'image'],
+    viewingHistory: [
+      { who: 'Applied Psi-Defense', when: 'C4427 D180 · 11:00' },
+      { who: 'A. Vex (issued unit)', when: 'C4427 D175 · 09:30' },
+      { who: 'archive.accession', when: 'C4419 D210 · 06:00' },
+    ],
+  },
 }

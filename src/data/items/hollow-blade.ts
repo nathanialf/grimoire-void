@@ -1,7 +1,9 @@
-import type { ItemData } from '../../types'
+import type { ArtifactTemplate } from '../../types'
 
-export const hollowBlade: ItemData = {
+export const hollowBlade: ArtifactTemplate = {
+  kind: 'artifact',
   pageNumber: '024',
+  drift: 0.47,
   header: {
     classification: 'Artifact — Void-Touched',
     title: 'The Hollow Blade',
@@ -69,4 +71,12 @@ export const hollowBlade: ItemData = {
       ],
     },
   ],
+  footer: {
+    media: ['text', 'image'],
+    viewingHistory: [
+      { who: 'Sector 9 Cmd', when: 'C4427 D192 · 14:30' },
+      { who: 'A. Vex (last handler)', when: 'C4417 D085 · 04:52' },
+      { who: 'archive.accession', when: 'C4419 D012 · 09:00' },
+    ],
+  },
 }

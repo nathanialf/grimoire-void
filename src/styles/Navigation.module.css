@@ -127,8 +127,8 @@
   width: 100%;
   height: 100%;
   background-color: var(--color-text-dim);
-  mask-image: url('/images/rings.png');
-  -webkit-mask-image: url('/images/rings.png');
+  mask-image: url('/images/rings.svg');
+  -webkit-mask-image: url('/images/rings.svg');
   mask-size: contain;
   -webkit-mask-size: contain;
   mask-repeat: no-repeat;
@@ -145,6 +145,7 @@
   display: flex;
   align-items: center;
   gap: 0.3em;
+  line-height: 0;
   text-decoration: none;
   cursor: pointer;
   transition: opacity var(--transition-fast);
@@ -154,13 +155,33 @@
   opacity: 0.8;
 }
 
+.copyrightYear {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  line-height: 0;
+}
+
+.copyrightSymbol {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.copyrightCell {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
 .copyrightLogo {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   height: 0.85em;
   width: 1.275em;
   flex-shrink: 0;
-  margin-top: -0.32em;
   margin-right: 0.3em;
+  line-height: 0;
 }
 
 .copyrightLogoMask {
@@ -179,8 +200,7 @@
 }
 
 /* Desktop-only bumps: nav links sized up a touch (tablet/mobile keep the
-   default), and the defnf logo nudged up a hair to sit better on the
-   copyright row baseline. */
+   default). The copyright row aligns by flex centering — no per-item nudges. */
 @media (min-width: 769px) and (max-width: 1024px) {
   .link {
     zoom: 0.85;
@@ -189,9 +209,6 @@
 @media (min-width: 1025px) {
   .link {
     zoom: 1.2;
-  }
-  .copyrightLogo {
-    margin-top: -0.5em;
   }
 }
 

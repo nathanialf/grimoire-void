@@ -2,8 +2,10 @@ import { PageFrame } from '../components/PageFrame';
 import { EntryHeader } from '../components/EntryHeader';
 import { ChapterDivider } from '../components/ChapterDivider';
 import { ClassNoticeBlock } from '../components/ClassNoticeBlock';
+import { MetaTable } from '../components/MetaTable';
+import { Timeline } from '../components/Timeline';
+import { NumberedList } from '../components/NumberedList';
 import { renderBlocks } from '../utils/renderBlocks';
-import { renderText } from '../utils/renderText';
 import type { ReportData } from '../types';
 import shared from '../styles/shared.module.css';
 import styles from '../styles/ReportPage.module.css';
@@ -27,32 +29,14 @@ export function ReportPage(props: ReportData) {
         ])}
 
         <ChapterDivider label="Mission Parameters" />
-        <div className={styles.metaTable}>
-          {missionStats.stats.map((stat, i) => (
-            <div key={i} className={styles.metaRow}>
-              <span className={styles.metaLabel}>{stat.label}</span>
-              <span className={
-                stat.variant === 'danger' ? styles.metaValueDanger
-                : stat.variant === 'accent' ? styles.metaValueAccent
-                : styles.metaValue
-              }>
-                {stat.value}
-              </span>
-            </div>
-          ))}
-        </div>
+        <MetaTable rows={missionStats.stats.map((s) => ({
+          label: s.label,
+          value: s.value,
+          variant: s.variant,
+        }))} />
 
         <ChapterDivider label="Operational Timeline" />
-        <div className={shared.prose}>
-          <ul className={styles.timeline}>
-            {timeline.map((entry, i) => (
-              <li key={i}>
-                <span className={styles.timestamp}>{entry.timestamp}</span>
-                <span className={styles.event}>{renderText(entry.event)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <Timeline entries={timeline} />
 
         <ChapterDivider label="Casualties & Losses" />
         <div className={shared.prose}>
@@ -68,13 +52,7 @@ export function ReportPage(props: ReportData) {
         </div>
 
         <ChapterDivider label="Recommendations" />
-        <div className={shared.prose}>
-          <ol className={styles.recommendations}>
-            {recommendations.map((rec, i) => (
-              <li key={i}>{rec}</li>
-            ))}
-          </ol>
-        </div>
+        <NumberedList items={recommendations} />
 
         {classNotice && <ClassNoticeBlock classNotice={classNotice} />}
       </div>

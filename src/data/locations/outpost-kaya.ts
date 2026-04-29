@@ -1,7 +1,9 @@
-import type { LocationData } from '../../types'
+import type { SurveyTemplate } from '../../types'
 
-export const outpostKaya: LocationData = {
+export const outpostKaya: SurveyTemplate = {
+  kind: 'survey',
   pageNumber: '048',
+  drift: 0.43,
   header: {
     classification: 'Abandoned Installation — Hazard Level: Moderate',
     title: 'Outpost Kaya',
@@ -53,27 +55,45 @@ export const outpostKaya: LocationData = {
         },
       ],
     },
-  ],
-  poi: [
-    { marker: 'K1', name: 'Main Habitation Module', desc: 'Intact. Signs of recent cleaning and occupation.' },
-    { marker: 'K2', name: 'Supply Depot', desc: 'Partially looted. Non-essential Compact rations remain.' },
-    { marker: 'K3', name: 'Communication Array', desc: 'Powered down. Source of anomalous Cy. 4421 transmission.' },
-    { marker: 'K4', name: 'East Wing (Damaged)', desc: 'Structural collapse. Cause unclear — not consistent with weathering.' },
-    { marker: 'K5', name: 'Perimeter Alarm Grid', desc: 'Unauthorized modification. Crude but functional sensor net.' },
-  ],
-  statBlocks: [
     {
-      title: 'Location Profile',
-      stats: [
-        { label: 'Hazard', value: 'MODERATE', variant: 'accent' },
-        { label: 'Type', value: 'Abandoned FOB' },
-        { label: 'Grid Ref.', value: 'W5' },
-        { label: 'Gravity', value: '0.3g' },
-        { label: 'Atmo', value: 'Marginal' },
-        { label: 'Void Level', value: 'Low-Moderate' },
-        { label: 'Access', value: 'Unrestricted' },
-        { label: 'Occupants', value: 'Unknown', variant: 'danger' },
+      heading: 'Points of Interest',
+      blocks: [
+        {
+          type: 'table',
+          columns: ['Marker', 'Location', 'Notes'],
+          rows: [
+            ['K1', 'Main Habitation Module', 'Intact. Signs of recent cleaning and occupation.'],
+            ['K2', 'Supply Depot', 'Partially looted. Non-essential Compact rations remain.'],
+            ['K3', 'Communication Array', 'Powered down. Source of anomalous Cy. 4421 transmission.'],
+            ['K4', 'East Wing (Damaged)', 'Structural collapse. Cause unclear — not consistent with weathering.'],
+            ['K5', 'Perimeter Alarm Grid', 'Unauthorized modification. Crude but functional sensor net.'],
+          ],
+        },
       ],
     },
   ],
+  missionStats: {
+    title: 'Site Parameters',
+    stats: [
+      { label: 'Hazard', value: 'MODERATE', variant: 'accent' },
+      { label: 'Type', value: 'Abandoned FOB' },
+      { label: 'Grid Ref.', value: 'W5' },
+      { label: 'Gravity', value: '0.3g' },
+      { label: 'Atmo', value: 'Marginal' },
+      { label: 'Void Level', value: 'Low-Moderate' },
+      { label: 'Access', value: 'Unrestricted' },
+      { label: 'Occupants', value: 'Unknown', variant: 'danger' },
+    ],
+  },
+  timeline: [],
+  casualties: [],
+  recommendations: [],
+  footer: {
+    media: ['text', 'image'],
+    viewingHistory: [
+      { who: 'Expanse Patrol', when: 'C4427 D194 · 18:42' },
+      { who: 'E. Tan (drone op)', when: 'C4422 D178 · 03:00' },
+      { who: 'archive.cartography', when: 'C4418 D305 · 14:00' },
+    ],
+  },
 }

@@ -1,81 +1,203 @@
-import type { LoreData } from '../../types'
+import type { COETemplate } from '../../types'
 
-export const omicronCollapse: LoreData = {
+// The Omicron Collapse — the founding incident. Filed retroactively as a
+// SEV-1 retrospective during the establishment of Sector 9. The document
+// is itself a reconstruction from partial records; the institution does
+// not claim completeness.
+
+export const omicronCollapse: COETemplate = {
+  kind: 'coe',
   pageNumber: '071',
-  header: {
-    classification: 'Archive Fragment — Recovered',
-    title: 'The Omicron Collapse',
-    subtitle: 'A reconstruction from partial records, Cycles 4415–4417',
-    tags: ['archive', 'historical', 'partially redacted', 'void event'],
-  },
-  sections: [
+  drift: 0.81,
+  incidentId: 'OP-OMICRON-4416',
+  title: 'The Omicron Collapse — Cascading Void Incursion at Relay Station Omicron-7',
+  service: 'Meridian Compact · pre-Sector-9 era',
+  status: 'CLOSED · ratified Threshold Accords as institutional response',
+  severity: 'SEV-1',
+  detected: 'Cycle 4416 · Day 0347 (anomalous signal received at antenna array)',
+  mitigated: 'Cycle 4417 · Day 47 (station declared total loss; survivor extracted)',
+  resolved: 'Cycle 4418 (Threshold Accords ratified; permanent quarantine established)',
+  filed: 'Cycle 4418 · Day 305 · post-ratification retrospective',
+  authors: ['Meridian Compact Historical Division', 'Director Sable (Sector 9, founding)'],
+  reviewers: ['Meridian Compact Directorate (closed session)'],
+
+  issueSummary: [
     {
-      heading: 'Preface',
-      blocks: [
-        {
-          type: 'paragraph',
-          text: 'The following account has been reconstructed from surviving data cores, field logs, and testimony fragments recovered during Cycles 4418–4420. Significant gaps remain. Passages marked with [REDACTED] indicate content lost to data corruption or classified above Omega clearance. The Meridian Compact Historical Division makes no guarantee of completeness or accuracy.',
-        },
-      ],
+      type: 'paragraph',
+      text: 'The Omicron Collapse refers to the cascading systems failure and spatial-distortion event that consumed Relay Station Omicron-7 and the surrounding region of planetoid XR-881 over approximately 47 standard days during Cycles 4416–4417. It remains the single most significant void incursion event in recorded human history.',
     },
     {
-      heading: 'Timeline of Events',
-      blocks: [
-        {
-          type: 'paragraph',
-          text: 'The Omicron Collapse refers to the cascading systems failure and spatial distortion event that consumed Relay Station Omicron-7 and the surrounding region of planetoid XR-881 over a period of approximately 47 standard days during Cycles 4416–4417. It remains the single most significant void incursion event in recorded human history.',
-        },
-        {
-          type: 'quote',
-          text: 'At 0347 local, the long-range antenna array registered a signal of unknown origin. The signal did not arrive from any catalogued direction. Technician Olu Maren described it as "coming from inside the receiver." Within six hours, 14 of 22 station personnel reported identical auditory hallucinations: a voice reading a sequence of numbers that, when transcribed, corresponded to the atomic weights of elements not found on any periodic table.',
-          source: 'Incident Report 4416-001, Station Commander Elias Dren',
-        },
-        {
-          type: 'paragraph',
-          text: "Over the following three weeks, the station experienced progressive spatial instability. Corridors extended beyond their architectural boundaries. Internal navigation systems reported distances between compartments that exceeded the station's total physical volume. Two crew members — Specialists Rho and Tanaka — disappeared into a maintenance shaft that, according to all blueprints, should have terminated after twelve meters. Search teams measured the shaft at over three hundred meters before being recalled.",
-        },
-        {
-          type: 'quote',
-          text: "[REDACTED] ...the geometry was wrong. Not broken — wrong. Like looking at a word you've read a thousand times and suddenly it doesn't mean anything. The walls were still walls. The floor was still floor. But the space they enclosed had become something else. Something that was watching us understand it.",
-          source: 'Field Log 4417-B, Operative Yael Mox',
-        },
-      ],
+      type: 'paragraph',
+      text: 'This retrospective has been reconstructed from surviving data cores, field logs, and testimony fragments recovered during Cycles 4418–4420. Significant gaps remain. Passages marked [REDACTED] indicate content lost to data corruption or classified above Omega clearance. The institution makes no guarantee of completeness or accuracy.',
     },
     {
-      heading: 'The Manifestation',
-      blocks: [
-        {
-          type: 'paragraph',
-          text: 'On day 31, the entity now classified as the [[Pallid Watcher|/bestiary/pallid-watcher]] was observed for the first time. It appeared in the reactor chamber — or rather, it was noticed there. Surviving accounts disagree on whether the entity arrived or was revealed, as though it had always been present but previously unperceived.',
-        },
-        {
-          type: 'paragraph',
-          text: 'Of the eleven personnel remaining at the time of manifestation, ten experienced immediate and total cognitive dissolution — a state described in clinical literature as "the erasure of the self\'s narrative coherence." The sole survivor, Operative Yael Mox, was recovered from the station\'s exterior hull 72 hours later by an automated retrieval drone. Her final field log, recorded during the event, remains the primary source document for Pallid Watcher behavioral analysis.',
-        },
-        {
-          type: 'quote',
-          text: 'It did not move toward us. We moved toward it. We had always been moving toward it. Every corridor we walked, every hatch we sealed, every breath — all of it was approach. There was never any other direction.',
-          source: 'Field Log 4417-C, Operative Yael Mox (posthumous classification)',
-        },
-      ],
-    },
-    {
-      heading: 'Aftermath',
-      blocks: [
-        {
-          type: 'paragraph',
-          text: 'The Meridian Compact declared Relay Station Omicron-7 a total loss on day 47. The surrounding 400-kilometer zone — subsequently designated the [[Wasting Expanse|/map/wasting-expanse]] — was placed under permanent restricted access. Void-matter contamination levels in the region remain elevated and show no signs of decay, contradicting prevailing theoretical models that predict entropic dissipation over time.',
-        },
-        {
-          type: 'paragraph',
-          text: "The Omicron Collapse prompted the formation of Sector 9's deep reconnaissance division and the development of psi-shielding equipment rated for Class III void exposure. It also led to the reclassification of the [[Pallid Watcher|/bestiary/pallid-watcher]] from theoretical to confirmed, and the establishment of [[Protocol Sable|/report/sable-threshold]] — the contingency framework for future void incursion events of equivalent or greater magnitude.",
-        },
-        {
-          type: 'quote',
-          text: 'We did not discover the void. The void discovered us. The Omicron Collapse was not a catastrophe — it was an introduction.',
-          source: 'Director Sable, Meridian Compact closed session, Cycle 4418',
-        },
-      ],
+      type: 'paragraph',
+      text: 'SEV-1: total loss of a strategic relay station, 21 of 22 personnel killed or dissolved, first confirmed manifestation of a Class IV void-born entity ([[the Pallid Watcher|/bestiary/pallid-watcher]]), and creation of a permanent void-contaminated zone ([[the Wasting Expanse|/map/wasting-expanse]]) that has not decayed contrary to all theoretical models.',
     },
   ],
+
+  customerImpact: [
+    {
+      type: 'paragraph',
+      text: 'Personnel: 21 killed or dissolved. The 22nd ([[Operative Yael Mox|/character/yael-mox]]) survived under unexplained circumstances and remains under permanent cognitive monitoring per Article 7 of [[the Threshold Accords|/lore/threshold-accords]].',
+    },
+    {
+      type: 'paragraph',
+      text: 'Material: Relay Station Omicron-7 — total loss. Long-range antenna array compromised. All navigational archives selectively excised post-Collapse (deletion timestamp three cycles after the station went offline; performer unknown).',
+    },
+    {
+      type: 'paragraph',
+      text: 'Strategic: The 400km surrounding region was placed under permanent restricted access as [[the Wasting Expanse|/map/wasting-expanse]]. Void-contamination levels in the region remain elevated and show no signs of decay, contradicting prevailing theoretical models that predict entropic dissipation over time. The contamination is permanent.',
+    },
+    {
+      type: 'paragraph',
+      text: 'Doctrinal: The Collapse forced the creation of Sector 9, the ratification of [[the Threshold Accords|/lore/threshold-accords]], and the reclassification of the Pallid Watcher from theoretical to confirmed. The institution\'s pre-Collapse threat model was demonstrated to be inadequate at every level.',
+    },
+  ],
+
+  incidentResponseAnalysis: {
+    ttd: {
+      value: '6h (anomalous signal → first auditory hallucinations)',
+      rationale: 'The station\'s antenna array logged the anomalous signal at 0347. Within six hours, 14 of 22 personnel reported identical auditory hallucinations. Detection of *something wrong* was rapid; detection of the actual nature of the incident was not possible — pre-Collapse threat models did not include this scenario.',
+      improvement: 'Post-Collapse: continuous sub-20Hz subsonic monitoring established at all forward stations. Anomalous-signal protocols revised. See Action Item 03.',
+    },
+    tte: {
+      value: '~21 days (signal → first formal report to Directorate)',
+      rationale: 'Station Commander Dren\'s incident report was filed 21 days into the spatial-distortion phase, when corridors were extending beyond architectural boundaries and personnel were disappearing. Engagement was severely delayed by the institutional refusal to credit the anomalous data.',
+      improvement: 'Article 3 of the Threshold Accords removes commanders\' discretion to delay reporting on void-related anomalies; all such reports route directly to Sector 9 within 24 hours of detection.',
+    },
+    ttr: {
+      value: 'N/A — no recovery achieved',
+      rationale: 'Resolution was not possible. The Pallid Watcher manifested on day 31. Of the 11 personnel remaining at manifestation, 10 experienced immediate total cognitive dissolution. The station was declared a total loss on day 47. The contamination has not decayed; it is the institution\'s working assumption that it never will.',
+      improvement: 'OBSERVE ONLY doctrine codified in Article 5. The institution accepts that some void-active sites cannot be recovered and must be permanently quarantined.',
+    },
+  },
+
+  timeline: [
+    {
+      timestamp: 'C4416 D0347 · 03:47',
+      event: 'Long-range antenna array registers a signal of unknown origin. The signal does not arrive from any catalogued direction. Technician Olu Maren describes it as "coming from inside the receiver."',
+    },
+    {
+      timestamp: 'C4416 D0347 · 09:47',
+      event: '14 of 22 station personnel report identical auditory hallucinations: a voice reading a sequence of numbers that, when transcribed, correspond to the atomic weights of elements not found on any periodic table.',
+    },
+    {
+      timestamp: 'C4416 · Day 14',
+      event: 'Progressive spatial instability begins. Corridors extend beyond their architectural boundaries. Internal navigation systems report distances between compartments that exceed the station\'s total physical volume.',
+    },
+    {
+      timestamp: 'C4416 · Day 18',
+      event: 'Specialists Rho and Tanaka disappear into a maintenance shaft that should terminate after 12 meters. Search teams measure the shaft at over 300 meters before being recalled.',
+    },
+    {
+      timestamp: 'C4416 · Day 21',
+      event: 'Station Commander Dren files Incident Report 4416-001 with the Directorate. The report is initially classified at the highest level and not acted upon.',
+    },
+    {
+      timestamp: 'C4417 · Day 31',
+      event: '**Manifestation.** The entity later classified as [[the Pallid Watcher|/bestiary/pallid-watcher]] is observed for the first time in the reactor chamber. Surviving accounts disagree on whether the entity arrived or was revealed; multiple witnesses describe it as having "always been present but previously unperceived."',
+    },
+    {
+      timestamp: 'C4417 · Day 31',
+      event: 'Of the 11 personnel remaining at manifestation, 10 experience immediate and total cognitive dissolution. [[Operative Yael Mox|/character/yael-mox]] is the sole survivor and is later recovered from the station\'s exterior hull by automated drone, T+72h post-manifestation.',
+    },
+    {
+      timestamp: 'C4417 · Day 47',
+      event: 'Meridian Compact declares Relay Station Omicron-7 a total loss. The surrounding 400km zone is designated [[the Wasting Expanse|/map/wasting-expanse]] and placed under permanent restricted access.',
+    },
+    {
+      timestamp: 'C4418 · Day 305',
+      event: '[[The Threshold Accords|/lore/threshold-accords]] ratified by the Directorate in closed emergency session. Sector 9 established. Director Sable assumes founding command.',
+    },
+  ],
+
+  fiveWhys: [
+    'Why was Relay Station Omicron-7 lost? Because the station was occupied by a Class IV void-born entity ([[the Pallid Watcher|/bestiary/pallid-watcher]]) and 21 of 22 personnel experienced cognitive dissolution at manifestation.',
+    'Why was the entity not detected and engaged earlier? Because pre-Collapse threat models did not include void-born intelligence; the institution treated void phenomena as theoretical hazards rather than as active threats.',
+    'Why were void phenomena classified as theoretical? Because the institution had no prior confirmed contact and defaulted to academic-literature framing — phenomena that "could exist" were treated as phenomena that "do not exist."',
+    'Why was Station Commander Dren\'s 21-day incident report not acted upon? Because the Directorate\'s standing classification protocols routed all anomalous reports to suppression rather than to investigation. Suppression was the default response to incomprehensible information.',
+    'Why was suppression the default? Because the Compact\'s political institutions had no framework for handling extradimensional threats. The absence of doctrine produced the absence of response. The Threshold Accords were the corrective.',
+  ],
+
+  lessonsLearned: [
+    {
+      type: 'paragraph',
+      text: 'Some incidents cannot be recovered. The institution accepts that the Wasting Expanse will not decay, that Relay Station Omicron-7 will not be reoccupied, and that 21 personnel are not coming back. Acknowledgment of permanence is itself a corrective action.',
+    },
+    {
+      type: 'paragraph',
+      text: 'Suppression is not a response. The Directorate\'s 21-day delay between Dren\'s report and Sector 9 escalation was itself a load-bearing contribution to the loss. Article 3 of the Threshold Accords codifies that anomalous reports must escalate within 24 hours of detection. Suppression as institutional habit is the failure mode the Accords were written to prevent.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The institution does not understand what was preserved by allowing [[Operative Mox|/character/yael-mox]] to leave. Her survival is the central anomaly of the Collapse. All future engagements must account for the possibility that the Watcher is not solely hostile — that its behavior includes a component of *selection*.',
+    },
+    {
+      type: 'paragraph',
+      text: 'Pre-Collapse academic literature on void phenomena was extensive and largely correct. The failure was not in the science but in the institutional refusal to credit the science. Doctrine must follow data; in the Compact, prior to the Collapse, doctrine had been allowed to follow comfort.',
+    },
+  ],
+
+  actionItems: [
+    {
+      description: 'Ratify [[the Threshold Accords|/lore/threshold-accords]] as the foundational legal and military framework for void-response operations.',
+      owner: 'Meridian Compact Directorate',
+      priority: 'P0',
+      dueDate: 'C4418 D305',
+      status: 'Done',
+    },
+    {
+      description: 'Establish Sector 9 as a dedicated void-response division with autonomous operational authority. Director Sable, founding command.',
+      owner: 'Meridian Compact Directorate',
+      priority: 'P0',
+      dueDate: 'C4418 D305',
+      status: 'Done',
+    },
+    {
+      description: 'Reclassify [[the Pallid Watcher|/bestiary/pallid-watcher]] from theoretical to confirmed. Update all field manuals and threat indices.',
+      owner: 'Sector 9 Threat Index',
+      priority: 'P0',
+      dueDate: 'C4418 D310',
+      status: 'Done',
+    },
+    {
+      description: 'Establish permanent quarantine perimeter around [[the Wasting Expanse|/map/wasting-expanse]]. Deploy automated warning buoys.',
+      owner: 'Sector 9 Cmd',
+      priority: 'P0',
+      dueDate: 'C4418 D330',
+      status: 'Done',
+    },
+    {
+      description: 'Develop psi-shielding equipment rated for Class III void exposure. See [[the Spectral Caul|/item/spectral-caul]] development history.',
+      owner: 'Applied Psi-Defense',
+      priority: 'P1',
+      dueDate: 'C4419 D210',
+      status: 'Done',
+    },
+    {
+      description: 'Maintain permanent cognitive monitoring of [[Operative Yael Mox|/character/yael-mox]] under Article 7. Twice-daily psionic baseline scans. Indefinite duration.',
+      owner: 'Cognitive Monitoring · L. Ashara',
+      priority: 'P1',
+      dueDate: 'Ongoing',
+      status: 'In Progress',
+    },
+  ],
+
+  relatedItems: [
+    { id: 'TR-ACCORDS-4418', title: 'The Threshold Accords — institutional response', path: '/lore/threshold-accords' },
+    { id: 'OP-SABLE-4417', title: 'Operation Sable Threshold — failed return to Omicron-7', path: '/report/sable-threshold' },
+    { id: 'A-013', title: 'Pallid Watcher — entity record', path: '/bestiary/pallid-watcher' },
+    { id: 'A-058', title: 'The Wasting Expanse — permanent quarantine zone', path: '/map/wasting-expanse' },
+    { id: 'CHAR-MOX', title: 'Yael Mox — sole survivor', path: '/character/yael-mox' },
+  ],
+
+  footer: {
+    media: ['text'],
+    viewingHistory: [
+      { who: 'Dir. H. Mire', when: 'C4427 D192 · 11:00' },
+      { who: 'Dir. Sable (founding)', when: 'C4418 D310 · 14:00' },
+      { who: 'archive.audit', when: 'C4418 D310 · 14:00' },
+    ],
+  },
 }

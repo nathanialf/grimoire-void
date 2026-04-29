@@ -1,7 +1,9 @@
-import type { MapData } from '../../types'
+import type { ArtifactTemplate } from '../../types'
 
-export const wastingExpanse: MapData = {
+export const wastingExpanse: ArtifactTemplate = {
+  kind: 'artifact',
   pageNumber: '058',
+  drift: 0.38,
   header: {
     classification: 'Regional Survey — Sector 7',
     title: 'The Wasting Expanse',
@@ -31,13 +33,31 @@ export const wastingExpanse: MapData = {
         },
       ],
     },
+    {
+      heading: 'Points of Interest',
+      blocks: [
+        {
+          type: 'table',
+          columns: ['Marker', 'Location', 'Notes'],
+          rows: [
+            ['W1', 'The Glass Flats', 'Fused silicate plain. Surface temperature exceeds safe limits during solar peak.'],
+            ['W2', 'Relay Station Omicron-7', 'Submerged derelict. See [[The Sunken Relay|/location/sunken-relay]] for detailed survey.'],
+            ['W3', 'The Processional', 'Linear arrangement of monolithic structures. Origin unknown. Possibly pre-Compact.'],
+            ['W4', 'Sinkfield Alpha', 'Gravitational anomaly zone. Equipment failure rate: 80%. Avoid.'],
+            ['W5', 'Outpost Kaya (Abandoned)', 'Former forward operating base. See [[Outpost Kaya|/location/outpost-kaya]].'],
+            ['W6', 'The Wound', 'Planetary fissure of unknown depth. Void-matter emissions detected. RESTRICTED.'],
+          ],
+        },
+      ],
+    },
   ],
-  poi: [
-    { marker: 'W1', name: 'The Glass Flats', desc: 'Fused silicate plain. Surface temperature exceeds safe limits during solar peak.' },
-    { marker: 'W2', name: 'Relay Station Omicron-7', desc: 'Submerged derelict. See entry 042 for detailed survey.' },
-    { marker: 'W3', name: 'The Processional', desc: 'Linear arrangement of monolithic structures. Origin unknown. Possibly pre-Compact.' },
-    { marker: 'W4', name: 'Sinkfield Alpha', desc: 'Gravitational anomaly zone. Equipment failure rate: 80%. Avoid.' },
-    { marker: 'W5', name: 'Outpost Kaya (Abandoned)', desc: 'Former forward operating base. Evacuated Cycle 4418. May contain cached supplies.' },
-    { marker: 'W6', name: 'The Wound', desc: 'Planetary fissure of unknown depth. Void-matter emissions detected. RESTRICTED.' },
-  ],
+  statBlocks: [],
+  footer: {
+    media: ['text', 'image'],
+    viewingHistory: [
+      { who: 'Sector 9 Cmd', when: 'C4427 D192 · 06:00' },
+      { who: 'Cartography Office', when: 'C4421 D310 · 14:00' },
+      { who: 'archive.cartography', when: 'C4418 D250 · 09:00' },
+    ],
+  },
 }
