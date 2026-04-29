@@ -21,6 +21,30 @@
   pointer-events: auto;
 }
 
+/* Content-area overlay used on per-page transitions: leaves the sidebar
+   visible so navigation stays responsive. Falls back to full-width on
+   mobile where the sidebar is offscreen by default. */
+.loadingOverlayContent {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--nav-width);
+  z-index: 9999;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+  .loadingOverlayContent {
+    left: 0;
+  }
+}
+
 .loadingRing {
   display: inline-block;
   width: 1.4em;

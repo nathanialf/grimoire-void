@@ -256,8 +256,20 @@ export function App() {
   // an early-return lets the wiki content mount underneath so its effects
   // run; the overlay covers the staircase reflow until the MutationObserver
   // signals settle.
-  const loadingOverlay = !fontsReady || !bitmapsReady ? (
+  //
+  // On initial load (!fontsReady) the overlay is full-screen — the sidebar
+  // bitmaps are also rendering and would look wonky. After fonts are loaded,
+  // per-page transitions use a content-area-only overlay so the sidebar
+  // stays visible and navigation feels responsive.
+  const showOverlay = !fontsReady || !bitmapsReady
+  const fullScreenOverlay = showOverlay ? (
     <div className={styles.loadingOverlay}>
+      <span className={styles.loadingRing} role="img" aria-hidden="true" />
+      <span className={styles.loadingText}>Loading</span>
+    </div>
+  ) : null
+  const mainOverlay = showOverlay ? (
+    <div className={!fontsReady ? styles.loadingOverlay : styles.loadingOverlayContent}>
       <span className={styles.loadingRing} role="img" aria-hidden="true" />
       <span className={styles.loadingText}>Loading</span>
     </div>
@@ -269,7 +281,7 @@ export function App() {
         <Suspense fallback={<div style={{ background: '#0a0a0a', position: 'fixed', inset: 0 }} />}>
           <MuseumPage />
         </Suspense>
-        {loadingOverlay}
+        {fullScreenOverlay}
       </NavigateProvider>
     )
   }
@@ -280,7 +292,7 @@ export function App() {
         <RedactedPage />
         <SignalTear ref={tearRef} effectsOn={effectsOn} />
         <ChromaticAberrationFilter />
-        {loadingOverlay}
+        {fullScreenOverlay}
       </NavigateProvider>
     )
   }
@@ -305,7 +317,7 @@ export function App() {
       {showTicker && <Ticker position="bottom" />}
       <SignalTear ref={tearRef} effectsOn={effectsOn} />
       <ChromaticAberrationFilter />
-      {loadingOverlay}
+      {mainOverlay}
     </NavigateProvider>
   )
 }
