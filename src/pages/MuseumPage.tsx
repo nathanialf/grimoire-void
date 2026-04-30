@@ -122,7 +122,7 @@ export function MuseumPage() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `grimoire-${activeScene}-${Date.now()}.png`
+      a.download = `grimoire-${Date.now()}.png`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -133,7 +133,7 @@ export function MuseumPage() {
     requestAnimationFrame(() => {
       setTimeout(() => setFlashOpacity(0), 120)
     })
-  }, [activeScene])
+  }, [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
