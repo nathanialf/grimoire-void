@@ -10,7 +10,7 @@ export const omicronCollapse: COETemplate = {
   pageNumber: '071',
   drift: 0.81,
   incidentId: 'OP-OMICRON-4416',
-  title: 'The Omicron Collapse — Cascading Void Incursion at Relay Station Omicron-7',
+  title: 'The Omicron Collapse',
   service: 'Meridian Compact · pre-Sector-9 era',
   status: 'CLOSED · ratified Threshold Accords as institutional response',
   severity: 'SEV-1',

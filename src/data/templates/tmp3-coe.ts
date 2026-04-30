@@ -10,7 +10,7 @@ export const tmp3COE: COETemplate = {
   pageNumber: 'TMP3',
   drift: 0.0,
   incidentId: '{COE-XXXX-NNN}',
-  title: 'COE — Document Template',
+  title: 'COE Name',
   service: '{Affected service / team}',
   status: '{Phase 1 Mitigation Complete · Action Items In Progress}',
   severity: 'SEV-1',

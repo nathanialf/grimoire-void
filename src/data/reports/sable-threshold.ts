@@ -5,7 +5,7 @@ export const sableThreshold: COETemplate = {
   pageNumber: '085',
   drift: 0.69,
   incidentId: 'OP-SABLE-4417',
-  title: 'Operation Sable Threshold — Mission Failure at Relay Station Omicron-7',
+  title: 'Operation Sable Threshold',
   service: 'Sector 9 · Deep Reconnaissance',
   status: 'CLOSED · Pallid Watcher reclassified ACTIVE-HOSTILE',
   severity: 'SEV-1',

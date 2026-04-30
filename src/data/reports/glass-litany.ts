@@ -5,7 +5,7 @@ export const glassLitany: COETemplate = {
   pageNumber: '090',
   drift: 0.55,
   incidentId: 'OP-LITANY-4422',
-  title: 'Operation Glass Litany — Greyfield Choir Observation, Partial Success',
+  title: 'Operation Glass Litany',
   service: 'Sector 9 · Field Operations',
   status: 'CLOSED · Glass Flats observation continues with revised protocols',
   severity: 'SEV-2',
