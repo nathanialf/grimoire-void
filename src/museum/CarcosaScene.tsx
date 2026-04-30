@@ -3,6 +3,7 @@ import { BufferAttribute, BufferGeometry, Group, Matrix4, Quaternion, Vector3 } 
 import { useFrame } from '@react-three/fiber'
 import { DOOR_W, DOOR_H, DOOR_CY, FrameTicker, makeDebugTickerCanvas } from './frameTicker'
 import { useRevealedArtifactTexture, DOOR_ANIM_RADIUS } from './Scene'
+import { DemoNode } from './DemoNode'
 
 export const PORTAL_Z = -10
 
@@ -340,6 +341,10 @@ export function CarcosaScene() {
 
       <ReturnPortal />
       <ReturnPortalFrame />
+
+      {/* Smoke-test scan target — single placeholder node for validating
+          the recording loop end-to-end before real node authoring lands. */}
+      <DemoNode />
     </>
   )
 }

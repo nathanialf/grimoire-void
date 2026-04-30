@@ -2,16 +2,35 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Scene } from '../museum/Scene'
 import { CarcosaScene, returnPortalZone } from '../museum/CarcosaScene'
-import { walkableRects, pedestalPositions, exitZone, carcosaDoorZone, EXIT_Z_POS } from '../museum/sceneConstants'
+import {
+  walkableRects,
+  pedestalPositions,
+  exitZone,
+  carcosaDoorZone,
+  EXIT_Z_POS,
+  cartDispenserFixture,
+  toolMountFixture,
+  fixtureBoxAABB,
+  CENTRAL_PEDESTAL,
+} from '../museum/sceneConstants'
 import { DOOR_W, DOOR_H } from '../museum/frameTicker'
 import { Controls, type InputState, type Trigger } from '../museum/Controls'
 import { TouchControls } from '../museum/TouchControls'
 import { Effects } from '../museum/Effects'
 import { TerminalLog } from '../museum/TerminalLog'
 import { DoorPrompt } from '../museum/DoorPrompt'
+import { HeldTool } from '../museum/CartTool'
+import { DEMO_NODE_ID, DEMO_NODE_SLUG, demoNodeAabb } from '../museum/DemoNode'
 import { pixelSort } from '../museum/effects/pixelSortUniform'
 import { datamosh } from '../museum/effects/datamoshUniform'
 import { useNavigate } from '../hooks/useNavigate'
+import {
+  derez as derezInventory,
+  dispenseCart,
+  pickUpTool,
+  scanNode,
+  useInventory,
+} from '../data/inventory'
 import styles from '../styles/Museum.module.css'
 import appStyles from '../styles/App.module.css'
 
@@ -80,6 +99,10 @@ export function MuseumPage() {
     if (exitingRef.current) return
     exitingRef.current = true
     setIsExiting(true)
+    // Wipe the held cart at the START of the derez, hidden inside the
+    // pixel-sort chaos — doing it at navigation would briefly flash the
+    // empty scope to the player before the cover page transitions in.
+    derezInventory()
     const start = performance.now()
     const ramp = (now: number) => {
       const elapsed = now - start
@@ -104,6 +127,9 @@ export function MuseumPage() {
     if (exitingRef.current) return
     exitingRef.current = true
     setIsExiting(true)
+    // EXIT door is the other wipe path — same start-of-fade timing as
+    // the timer-derez above.
+    derezInventory()
     const start = performance.now()
     const ramp = (now: number) => {
       const t = Math.min(1, (now - start) / FADE_MS)
@@ -181,9 +207,11 @@ export function MuseumPage() {
     requestAnimationFrame(ramp)
   }
 
+  const inv = useInventory()
+
   const doors: Trigger[] = useMemo(() => {
     if (activeScene === 'museum') {
-      return [
+      const triggers: Trigger[] = [
         // Exit on +Z wall — aim-based: prompt shows whenever the reticle is
         // on the door panel within maxDist, regardless of player position.
         {
@@ -199,16 +227,66 @@ export function MuseumPage() {
         // Carcosa door — walk through to teleport, no prompt and no fade.
         { zone: carcosaDoorZone, onActivate: () => swapToScene('carcosa', CARCOSA_SPAWN), facing: [0, -1], instant: true },
       ]
+      // Dispenser is only interactable when the player has the tool
+      // equipped AND no cart held — suppress the trigger entirely
+      // otherwise. Without the tool there's nothing to load the cart
+      // into, so dispensing would just spawn an unusable object.
+      if (inv.tool.equipped && inv.cart === null) {
+        const aabb = fixtureBoxAABB(cartDispenserFixture)
+        triggers.push({
+          zone: { minX: aabb.min[0], maxX: aabb.max[0], minZ: aabb.min[2], maxZ: aabb.max[2] },
+          onActivate: () => { dispenseCart() },
+          label: 'DISPENSE',
+          aim: { min: aabb.min, max: aabb.max, maxDist: 2.4 },
+        })
+      }
+      // Tool rack — only present until equipped.
+      if (!inv.tool.equipped) {
+        const aabb = fixtureBoxAABB(toolMountFixture)
+        triggers.push({
+          zone: { minX: aabb.min[0], maxX: aabb.max[0], minZ: aabb.min[2], maxZ: aabb.max[2] },
+          onActivate: () => { pickUpTool() },
+          label: 'PICK UP TOOL',
+          aim: { min: aabb.min, max: aabb.max, maxDist: 2.4 },
+        })
+      }
+      return triggers
     }
-    // In Carcosa: walk through the return portal to teleport back.
-    return [
+    // In Carcosa.
+    const triggers: Trigger[] = [
+      // Walk through the return portal to teleport back.
       { zone: returnPortalZone, onActivate: () => swapToScene('museum', MUSEUM_RETURN_SPAWN), facing: [0, -1], instant: true },
     ]
+    // Demo scan node — only useful while the tool is equipped, the cart
+    // is loaded, the cart's slug matches the node, and the node hasn't
+    // been gathered yet. Anything else, suppress the prompt to keep the
+    // HUD honest about what's actionable.
+    if (inv.tool.equipped) {
+      const cart = inv.cart
+      const wrongSlug = cart && cart.slug !== null && cart.slug !== DEMO_NODE_SLUG
+      const alreadyGathered = !!(cart && cart.gathered[DEMO_NODE_ID])
+      if (!alreadyGathered) {
+        let label = 'SCAN'
+        if (!cart) label = 'NO CART'
+        else if (wrongSlug) label = 'WRONG CART'
+        triggers.push({
+          zone: { minX: demoNodeAabb.min[0], maxX: demoNodeAabb.max[0], minZ: demoNodeAabb.min[2], maxZ: demoNodeAabb.max[2] },
+          onActivate: () => { scanNode(DEMO_NODE_ID, DEMO_NODE_SLUG) },
+          label,
+          aim: { min: demoNodeAabb.min, max: demoNodeAabb.max, maxDist: 3 },
+        })
+      }
+    }
+    return triggers
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeScene])
+  }, [activeScene, inv])
 
   const sceneWalkable = activeScene === 'museum' ? walkableRects : CARCOSA_BOUNDS
-  const scenePedestals = activeScene === 'museum' ? pedestalPositions : []
+  // Central pedestal pillar shares the museum's pedestal push-out so the
+  // player can't walk through it. Carcosa has no pedestals.
+  const scenePedestals = activeScene === 'museum'
+    ? [...pedestalPositions, [CENTRAL_PEDESTAL.centerX, CENTRAL_PEDESTAL.centerZ] as [number, number]]
+    : []
   const sceneBackground = activeScene === 'museum' ? '#f0f0f0' : '#ffffff'
 
   return (
@@ -232,6 +310,10 @@ export function MuseumPage() {
           <group visible={activeScene === 'carcosa'}>
             <CarcosaScene />
           </group>
+          {/* Held tool sits at top-level so it persists across scene
+              swaps without re-mounting (which would tear down its
+              camera-attachment effect). */}
+          <HeldTool />
           <Effects />
           <FirstFrameProbe onReady={() => setSceneReady(true)} />
         </Suspense>
@@ -250,7 +332,12 @@ export function MuseumPage() {
       </div>
       <TerminalLog ms={msLeft} />
       {touch && <TouchControls input={inputRef} />}
-      {activeDoor !== null && (
+      {/* Guard against the index briefly outliving its trigger: when an
+          aim trigger removes itself in response to its own onActivate
+          (dispenser, tool rack, demo node), the doors array shrinks
+          before Controls' next-frame update clears `activeDoor`. The
+          stale index would dereference `undefined` without this check. */}
+      {activeDoor !== null && doors[activeDoor] && (
         <DoorPrompt
           label={doors[activeDoor].label ?? 'OPEN'}
           touch={touch}

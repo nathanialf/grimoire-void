@@ -39,6 +39,10 @@ import {
   makeDebugTickerCanvas,
 } from './frameTicker'
 import { renderPixelBitmap } from '../utils/renderPixelBitmap'
+import { CarcosaTerminal } from './CarcosaTerminal'
+import { CartDispenser } from './CartDispenser'
+import { ToolWallMount } from './CartTool'
+import { CentralPedestal } from './CentralPedestal'
 
 // RectAreaLight requires a one-time uniform texture LUT init before use.
 RectAreaLightUniformsLib.init()
@@ -1282,6 +1286,14 @@ export function Scene() {
       <SealFrame />
       <DebugDoor />
       <DebugFrame />
+
+      {/* Variant terminal sits on the carcosa-door wall, just left of
+          the door. Dispenser + tool rack hang off a thin central
+          pedestal mid-room so the player passes them on the way in. */}
+      <CarcosaTerminal />
+      <CentralPedestal />
+      <CartDispenser />
+      <ToolWallMount />
     </>
   )
 }

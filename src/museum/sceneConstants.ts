@@ -129,3 +129,101 @@ export const carcosaDoorZone: Rect = {
   minZ: CARCOSA_DOOR_Z_INNER - 0.1,
   maxZ: CARCOSA_DOOR_Z_INNER + 0.8,
 }
+
+// Wall fixtures along the -Z (carcosa-door) wall: variant terminal,
+// cartridge dispenser, tool wall-mount. Each fixture is described by the
+// center of its front face (xy) and its outer dimensions (w, h, d). The
+// back face is flush against the wall at z = -ROOM.d/2.
+//
+// AABBs derived from these are used as `aim` ray-hit boxes for the
+// trigger system — players look at the fixture and press E to interact.
+// The terminal is purely visual (no trigger), so its constant only
+// drives geometry placement.
+export interface WallFixture {
+  centerX: number
+  centerY: number
+  width: number
+  height: number
+  depth: number
+}
+
+const WALL_Z = -ROOM.d / 2
+
+// Variant terminal — wall-mounted, sits on the same wall as the
+// carcosa door, just to the left of it.
+export const variantTerminalFixture: WallFixture = {
+  centerX: -1.6,
+  centerY: 1.55,
+  width: 0.72,
+  height: 0.6,
+  depth: 0.09,
+}
+
+export interface AABB {
+  min: [number, number, number]
+  max: [number, number, number]
+}
+
+// Convert a wall fixture into an AABB usable by Trigger.aim. Front face
+// sits at (z = WALL_Z + depth); back face is flush at WALL_Z.
+export function wallFixtureAABB(f: WallFixture): AABB {
+  const halfW = f.width / 2
+  const halfH = f.height / 2
+  return {
+    min: [f.centerX - halfW, f.centerY - halfH, WALL_Z],
+    max: [f.centerX + halfW, f.centerY + halfH, WALL_Z + f.depth],
+  }
+}
+
+// Free-standing 3D fixture descriptor, used for things attached to the
+// central pedestal pillar (not the room walls).
+export interface FixtureBox {
+  center: [number, number, number]
+  size: [number, number, number]
+}
+
+export function fixtureBoxAABB(b: FixtureBox): AABB {
+  const [cx, cy, cz] = b.center
+  const [w, h, d] = b.size
+  return {
+    min: [cx - w / 2, cy - h / 2, cz - d / 2],
+    max: [cx + w / 2, cy + h / 2, cz + d / 2],
+  }
+}
+
+// The central pedestal is a thin column dead-center of the room, used
+// as the mount for both the cart dispenser and the tool wall-mount.
+// Player has to pass it on the way to/from the carcosa door.
+export const CENTRAL_PEDESTAL = {
+  centerX: 0,
+  centerZ: 0,
+  // Square footprint so the pillar reads from any approach angle.
+  width: 0.4,
+  depth: 0.4,
+  height: 1.95,
+} as const
+
+// Both fixtures hang off the +Z face of the pillar (facing the entry
+// door) so the player sees them on approach. Fixtures protrude forward
+// from the pillar's front face by half their depth.
+const PILLAR_FRONT_Z = CENTRAL_PEDESTAL.centerZ + CENTRAL_PEDESTAL.depth / 2
+
+export const cartDispenserFixture: FixtureBox = {
+  center: [
+    CENTRAL_PEDESTAL.centerX,
+    1.55,
+    PILLAR_FRONT_Z + 0.11,
+  ],
+  size: [0.5, 0.42, 0.22],
+}
+
+export const toolMountFixture: FixtureBox = {
+  center: [
+    CENTRAL_PEDESTAL.centerX,
+    1.05,
+    PILLAR_FRONT_Z + 0.11,
+  ],
+  size: [0.55, 0.3, 0.22],
+}
+
+export { WALL_Z }
