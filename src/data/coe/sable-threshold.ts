@@ -4,6 +4,15 @@ export const sableThreshold: COETemplate = {
   kind: 'coe',
   pageNumber: '085',
   drift: 0.69,
+  slug: 'sable-threshold',
+  filename: 'op-sable-4417.coe',
+  filetype: 'COE',
+  author: 'Incident Review Board',
+  sharedWith: ['Sector 9 — All Hands', 'Incident Review Board', "Director's Office"],
+  meta: [
+    { label: 'Severity', value: 'SEV-1' },
+    { label: 'Status', value: 'CLOSED · Pallid Watcher reclassified ACTIVE-HOSTILE' },
+  ],
   incidentId: 'OP-SABLE-4417',
   title: 'Operation Sable Threshold',
   service: 'Sector 9 · Deep Reconnaissance',
@@ -23,7 +32,7 @@ export const sableThreshold: COETemplate = {
     },
     {
       type: 'paragraph',
-      text: 'Contact with an entity matching the profile of the [[Pallid Watcher|/bestiary/pallid-watcher]] — previously classified as a theoretical threat — was confirmed within the first ninety minutes of insertion. The fireteam sustained total mission failure. Of six operatives deployed, one survived extraction. No navigational data was recovered. The [[Hollow Blade|/item/hollow-blade]], a resonance-class artifact carried as a countermeasure, was lost within the station and remains unrecovered.',
+      text: 'Contact with an entity matching the profile of the [[Pallid Watcher|/bestiary/pallid-watcher]] — previously classified as a theoretical threat — was confirmed within the first ninety minutes of insertion. The fireteam sustained total mission failure. Of six operatives deployed, one survived extraction. No navigational data was recovered. The [[Hollow Blade|/artifact/hollow-blade]], a resonance-class artifact carried as a countermeasure, was lost within the station and remains unrecovered.',
     },
     {
       type: 'paragraph',
@@ -34,11 +43,11 @@ export const sableThreshold: COETemplate = {
   customerImpact: [
     {
       type: 'paragraph',
-      text: 'Personnel: 3 KIA (Hask, Solari, Brunt — instantaneous cellular dehydration); 2 MIA (Dane, Vex — presumed lost). Sole survivor: Operative [[Yael Mox|/character/yael-mox]], extracted at airlock C-14 under unexplained nav-coordinate guidance. Mox is now under permanent cognitive monitoring per Article 7 of [[the Threshold Accords|/lore/threshold-accords]].',
+      text: 'Personnel: 3 KIA (Hask, Solari, Brunt — instantaneous cellular dehydration); 2 MIA (Dane, Vex — presumed lost). Sole survivor: Operative [[Yael Mox|/personnel/yael-mox]], extracted at airlock C-14 under unexplained nav-coordinate guidance. Mox is now under permanent cognitive monitoring per Article 7 of [[the Threshold Accords|/lore/threshold-accords]].',
     },
     {
       type: 'paragraph',
-      text: 'Material: [[The Hollow Blade|/item/hollow-blade]] — resonance-class artifact, Class V restricted — last signal Sector 3 data vault. Recovery priority: MAXIMUM. The artifact may be compromised, repurposed, or actively in use by the Watcher.',
+      text: 'Material: [[The Hollow Blade|/artifact/hollow-blade]] — resonance-class artifact, Class V restricted — last signal Sector 3 data vault. Recovery priority: MAXIMUM. The artifact may be compromised, repurposed, or actively in use by the Watcher.',
     },
     {
       type: 'paragraph',
@@ -71,7 +80,7 @@ export const sableThreshold: COETemplate = {
     },
     {
       timestamp: '4417.3.1',
-      event: 'Breach of outer hull via maintenance airlock C-14. Atmosphere inside registers breathable but anomalous — oxygen levels 4% above station baseline. Internal gravity still active despite reported reactor failure. Operative [[Yael Mox|/character/yael-mox]] flags this discrepancy. Team lead [[Aria Vex|/character/aria-vex]] authorizes continued advance.',
+      event: 'Breach of outer hull via maintenance airlock C-14. Atmosphere inside registers breathable but anomalous — oxygen levels 4% above station baseline. Internal gravity still active despite reported reactor failure. Operative [[Yael Mox|/personnel/yael-mox]] flags this discrepancy. Team lead [[Aria Vex|/personnel/aria-vex]] authorizes continued advance.',
     },
     {
       timestamp: '4417.3.2',
@@ -79,7 +88,7 @@ export const sableThreshold: COETemplate = {
     },
     {
       timestamp: '4417.3.3',
-      event: 'Operative Dren Solari reports auditory anomalies in corridor J-7 — a low resonance hum below 20 Hz, consistent with Watcher proximity signatures documented in theoretical models. Vex deploys [[the Hollow Blade|/item/hollow-blade]] from its shielded case as a precautionary measure.',
+      event: 'Operative Dren Solari reports auditory anomalies in corridor J-7 — a low resonance hum below 20 Hz, consistent with Watcher proximity signatures documented in theoretical models. Vex deploys [[the Hollow Blade|/artifact/hollow-blade]] from its shielded case as a precautionary measure.',
     },
     {
       timestamp: '4417.3.4',
@@ -87,7 +96,7 @@ export const sableThreshold: COETemplate = {
     },
     {
       timestamp: '4417.3.5',
-      event: 'Full engagement. The Pallid Watcher manifests in the data vault. Vex attempts resonance counter with [[the Hollow Blade|/item/hollow-blade]] — initial readings suggest partial disruption of the entity\'s phase state. For eleven seconds, it becomes visible to standard optics. Then the Blade\'s oscillation inverts. Vex reports the weapon is "singing wrong" before her comms cut.',
+      event: 'Full engagement. The Pallid Watcher manifests in the data vault. Vex attempts resonance counter with [[the Hollow Blade|/artifact/hollow-blade]] — initial readings suggest partial disruption of the entity\'s phase state. For eleven seconds, it becomes visible to standard optics. Then the Blade\'s oscillation inverts. Vex reports the weapon is "singing wrong" before her comms cut.',
     },
     {
       timestamp: '4417.3.6',
@@ -152,14 +161,14 @@ export const sableThreshold: COETemplate = {
       status: 'In Progress',
     },
     {
-      description: 'Initiate recovery planning for [[the Hollow Blade|/item/hollow-blade]] under separate operational authority. Account for the possibility that the artifact has been compromised or repurposed.',
+      description: 'Initiate recovery planning for [[the Hollow Blade|/artifact/hollow-blade]] under separate operational authority. Account for the possibility that the artifact has been compromised or repurposed.',
       owner: 'Sector 9 Cmd',
       priority: 'P1',
       dueDate: 'C4418 D120',
       status: 'Not Started',
     },
     {
-      description: 'Debrief [[Operative Yael Mox|/character/yael-mox]] under full cognitive protocol. Monitor for latent influence patterns consistent with Watcher contact. Cognitive monitoring authorized under Article 7 of [[the Threshold Accords|/lore/threshold-accords]].',
+      description: 'Debrief [[Operative Yael Mox|/personnel/yael-mox]] under full cognitive protocol. Monitor for latent influence patterns consistent with Watcher contact. Cognitive monitoring authorized under Article 7 of [[the Threshold Accords|/lore/threshold-accords]].',
       owner: 'L. Ashara · Cognitive Monitoring',
       priority: 'P2',
       dueDate: 'Ongoing',
@@ -170,12 +179,11 @@ export const sableThreshold: COETemplate = {
   relatedItems: [
     { id: 'OP-OMICRON-4416', title: 'The Omicron Collapse — precursor incident', path: '/lore/omicron-collapse' },
     { id: 'A-013', title: 'Pallid Watcher — entity record', path: '/bestiary/pallid-watcher' },
-    { id: 'A-024', title: 'The Hollow Blade — lost in operation', path: '/item/hollow-blade' },
-    { id: 'OP-LITANY-4422', title: 'Operation Glass Litany — successor study', path: '/report/glass-litany' },
+    { id: 'A-024', title: 'The Hollow Blade — lost in operation', path: '/artifact/hollow-blade' },
+    { id: 'OP-LITANY-4422', title: 'Operation Glass Litany — successor study', path: '/coe/glass-litany' },
   ],
 
   footer: {
-    media: ['text'],
     viewingHistory: [
       { who: 'Dir. H. Mire', when: 'C4427 D188 · 09:00' },
       { who: 'Cmdr. O. Duskfall', when: 'C4417 D210 · 18:30' },

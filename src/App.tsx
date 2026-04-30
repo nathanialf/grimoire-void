@@ -3,7 +3,7 @@ import { Navigation } from './components/Navigation'
 import { NavigateProvider } from './hooks/useNavigate'
 import { PageNavProvider } from './hooks/usePageNav'
 import { SignalTear, type SignalTearHandle } from './components/SignalTear'
-import { Ticker } from './components/Ticker'
+import { Ticker, type TickerVariant as TickerRenderVariant } from './components/Ticker'
 import { SplashScreen } from './pages/SplashScreen'
 import { CoverPage } from './pages/CoverPage'
 import { BlankPage } from './pages/BlankPage'
@@ -11,60 +11,33 @@ import { RedactedPage } from './pages/RedactedPage'
 import { CreditsPage } from './pages/CreditsPage'
 import { TemplatePage } from './pages/TemplatePage'
 import { usePageScroll } from './hooks/usePageScroll'
-import { ariaVex } from './data/characters/aria-vex'
-import { yaelMox } from './data/characters/yael-mox'
-import { pallidWatcher } from './data/bestiary/pallid-watcher'
-import { greyfieldChoir } from './data/bestiary/greyfield-choir'
-import { hollowBlade } from './data/items/hollow-blade'
-import { spectralCaul } from './data/items/spectral-caul'
-import { sunkenRelay } from './data/locations/sunken-relay'
-import { outpostKaya } from './data/locations/outpost-kaya'
-import { wastingExpanse } from './data/maps/wasting-expanse'
-import { omicronCollapse } from './data/lore/omicron-collapse'
-import { thresholdAccords } from './data/lore/threshold-accords'
-import { sableThreshold } from './data/reports/sable-threshold'
-import { glassLitany } from './data/reports/glass-litany'
-import { tmp1Email } from './data/templates/tmp1-email'
-import { tmp2Profile } from './data/templates/tmp2-profile'
-import { tmp3COE } from './data/templates/tmp3-coe'
-import { tmp4Artifact } from './data/templates/tmp4-artifact'
-import { tmp5Survey } from './data/templates/tmp5-survey'
+import { REGISTRY, isDocVisible, type TickerVariant } from './data'
+import { useCartridgeStates } from './data/loadState'
 import styles from './styles/App.module.css'
-import type { TickerVariant } from './components/Ticker'
 
 const MuseumPage = lazy(() => import('./pages/MuseumPage').then(m => ({ default: m.MuseumPage })))
 
 interface PageEntry {
   path: string
   component: () => ReactElement
-  isPlaceholder?: boolean
-  ticker?: TickerVariant
+  ticker: TickerVariant
 }
 
+// `/redacted/067` sits between the wiki entries and `/credits`; the
+// registry's order preserves the legacy prev/next sweep.
+const REDACTED_INSERT_INDEX = REGISTRY.length
+
 const PAGES: PageEntry[] = [
-  { path: '/', component: SplashScreen },
-  { path: '/cover', component: CoverPage },
-  { path: '/blank', component: BlankPage },
-  { path: '/character/aria-vex', component: () => <TemplatePage {...ariaVex} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/character/yael-mox', component: () => <TemplatePage {...yaelMox} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/bestiary/pallid-watcher', component: () => <TemplatePage {...pallidWatcher} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/bestiary/greyfield-choir', component: () => <TemplatePage {...greyfieldChoir} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/item/hollow-blade', component: () => <TemplatePage {...hollowBlade} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/item/spectral-caul', component: () => <TemplatePage {...spectralCaul} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/location/sunken-relay', component: () => <TemplatePage {...sunkenRelay} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/location/outpost-kaya', component: () => <TemplatePage {...outpostKaya} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/map/wasting-expanse', component: () => <TemplatePage {...wastingExpanse} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/redacted/067', component: RedactedPage },
-  { path: '/lore/omicron-collapse', component: () => <TemplatePage {...omicronCollapse} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/lore/threshold-accords', component: () => <TemplatePage {...thresholdAccords} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/report/sable-threshold', component: () => <TemplatePage {...sableThreshold} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/report/glass-litany', component: () => <TemplatePage {...glassLitany} />, isPlaceholder: true, ticker: 'placeholder' },
-  { path: '/template/tmp1-email', component: () => <TemplatePage {...tmp1Email} />, isPlaceholder: true, ticker: 'template' },
-  { path: '/template/tmp2-profile', component: () => <TemplatePage {...tmp2Profile} />, isPlaceholder: true, ticker: 'template' },
-  { path: '/template/tmp3-coe', component: () => <TemplatePage {...tmp3COE} />, isPlaceholder: true, ticker: 'template' },
-  { path: '/template/tmp4-artifact', component: () => <TemplatePage {...tmp4Artifact} />, isPlaceholder: true, ticker: 'template' },
-  { path: '/template/tmp5-survey', component: () => <TemplatePage {...tmp5Survey} />, isPlaceholder: true, ticker: 'template' },
-  { path: '/credits', component: CreditsPage },
+  { path: '/', component: SplashScreen, ticker: 'none' },
+  { path: '/cover', component: CoverPage, ticker: 'none' },
+  { path: '/blank', component: BlankPage, ticker: 'none' },
+  ...REGISTRY.slice(0, REDACTED_INSERT_INDEX).map(({ data, route, ticker }) => ({
+    path: route,
+    component: () => <TemplatePage {...data} />,
+    ticker,
+  })),
+  { path: '/redacted/067', component: RedactedPage, ticker: 'none' },
+  { path: '/credits', component: CreditsPage, ticker: 'none' },
 ]
 
 export function App() {
@@ -251,16 +224,31 @@ export function App() {
     tearRef.current?.syncNavOpen(open)
   }, [])
 
+  const cartridgeStates = useCartridgeStates()
+
+  // Wiki entries gate on cartridge state. Chrome pages (no REGISTRY entry
+  // for the route) bypass the gate and stay always-known. An invisible
+  // route falls through to the existing RedactedPage 404 branch.
   const navigablePages = useMemo(
-    () => PAGES.filter(({ path }) => path !== '/'),
-    [],
+    () => PAGES.filter(({ path }) => {
+      if (path === '/') return false
+      const entry = REGISTRY.find(({ route }) => route === path)
+      return !entry || isDocVisible(entry, cartridgeStates)
+    }),
+    [cartridgeStates],
   )
 
   const navIndex = navigablePages.findIndex(({ path }) => path === pathname)
   const prevPath = navIndex > 0 ? navigablePages[navIndex - 1].path : undefined
   const nextPath = navIndex >= 0 && navIndex < navigablePages.length - 1 ? navigablePages[navIndex + 1].path : undefined
 
-  const isKnownPage = PAGES.some(({ path }) => path === pathname)
+  const isKnownPage = useMemo(() => {
+    const page = PAGES.find(({ path }) => path === pathname)
+    if (!page) return false
+    const entry = REGISTRY.find(({ route }) => route === page.path)
+    if (!entry) return true
+    return isDocVisible(entry, cartridgeStates)
+  }, [pathname, cartridgeStates])
 
   // Loading overlay sits above content while fonts are loading or the
   // page's PixelatedText bitmaps haven't finished their async render →
@@ -288,9 +276,15 @@ export function App() {
   ) : null
 
   if (pathname === '/museum') {
+    const museumFallback = (
+      <div className={styles.loadingOverlay}>
+        <span className={styles.loadingRing} role="img" aria-hidden="true" />
+        <span className={styles.loadingText}>Loading</span>
+      </div>
+    )
     return (
       <NavigateProvider value={navigate}>
-        <Suspense fallback={<div style={{ background: '#0a0a0a', position: 'fixed', inset: 0 }} />}>
+        <Suspense fallback={museumFallback}>
           <MuseumPage />
         </Suspense>
         {fullScreenOverlay}
@@ -310,8 +304,8 @@ export function App() {
   }
 
   const currentPage = PAGES.find(({ path }) => path === pathname)
-  const showTicker = currentPage?.isPlaceholder ?? false
-  const tickerVariant = currentPage?.ticker ?? 'placeholder'
+  const showTicker = currentPage?.ticker !== undefined && currentPage.ticker !== 'none'
+  const tickerVariant: TickerRenderVariant = currentPage?.ticker === 'template' ? 'template' : 'placeholder'
 
   return (
     <NavigateProvider value={navigate}>

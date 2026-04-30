@@ -4,10 +4,18 @@ export const wastingExpanse: ArtifactTemplate = {
   kind: 'artifact',
   pageNumber: '058',
   drift: 0.38,
+  slug: 'wasting-expanse',
+  filename: 'cartography-wasting-expanse.artifact',
+  filetype: 'ARTIFACT',
+  author: 'Cartographic Division',
+  sharedWith: ['Sector 9 — All Hands', 'Operations Planning'],
+  meta: [
+    { label: 'Class', value: 'IV' },
+    { label: 'Custody', value: 'Permanent Restricted' },
+  ],
   header: {
     classification: 'Regional Survey — Sector 7',
     title: 'The Wasting Expanse',
-    subtitle: 'Planetoid XR-881, northern hemisphere survey zone',
     tags: ['survey', 'hostile environment', 'void-active', 'restricted access'],
   },
   image: {
@@ -51,9 +59,31 @@ export const wastingExpanse: ArtifactTemplate = {
       ],
     },
   ],
-  statBlocks: [],
+  statBlocks: [
+    {
+      title: 'Region Profile',
+      stats: [
+        { label: 'Body', value: 'XR-881' },
+        { label: 'Hemisphere', value: 'Northern' },
+        { label: 'Span', value: '400 km' },
+        { label: 'Gravity', value: 'Low' },
+        { label: 'Terrain', value: 'Silicate desert' },
+        { label: 'Status', value: 'VOID-ACTIVE', variant: 'danger' },
+      ],
+    },
+    {
+      title: 'Access Protocol',
+      stats: [
+        { label: 'Class', value: 'IV', variant: 'danger' },
+        { label: 'Psi-Shield', value: 'Class III min.' },
+        { label: 'Provisions', value: '72 hr min.' },
+        { label: 'Solo Ops', value: 'PROHIBITED', variant: 'danger' },
+        { label: 'Order', value: '4419-7' },
+        { label: 'Markers', value: '6 (W1–W6)' },
+      ],
+    },
+  ],
   footer: {
-    media: ['text', 'image'],
     viewingHistory: [
       { who: 'Sector 9 Cmd', when: 'C4427 D192 · 06:00' },
       { who: 'Cartography Office', when: 'C4421 D310 · 14:00' },

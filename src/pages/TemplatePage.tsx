@@ -11,13 +11,14 @@ import { ClassNoticeBlock } from '../components/ClassNoticeBlock'
 import { DocFooter } from '../components/DocChrome'
 import { renderBlocks } from '../utils/renderBlocks'
 import { renderText } from '../utils/renderText'
+import { deriveMedia } from '../data'
 import shared from '../styles/shared.module.css'
 import styles from '../styles/TemplatePage.module.css'
 import type {
   ActionItem,
   ArtifactTemplate,
   COETemplate,
-  EmailTemplate,
+  CommTemplate,
   IncidentResponseAnalysis,
   ProfileChainEntry,
   ProfileTemplate,
@@ -27,16 +28,17 @@ import type {
   TemplateData,
 } from '../types'
 
-// One page, four kinds (email / HR / profile / COE). Each kind composes
-// the same primitives the rest of the wiki uses — EntryHeader, ChapterDivider,
-// MetaTable, Timeline, NumberedList, shared.prose + renderBlocks — so the
-// template chrome reads as part of the same archive, not a parallel one.
+// One page, five kinds (comm / profile / COE / artifact / survey). Each kind
+// composes the same primitives the rest of the wiki uses — EntryHeader,
+// ChapterDivider, MetaTable, Timeline, NumberedList, shared.prose +
+// renderBlocks — so the template chrome reads as part of the same archive,
+// not a parallel one.
 
 export function TemplatePage(props: TemplateData) {
   return (
     <PageFrame pageNumber={props.pageNumber}>
       <div className={shared.page}>
-        {props.kind === 'email' && <EmailDoc doc={props} />}
+        {props.kind === 'comm' && <CommDoc doc={props} />}
         {props.kind === 'profile' && <ProfileDoc doc={props} />}
         {props.kind === 'coe' && <COEDoc doc={props} />}
         {props.kind === 'artifact' && <ArtifactDoc doc={props} />}
@@ -49,22 +51,13 @@ export function TemplatePage(props: TemplateData) {
 
 // ── Per-kind compositions ──
 
-function EmailDoc({ doc }: { doc: EmailTemplate }) {
+function CommDoc({ doc }: { doc: CommTemplate }) {
+  // Subject / From / To / Cc / Sent / Variant are all surfaced in the
+  // header chrome (subject in meta[0], from in author, to+cc in sharedWith,
+  // sent in meta[1], variant in classification) — no body table needed.
   return (
     <>
-      <EntryHeader
-        classification={`Email · ${doc.variant}`}
-        title={doc.title}
-        subtitle={doc.subtitle}
-        drift={doc.drift}
-      />
-      <MetaTable rows={[
-        { label: 'Subject', value: doc.subject },
-        { label: 'From', value: doc.from },
-        { label: 'To', value: doc.to.join(', ') },
-        ...(doc.cc && doc.cc.length > 0 ? [{ label: 'Cc', value: doc.cc.join(', ') }] : []),
-        { label: 'Sent', value: doc.sent, variant: 'accent' as const },
-      ]} />
+      <EntryHeader {...chromeProps(doc)} classification={`Communication · ${doc.variant}`} title={doc.title} />
       <div className={shared.prose}>{renderBlocks(doc.body, shared)}</div>
     </>
   )
@@ -73,12 +66,7 @@ function EmailDoc({ doc }: { doc: EmailTemplate }) {
 function ProfileDoc({ doc }: { doc: ProfileTemplate }) {
   return (
     <>
-      <EntryHeader
-        classification="Personnel · Intranet Profile"
-        title={doc.name}
-        subtitle={`${doc.role} · ${doc.employeeNumber}`}
-        drift={doc.drift}
-      />
+      <EntryHeader {...chromeProps(doc)} classification="Personnel" title={doc.name} />
       <div className={styles.profileLayout}>
         <div className={styles.profilePortrait} aria-hidden="true">
           <span className="visually-hidden">Portrait unavailable</span>
@@ -131,12 +119,7 @@ function ServiceRecord({ entries }: { entries: ServiceEntry[] }) {
 function COEDoc({ doc }: { doc: COETemplate }) {
   return (
     <>
-      <EntryHeader
-        classification="Correction of Error"
-        title={doc.title}
-        subtitle={`${doc.incidentId} · ${doc.severity} · ${doc.status}`}
-        drift={doc.drift}
-      />
+      <EntryHeader {...chromeProps(doc)} classification="Correction of Error" title={doc.title} />
       <MetaTable rows={[
         { label: 'Incident', value: doc.incidentId },
         { label: 'Service', value: doc.service },
@@ -258,7 +241,7 @@ function statusClass(s: ActionItem['status']): string {
 function ArtifactDoc({ doc }: { doc: ArtifactTemplate }) {
   return (
     <>
-      <EntryHeader {...doc.header} drift={doc.drift} />
+      <EntryHeader {...chromeProps(doc)} {...doc.header} />
       {doc.image && (
         <div className={shared.fullBleed}>
           <ImagePanel {...doc.image} />
@@ -290,7 +273,7 @@ function ArtifactDoc({ doc }: { doc: ArtifactTemplate }) {
 function SurveyDoc({ doc }: { doc: SurveyTemplate }) {
   return (
     <>
-      <EntryHeader {...doc.header} drift={doc.drift} />
+      <EntryHeader {...chromeProps(doc)} {...doc.header} />
       {doc.image && (
         <div className={shared.fullBleed}>
           <ImagePanel {...doc.image} />
@@ -337,6 +320,23 @@ function SurveyDoc({ doc }: { doc: SurveyTemplate }) {
 
 // ── Helpers ──
 
+// Pulls the universal six-slot header chrome off any TemplateData. Each
+// per-kind sub-component spreads this onto EntryHeader, then overrides
+// the kind-specific classification/title/tags after. `media` is derived
+// from the document's actual content blocks (see deriveMedia) so the
+// indicator can't drift from what the doc carries.
+function chromeProps(doc: TemplateData) {
+  return {
+    filename: doc.filename,
+    filetype: doc.filetype,
+    author: doc.author,
+    sharedWith: doc.sharedWith,
+    meta: doc.meta,
+    media: deriveMedia(doc),
+    drift: doc.drift,
+  }
+}
+
 function renderSections(sections: Section[]) {
   return sections.flatMap((s, i) => [
     <ChapterDivider key={`d${i}`} label={s.heading} />,
@@ -366,8 +366,8 @@ function ChainTree({
         <>
           <div className={styles.chainBar} />
           <div className={styles.chainReports}>
-            {reports.map((r) => (
-              <div key={r.employeeNumber} className={styles.chainReportSlot}>
+            {reports.map((r, i) => (
+              <div key={`${r.employeeNumber}-${i}`} className={styles.chainReportSlot}>
                 <ChainNode entry={r} />
               </div>
             ))}

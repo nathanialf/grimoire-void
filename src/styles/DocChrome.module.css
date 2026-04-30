@@ -14,18 +14,3 @@
   padding-top: 0;
 }
 
-.mediaRow {
-  display: flex;
-  gap: var(--space-lg);
-  font-family: var(--font-mono);
-  color: var(--color-text-dim);
-}
-
-.mediaTag {
-  display: inline-flex;
-  align-items: center;
-}
-
-.mediaTagOn {
-  color: var(--color-accent);
-}

@@ -9,6 +9,15 @@ export const omicronCollapse: COETemplate = {
   kind: 'coe',
   pageNumber: '071',
   drift: 0.81,
+  slug: 'omicron-collapse',
+  filename: 'coe-c4418-omicron-collapse.coe',
+  filetype: 'COE',
+  author: 'Incident Review Board',
+  sharedWith: ['Sector 9 — All Hands', 'Incident Review Board', "Director's Office"],
+  meta: [
+    { label: 'Severity', value: 'SEV-1' },
+    { label: 'Status', value: 'CLOSED · ratified Threshold Accords as institutional response' },
+  ],
   incidentId: 'OP-OMICRON-4416',
   title: 'The Omicron Collapse',
   service: 'Meridian Compact · pre-Sector-9 era',
@@ -39,7 +48,7 @@ export const omicronCollapse: COETemplate = {
   customerImpact: [
     {
       type: 'paragraph',
-      text: 'Personnel: 21 killed or dissolved. The 22nd ([[Operative Yael Mox|/character/yael-mox]]) survived under unexplained circumstances and remains under permanent cognitive monitoring per Article 7 of [[the Threshold Accords|/lore/threshold-accords]].',
+      text: 'Personnel: 21 killed or dissolved. The 22nd ([[Operative Yael Mox|/personnel/yael-mox]]) survived under unexplained circumstances and remains under permanent cognitive monitoring per Article 7 of [[the Threshold Accords|/lore/threshold-accords]].',
     },
     {
       type: 'paragraph',
@@ -100,7 +109,7 @@ export const omicronCollapse: COETemplate = {
     },
     {
       timestamp: 'C4417 · Day 31',
-      event: 'Of the 11 personnel remaining at manifestation, 10 experience immediate and total cognitive dissolution. [[Operative Yael Mox|/character/yael-mox]] is the sole survivor and is later recovered from the station\'s exterior hull by automated drone, T+72h post-manifestation.',
+      event: 'Of the 11 personnel remaining at manifestation, 10 experience immediate and total cognitive dissolution. [[Operative Yael Mox|/personnel/yael-mox]] is the sole survivor and is later recovered from the station\'s exterior hull by automated drone, T+72h post-manifestation.',
     },
     {
       timestamp: 'C4417 · Day 47',
@@ -131,7 +140,7 @@ export const omicronCollapse: COETemplate = {
     },
     {
       type: 'paragraph',
-      text: 'The institution does not understand what was preserved by allowing [[Operative Mox|/character/yael-mox]] to leave. Her survival is the central anomaly of the Collapse. All future engagements must account for the possibility that the Watcher is not solely hostile — that its behavior includes a component of *selection*.',
+      text: 'The institution does not understand what was preserved by allowing [[Operative Mox|/personnel/yael-mox]] to leave. Her survival is the central anomaly of the Collapse. All future engagements must account for the possibility that the Watcher is not solely hostile — that its behavior includes a component of *selection*.',
     },
     {
       type: 'paragraph',
@@ -169,14 +178,14 @@ export const omicronCollapse: COETemplate = {
       status: 'Done',
     },
     {
-      description: 'Develop psi-shielding equipment rated for Class III void exposure. See [[the Spectral Caul|/item/spectral-caul]] development history.',
+      description: 'Develop psi-shielding equipment rated for Class III void exposure. See [[the Spectral Caul|/artifact/spectral-caul]] development history.',
       owner: 'Applied Psi-Defense',
       priority: 'P1',
       dueDate: 'C4419 D210',
       status: 'Done',
     },
     {
-      description: 'Maintain permanent cognitive monitoring of [[Operative Yael Mox|/character/yael-mox]] under Article 7. Twice-daily psionic baseline scans. Indefinite duration.',
+      description: 'Maintain permanent cognitive monitoring of [[Operative Yael Mox|/personnel/yael-mox]] under Article 7. Twice-daily psionic baseline scans. Indefinite duration.',
       owner: 'Cognitive Monitoring · L. Ashara',
       priority: 'P1',
       dueDate: 'Ongoing',
@@ -186,14 +195,13 @@ export const omicronCollapse: COETemplate = {
 
   relatedItems: [
     { id: 'TR-ACCORDS-4418', title: 'The Threshold Accords — institutional response', path: '/lore/threshold-accords' },
-    { id: 'OP-SABLE-4417', title: 'Operation Sable Threshold — failed return to Omicron-7', path: '/report/sable-threshold' },
+    { id: 'OP-SABLE-4417', title: 'Operation Sable Threshold — failed return to Omicron-7', path: '/coe/sable-threshold' },
     { id: 'A-013', title: 'Pallid Watcher — entity record', path: '/bestiary/pallid-watcher' },
     { id: 'A-058', title: 'The Wasting Expanse — permanent quarantine zone', path: '/map/wasting-expanse' },
-    { id: 'CHAR-MOX', title: 'Yael Mox — sole survivor', path: '/character/yael-mox' },
+    { id: 'CHAR-MOX', title: 'Yael Mox — sole survivor', path: '/personnel/yael-mox' },
   ],
 
   footer: {
-    media: ['text'],
     viewingHistory: [
       { who: 'Dir. H. Mire', when: 'C4427 D192 · 11:00' },
       { who: 'Dir. Sable (founding)', when: 'C4418 D310 · 14:00' },

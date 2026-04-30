@@ -1,5 +1,5 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { Scene } from '../museum/Scene'
 import { CarcosaScene, returnPortalZone } from '../museum/CarcosaScene'
 import { walkableRects, pedestalPositions, exitZone, carcosaDoorZone, EXIT_Z_POS } from '../museum/sceneConstants'
@@ -13,6 +13,7 @@ import { pixelSort } from '../museum/effects/pixelSortUniform'
 import { datamosh } from '../museum/effects/datamoshUniform'
 import { useNavigate } from '../hooks/useNavigate'
 import styles from '../styles/Museum.module.css'
+import appStyles from '../styles/App.module.css'
 
 const TOTAL_MS = 5 * 60 * 1000
 const DEREZ_MS = 1600         // pixel-sort ramp on timer expiry / ESC
@@ -50,6 +51,10 @@ export function MuseumPage() {
   // Brief flash overlay shown the instant a screenshot is taken so the
   // player has visual feedback that the capture fired.
   const [flashOpacity, setFlashOpacity] = useState(0)
+  // Holds the loading overlay over the canvas until the inner Suspense
+  // resolves (GLTF models loaded) and Three.js has painted at least one
+  // frame, so the player doesn't see a blank canvas during scene init.
+  const [sceneReady, setSceneReady] = useState(false)
 
   // Countdown loop (rAF-based) — keeps running through scene swaps so the
   // timer persists when the player is in Carcosa.
@@ -228,6 +233,7 @@ export function MuseumPage() {
             <CarcosaScene />
           </group>
           <Effects />
+          <FirstFrameProbe onReady={() => setSceneReady(true)} />
         </Suspense>
         <Controls
           input={inputRef}
@@ -298,6 +304,25 @@ export function MuseumPage() {
           zIndex: 21,
         }}
       />
+      {!sceneReady && (
+        <div className={appStyles.loadingOverlay}>
+          <span className={appStyles.loadingRing} role="img" aria-hidden="true" />
+          <span className={appStyles.loadingText}>Loading</span>
+        </div>
+      )}
     </div>
   )
+}
+
+// Sits inside the Canvas Suspense boundary. Once GLTF models have loaded
+// (Suspense resolves) and Three.js has painted at least one frame, fires
+// onReady so MuseumPage can drop the loading overlay covering the canvas.
+function FirstFrameProbe({ onReady }: { onReady: () => void }) {
+  const fired = useRef(false)
+  useFrame(() => {
+    if (fired.current) return
+    fired.current = true
+    requestAnimationFrame(() => onReady())
+  })
+  return null
 }

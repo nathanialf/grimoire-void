@@ -8,10 +8,18 @@ export const thresholdAccords: ArtifactTemplate = {
   kind: 'artifact',
   pageNumber: '075',
   drift: 0.12,
+  slug: 'threshold-accords',
+  filename: 'doctrine-threshold-accords-rev2.artifact',
+  filetype: 'ARTIFACT',
+  author: 'Doctrinal Records',
+  sharedWith: ['Sector 9 — All Hands'],
+  meta: [
+    { label: 'Class', value: 'Treaty' },
+    { label: 'Custody', value: 'Standing · Rev. 2' },
+  ],
   header: {
     classification: 'Archive Fragment — Ratified Treaty',
     title: 'The Threshold Accords',
-    subtitle: 'The legal architecture of humanity\'s response to the void',
     tags: ['archive', 'legal framework', 'political', 'sector 9 founding'],
   },
   sections: [
@@ -33,7 +41,7 @@ export const thresholdAccords: ArtifactTemplate = {
         },
         {
           type: 'paragraph',
-          text: "The political response was chaotic. The Directorate's initial instinct was suppression — the Collapse was classified at the highest level, and all surviving records were sealed. But suppression proved untenable. [[The Wasting Expanse|/map/wasting-expanse]] was expanding. Void-contamination readings were rising across the sector. And [[Operative Yael Mox|/character/yael-mox]], the sole survivor, was producing testimony that demanded institutional response.",
+          text: "The political response was chaotic. The Directorate's initial instinct was suppression — the Collapse was classified at the highest level, and all surviving records were sealed. But suppression proved untenable. [[The Wasting Expanse|/map/wasting-expanse]] was expanding. Void-contamination readings were rising across the sector. And [[Operative Yael Mox|/personnel/yael-mox]], the sole survivor, was producing testimony that demanded institutional response.",
         },
         {
           type: 'quote',
@@ -55,7 +63,7 @@ export const thresholdAccords: ArtifactTemplate = {
         },
         {
           type: 'paragraph',
-          text: "Article 3 — Classification Protocols: All void-related intelligence is classified at Omega level by default. Distribution is restricted to Sector 9 command staff and Directorate members with specific clearance. Unauthorized disclosure constitutes a capital offense under military tribunal jurisdiction. [[Operation Sable Threshold|/report/sable-threshold]]'s after-action report was filed under this protocol.",
+          text: "Article 3 — Classification Protocols: All void-related intelligence is classified at Omega level by default. Distribution is restricted to Sector 9 command staff and Directorate members with specific clearance. Unauthorized disclosure constitutes a capital offense under military tribunal jurisdiction. [[Operation Sable Threshold|/coe/sable-threshold]]'s after-action report was filed under this protocol.",
         },
         {
           type: 'paragraph',
@@ -63,11 +71,11 @@ export const thresholdAccords: ArtifactTemplate = {
         },
         {
           type: 'paragraph',
-          text: "Article 7 — Survivor Protocols: Personnel who survive direct void exposure are subject to mandatory cognitive monitoring for a minimum of twelve cycles. Monitoring includes twice-daily psionic baseline scans, restricted movement, and periodic debrief under cognitive protocol. [[Operative Mox|/character/yael-mox]]'s ongoing confinement is authorized under this article.",
+          text: "Article 7 — Survivor Protocols: Personnel who survive direct void exposure are subject to mandatory cognitive monitoring for a minimum of twelve cycles. Monitoring includes twice-daily psionic baseline scans, restricted movement, and periodic debrief under cognitive protocol. [[Operative Mox|/personnel/yael-mox]]'s ongoing confinement is authorized under this article.",
         },
         {
           type: 'paragraph',
-          text: 'Article 9 — Research Ethics: The use of void-derived materials in equipment development requires oversight committee approval. This provision was added after controversy surrounding the development of [[the Spectral Caul|/item/spectral-caul]], whose psi-shielding frequency was calibrated using neural tissue from void-exposure casualties.',
+          text: 'Article 9 — Research Ethics: The use of void-derived materials in equipment development requires oversight committee approval. This provision was added after controversy surrounding the development of [[the Spectral Caul|/artifact/spectral-caul]], whose psi-shielding frequency was calibrated using neural tissue from void-exposure casualties.',
         },
       ],
     },
@@ -110,7 +118,6 @@ export const thresholdAccords: ArtifactTemplate = {
     },
   ],
   footer: {
-    media: ['text'],
     viewingHistory: [
       { who: 'Dir. H. Mire', when: 'C4427 D192 · 09:30' },
       { who: 'Cpt. N. Solenne', when: 'C4420 D210 · 14:00' },

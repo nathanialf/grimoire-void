@@ -17,10 +17,33 @@ export interface ImageConfig {
   placeholderLabel?: string
 }
 
+// Inline document content. The block kinds are deliberately discriminated
+// so the renderer can dispatch on `type`, and so deriveMedia() (data/index)
+// can scan for image/audio/video presence and surface the right indicator
+// in the header chrome without anyone hand-curating the media array.
 export type ContentBlock =
   | { type: 'paragraph'; text: string }
   | { type: 'quote'; text: string; source: string }
   | { type: 'table'; caption?: string; columns: string[]; rows: string[][] }
+  | {
+      type: 'image'
+      src?: string
+      alt?: string
+      caption?: string
+      aspect?: 'tall' | 'wide' | 'square'
+      placeholderLabel?: string
+    }
+  | {
+      type: 'audio'
+      src: string
+      caption?: string
+    }
+  | {
+      type: 'video'
+      src: string
+      poster?: string
+      caption?: string
+    }
 
 export interface Section {
   heading: string
@@ -36,7 +59,6 @@ export interface ClassNotice {
 export interface EntryHeaderData {
   classification?: string
   title: string
-  subtitle?: string
   tags?: string[]
 }
 
@@ -77,25 +99,65 @@ export interface ViewingHistoryEntry {
   when: string
 }
 
+// Footer only carries the access log now. Media presence is derived from
+// the document's body content (see deriveMedia in src/data) rather than
+// hand-listed, so authors can't drift from what's actually in the doc.
 export interface TemplateFooter {
-  media: DocMedia[]
   viewingHistory: ViewingHistoryEntry[]
 }
 
-// Drift-score chrome field. Present on every template kind. Rendered as a
-// dim, unlabeled strip in the document's header chrome — the player sees a
-// number on every document and is never told what it means. Higher = more
-// drift in the reconstruction. Per drift.md: drift felt, not explicated.
-export interface ChromeMeta {
-  drift: number
+// One of the two trailing per-type metadata slots in the universal header
+// chrome. Spec (documents.md §"Header fields") locks the universal grid at
+// six slots; the four leading ones are filename / filetype / author /
+// sharedWith, the two trailing ones are these — author-defined per type.
+export interface HeaderMetaSlot {
+  label: string
+  value: string
 }
 
-export interface EmailTemplate extends ChromeMeta {
-  kind: 'email'
+// Optional museum-presence metadata. Drives the procedural cartridge image
+// (seed / palette / label overrides) and an optional glTF model that
+// replaces the procedural cart on the pedestal. A document being absent
+// from MUSEUM_PEDESTALS (sceneConstants.ts) means it has no pedestal at
+// all; this object only customizes how the cartridge looks when one is
+// assigned, or swaps the cart for a 3D model.
+export interface MuseumPresence {
+  cartridge?: {
+    seed?: number
+    paletteIndex?: number
+    label?: string
+  }
+  // glTF/GLB asset, public/-relative (e.g. '/models/hollow-blade.glb').
+  // Loaded lazily; the procedural cart shows during Suspense fallback.
+  model?: {
+    src: string
+    scale?: number
+    rotation?: [number, number, number]
+    yOffset?: number
+  }
+}
+
+// Universal document chrome. Present on every template kind via inheritance.
+// The six-slot header (filename / filetype / author / sharedWith / meta×2)
+// matches documents.md §"Header fields"; per-type body chrome layers on top
+// of this. `slug` is the unique kebab-case id and the registry key. `drift`
+// renders as the dim unlabeled chip on the header divider — see drift.md.
+export interface ChromeMeta {
+  slug: string
+  filename: string
+  filetype: string
+  author: string
+  sharedWith: string[]
+  meta: [HeaderMetaSlot, HeaderMetaSlot]
+  drift: number
+  museum?: MuseumPresence
+}
+
+export interface CommTemplate extends ChromeMeta {
+  kind: 'comm'
   pageNumber: string
   variant: '1:1' | 'group' | 'all-hands'
   title: string
-  subtitle?: string
   subject: string
   from: string
   to: string[]
@@ -221,7 +283,7 @@ export interface SurveyTemplate extends ChromeMeta, ReportData {
 }
 
 export type TemplateData =
-  | EmailTemplate
+  | CommTemplate
   | ProfileTemplate
   | COETemplate
   | ArtifactTemplate

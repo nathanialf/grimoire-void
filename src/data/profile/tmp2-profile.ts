@@ -7,7 +7,16 @@ export const tmp2Profile: ProfileTemplate = {
   kind: 'profile',
   pageNumber: 'TMP2',
   drift: 0.0,
-  name: '{Employee Full Name}',
+  slug: 'tmp2-profile',
+  filename: 'tmp2-profile.profile',
+  filetype: 'PROFILE',
+  author: 'Records Division',
+  sharedWith: ['Sector 9 — Personnel', 'Records'],
+  meta: [
+    { label: 'Department', value: '{Department · floor}' },
+    { label: 'Site', value: '{Sublevel / building / desk reference}' },
+  ],
+  name: '{Employee Name}',
   employeeNumber: '{A-NNNNN}',
   role: '{Role title}',
   department: '{Department · floor}',
@@ -39,7 +48,6 @@ export const tmp2Profile: ProfileTemplate = {
   ],
   sections: [],
   footer: {
-    media: ['text'],
     viewingHistory: [
       { who: '{Latest viewer}', when: '{Cycle / day / time}' },
       { who: '{Manager (last access)}', when: '{Cycle / day / time}' },

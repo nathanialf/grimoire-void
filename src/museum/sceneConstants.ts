@@ -1,22 +1,32 @@
 export const ROOM = { w: 24, d: 24, h: 5 }
 export const PEDESTAL_SIZE = 1
 
-// Artifact names — one per pedestal, drawn from the existing Grimoire
-// document set (characters, bestiary, items, locations, lore, maps, reports).
-export const ARTIFACT_NAMES = [
-  'ARIA VEX',
-  'THE PALLID WATCHER',
-  'THE HOLLOW BLADE',
-  'YAEL MOX',
-  'THE GREYFIELD CHOIR',
-  'THE SPECTRAL CAUL',
-  'OUTPOST KAYA',
-  'THE OMICRON COLLAPSE',
-  'THE WASTING EXPANSE',
-  'OPERATION SABLE THRESHOLD',
-  'THE SUNKEN RELAY',
-  'THE THRESHOLD ACCORDS',
-  'THE GLASS LITANY',
+// One slug per pedestal slot (16 total). null = bare empty pedestal — no
+// chip, voxels, ticker, or top light. Order matches `pedestalPositions`
+// below; reordering this array changes which pedestal a document occupies,
+// but the cartridge's appearance is slug-hashed (see hashSlug in data/index)
+// so the document's look is stable regardless of slot.
+//
+// To put a document on a pedestal, add its slug here. To make a document
+// ambient (wiki-only, no pedestal), leave it out of this array — being in
+// REGISTRY is unrelated to museum presence.
+export const MUSEUM_PEDESTALS: (string | null)[] = [
+  'aria-vex',
+  'pallid-watcher',
+  'hollow-blade',
+  'yael-mox',
+  'greyfield-choir',
+  'spectral-caul',
+  'outpost-kaya',
+  'omicron-collapse',
+  'wasting-expanse',
+  'sable-threshold',
+  'sunken-relay',
+  'threshold-accords',
+  'glass-litany',
+  null,
+  null,
+  null,
 ]
 
 // 4×4 floor grid (16 pedestals). Pedestals are inset from every wall and

@@ -7,10 +7,18 @@ export const tmp4Artifact: ArtifactTemplate = {
   kind: 'artifact',
   pageNumber: 'TMP4',
   drift: 0.0,
+  slug: 'tmp4-artifact',
+  filename: 'tmp4-artifact.artifact',
+  filetype: 'ARTIFACT',
+  author: 'Applied Psi-Defense',
+  sharedWith: ['Sector 9 — Field Operations', 'Issue Control'],
+  meta: [
+    { label: 'Class', value: '{Class}' },
+    { label: 'Custody', value: '{Custody}' },
+  ],
   header: {
     classification: '{Artifact classification — e.g. "Artifact — Void-Touched"}',
     title: '{Artifact name}',
-    subtitle: '{One-line subtitle — flavor or essential descriptor}',
     tags: ['{tag-1}', '{tag-2}', '{tag-3}'],
   },
   image: {
@@ -62,7 +70,6 @@ export const tmp4Artifact: ArtifactTemplate = {
     },
   ],
   footer: {
-    media: ['text', 'image'],
     viewingHistory: [
       { who: '{Latest viewer}', when: '{Cycle / day / time}' },
       { who: '{Prior viewer}', when: '{Cycle / day / time}' },

@@ -4,6 +4,15 @@ export const glassLitany: COETemplate = {
   kind: 'coe',
   pageNumber: '090',
   drift: 0.55,
+  slug: 'glass-litany',
+  filename: 'op-litany-4422.coe',
+  filetype: 'COE',
+  author: 'Incident Review Board',
+  sharedWith: ['Sector 9 — All Hands', 'Incident Review Board'],
+  meta: [
+    { label: 'Severity', value: 'SEV-2' },
+    { label: 'Status', value: 'CLOSED · Glass Flats observation continues with revised protocols' },
+  ],
   incidentId: 'OP-LITANY-4422',
   title: 'Operation Glass Litany',
   service: 'Sector 9 · Field Operations',
@@ -19,7 +28,7 @@ export const glassLitany: COETemplate = {
   issueSummary: [
     {
       type: 'paragraph',
-      text: 'On Cycle 4422.1, a four-operative fireteam designated LITANY was deployed to the Glass Flats region (W1) of [[the Wasting Expanse|/map/wasting-expanse]] to observe and document [[Greyfield Choir|/bestiary/greyfield-choir]] activity, assess sustained-operations viability, and field-test the Mark IV [[Spectral Caul|/item/spectral-caul]] under active void-contamination conditions.',
+      text: 'On Cycle 4422.1, a four-operative fireteam designated LITANY was deployed to the Glass Flats region (W1) of [[the Wasting Expanse|/map/wasting-expanse]] to observe and document [[Greyfield Choir|/bestiary/greyfield-choir]] activity, assess sustained-operations viability, and field-test the Mark IV [[Spectral Caul|/artifact/spectral-caul]] under active void-contamination conditions.',
     },
     {
       type: 'paragraph',
@@ -34,7 +43,7 @@ export const glassLitany: COETemplate = {
     },
     {
       type: 'paragraph',
-      text: 'Material: One Mark IV [[Spectral Caul|/item/spectral-caul]] unit lost with Operative Daro. Telemetry from Daro\'s Caul during close-range harmonic exposure would significantly advance grey-fugue onset analysis if recoverable.',
+      text: 'Material: One Mark IV [[Spectral Caul|/artifact/spectral-caul]] unit lost with Operative Daro. Telemetry from Daro\'s Caul during close-range harmonic exposure would significantly advance grey-fugue onset analysis if recoverable.',
     },
     {
       type: 'paragraph',
@@ -110,7 +119,7 @@ export const glassLitany: COETemplate = {
     },
     {
       type: 'paragraph',
-      text: 'The Mark IV [[Spectral Caul|/item/spectral-caul]] is effective at standard observation distances but does not protect against close-range (<20m) exposure to shifted harmonics. Caul ratings should be revised to specify both distance and harmonic-frequency operating envelopes.',
+      text: 'The Mark IV [[Spectral Caul|/artifact/spectral-caul]] is effective at standard observation distances but does not protect against close-range (<20m) exposure to shifted harmonics. Caul ratings should be revised to specify both distance and harmonic-frequency operating envelopes.',
     },
   ],
 
@@ -123,7 +132,7 @@ export const glassLitany: COETemplate = {
       status: 'In Progress',
     },
     {
-      description: 'Revise Mark IV [[Spectral Caul|/item/spectral-caul]] maintenance protocols. Mandatory Caul diagnostic at 8-hour intervals during active operations.',
+      description: 'Revise Mark IV [[Spectral Caul|/artifact/spectral-caul]] maintenance protocols. Mandatory Caul diagnostic at 8-hour intervals during active operations.',
       owner: 'Applied Psi-Defense',
       priority: 'P0',
       dueDate: 'C4423 D015',
@@ -160,14 +169,13 @@ export const glassLitany: COETemplate = {
   ],
 
   relatedItems: [
-    { id: 'OP-SABLE-4417', title: 'Operation Sable Threshold — predecessor SEV-1', path: '/report/sable-threshold' },
+    { id: 'OP-SABLE-4417', title: 'Operation Sable Threshold — predecessor SEV-1', path: '/coe/sable-threshold' },
     { id: 'A-016', title: 'Greyfield Choir — entity record', path: '/bestiary/greyfield-choir' },
-    { id: 'A-030', title: 'Spectral Caul — countermeasure', path: '/item/spectral-caul' },
+    { id: 'A-030', title: 'Spectral Caul — countermeasure', path: '/artifact/spectral-caul' },
     { id: 'A-048', title: 'Outpost Kaya — staging area', path: '/location/outpost-kaya' },
   ],
 
   footer: {
-    media: ['text'],
     viewingHistory: [
       { who: 'Dir. H. Mire', when: 'C4427 D196 · 11:30' },
       { who: 'Lt. Cmdr. O. Dray', when: 'C4422 D305 · 21:00' },

@@ -8,10 +8,18 @@ export const tmp5Survey: SurveyTemplate = {
   kind: 'survey',
   pageNumber: 'TMP5',
   drift: 0.0,
+  slug: 'tmp5-survey',
+  filename: 'tmp5-survey.survey',
+  filetype: 'SURVEY',
+  author: 'Survey Division',
+  sharedWith: ['Sector 9 — Operations Planning'],
+  meta: [
+    { label: 'Phase', value: '{Phase}' },
+    { label: 'Status', value: '{Status}' },
+  ],
   header: {
     classification: '{Survey classification — e.g. "Field Survey · Site Report"}',
-    title: '{Operation or site name}',
-    subtitle: '{Cycle / day · theater}',
+    title: '{Survey Name}',
   },
   image: {
     aspect: 'wide',
@@ -62,7 +70,6 @@ export const tmp5Survey: SurveyTemplate = {
     '{Recommendation 3 — number the items in priority order if priority is implied.}',
   ],
   footer: {
-    media: ['text', 'image'],
     viewingHistory: [
       { who: '{Latest viewer}', when: '{Cycle / day / time}' },
       { who: '{Survey lead (author)}', when: '{Cycle / day / time}' },

@@ -1,6 +1,5 @@
 import { ChapterDivider } from './ChapterDivider'
 import { MetaTable } from './MetaTable'
-import { PixelatedText } from './PixelatedText'
 import styles from '../styles/DocChrome.module.css'
 import type { TemplateFooter } from '../types'
 
@@ -16,34 +15,17 @@ export function DriftStrip({ drift }: { drift: number }) {
   )
 }
 
-// Shared document footer. One section ("Viewing History") containing the
-// inline media-toggle indicator above the access log.
+// Shared document footer. Just the access log — the media indicator
+// (text/image/audio/video presence) is rendered in the header chrome
+// alongside the rest of the document's metadata.
 export function DocFooter({ footer }: { footer: TemplateFooter }) {
-  const present = (m: 'text' | 'audio' | 'video' | 'image') =>
-    footer.media.includes(m)
   return (
     <>
       <ChapterDivider label="Viewing History" />
-      <div className={styles.mediaRow}>
-        <MediaTag label="text" on={present('text')} />
-        <MediaTag label="image" on={present('image')} />
-        <MediaTag label="audio" on={present('audio')} />
-        <MediaTag label="video" on={present('video')} />
-      </div>
       <MetaTable rows={footer.viewingHistory.map((v) => ({
         label: v.when,
         value: v.who,
       }))} />
     </>
-  )
-}
-
-function MediaTag({ label, on }: { label: string; on: boolean }) {
-  return (
-    <span className={`${styles.mediaTag} ${on ? styles.mediaTagOn : ''}`}>
-      <PixelatedText renderSize={7} letterSpacing={1.4} textTransform="uppercase">
-        {`${label} [${on ? 'X' : ' '}]`}
-      </PixelatedText>
-    </span>
   )
 }

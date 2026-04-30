@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import type { ContentBlock } from '../types'
+import { ImagePanel } from '../components/ImagePanel'
 import { renderText } from './renderText'
 
 export function renderBlocks(blocks: ContentBlock[], shared: Record<string, string>): ReactNode {
@@ -33,6 +34,35 @@ export function renderBlocks(blocks: ContentBlock[], shared: Record<string, stri
             ))}
           </tbody>
         </table>
+      )
+    }
+    if (block.type === 'image') {
+      return (
+        <div key={i} className={shared.inlineMedia}>
+          <ImagePanel
+            src={block.src}
+            alt={block.alt}
+            caption={block.caption}
+            aspect={block.aspect}
+            placeholderLabel={block.placeholderLabel}
+          />
+        </div>
+      )
+    }
+    if (block.type === 'audio') {
+      return (
+        <figure key={i} className={shared.inlineMedia}>
+          <audio className={shared.audio} controls preload="none" src={block.src} />
+          {block.caption && <figcaption className={shared.mediaCaption}>{block.caption}</figcaption>}
+        </figure>
+      )
+    }
+    if (block.type === 'video') {
+      return (
+        <figure key={i} className={shared.inlineMedia}>
+          <video className={shared.video} controls preload="none" src={block.src} poster={block.poster} />
+          {block.caption && <figcaption className={shared.mediaCaption}>{block.caption}</figcaption>}
+        </figure>
       )
     }
     return <p key={i}>{renderText(block.text)}</p>

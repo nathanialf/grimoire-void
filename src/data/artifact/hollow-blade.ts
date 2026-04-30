@@ -4,10 +4,18 @@ export const hollowBlade: ArtifactTemplate = {
   kind: 'artifact',
   pageNumber: '024',
   drift: 0.47,
+  slug: 'hollow-blade',
+  filename: 'arms-hollow-blade-mk-iii.artifact',
+  filetype: 'ARTIFACT',
+  author: 'Applied Psi-Defense',
+  sharedWith: ['Sector 9 — Field Operations', 'Issue Control'],
+  meta: [
+    { label: 'Class', value: 'V (Restricted)' },
+    { label: 'Custody', value: 'Lost · Wasting Expanse' },
+  ],
   header: {
     classification: 'Artifact — Void-Touched',
     title: 'The Hollow Blade',
-    subtitle: 'A weapon that remembers what it has unmade',
     tags: ['artifact', 'cursed', 'void-forged', 'class-v restricted'],
   },
   image: {
@@ -38,11 +46,11 @@ export const hollowBlade: ArtifactTemplate = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'Recovery required three attempts. The first two teams reported spatial disorientation upon approaching the artifact, with one operative experiencing a 72-hour amnestic episode. The successful third extraction was performed by Operative [[Aria Vex|/character/aria-vex]], who reported no adverse effects beyond mild tinnitus lasting approximately six hours.',
+          text: 'Recovery required three attempts. The first two teams reported spatial disorientation upon approaching the artifact, with one operative experiencing a 72-hour amnestic episode. The successful third extraction was performed by Operative [[Aria Vex|/personnel/aria-vex]], who reported no adverse effects beyond mild tinnitus lasting approximately six hours.',
         },
         {
           type: 'paragraph',
-          text: 'The blade is currently held in Sector 9 deep storage, Vault 11-C. Access requires Omega-level clearance and dual authorization from the Meridian Compact oversight committee. Removal for field use is permitted only under [[Protocol Sable|/report/sable-threshold]].',
+          text: 'The blade is currently held in Sector 9 deep storage, Vault 11-C. Access requires Omega-level clearance and dual authorization from the Meridian Compact oversight committee. Removal for field use is permitted only under [[Protocol Sable|/coe/sable-threshold]].',
         },
       ],
     },
@@ -72,7 +80,6 @@ export const hollowBlade: ArtifactTemplate = {
     },
   ],
   footer: {
-    media: ['text', 'image'],
     viewingHistory: [
       { who: 'Sector 9 Cmd', when: 'C4427 D192 · 14:30' },
       { who: 'A. Vex (last handler)', when: 'C4417 D085 · 04:52' },

@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PixelatedHeading } from './PixelatedHeading';
 import { PixelatedText } from './PixelatedText';
+import { REGISTRY, isDocVisible, titleOf } from '../data';
+import { useCartridgeStates } from '../data/loadState';
+import { Rings } from './Rings';
 import styles from '../styles/Navigation.module.css';
 
 interface NavEntry {
@@ -10,30 +13,28 @@ interface NavEntry {
   redacted?: boolean;
 }
 
-const entries: NavEntry[] = [
+// Hand-curated entries: chrome pages and the redacted slot. Wiki entries
+// come from REGISTRY and are spliced in below \u2014 adding/removing/renaming
+// a document only needs to touch its data file, not this list.
+const STATIC_ENTRIES: NavEntry[] = [
   { label: 'Cover', to: '/cover', pageNumber: '001' },
   { label: '<UNTITLED>', to: '/blank', pageNumber: '002' },
-  { label: 'Aria Vex', to: '/character/aria-vex', pageNumber: '007' },
-  { label: 'Yael Mox', to: '/character/yael-mox', pageNumber: '010' },
-  { label: 'The Pallid Watcher', to: '/bestiary/pallid-watcher', pageNumber: '013' },
-  { label: 'The Greyfield Choir', to: '/bestiary/greyfield-choir', pageNumber: '016' },
-  { label: 'The Hollow Blade', to: '/item/hollow-blade', pageNumber: '024' },
-  { label: 'The Spectral Caul', to: '/item/spectral-caul', pageNumber: '030' },
-  { label: 'The Sunken Relay', to: '/location/sunken-relay', pageNumber: '042' },
-  { label: 'Outpost Kaya', to: '/location/outpost-kaya', pageNumber: '048' },
-  { label: 'The Wasting Expanse', to: '/map/wasting-expanse', pageNumber: '058' },
-  { label: 'The Omicron Collapse', to: '/lore/omicron-collapse', pageNumber: '071' },
-  { label: 'The Threshold Accords', to: '/lore/threshold-accords', pageNumber: '075' },
-  { label: 'Operation Sable Threshold', to: '/report/sable-threshold', pageNumber: '085' },
-  { label: 'Operation Glass Litany', to: '/report/glass-litany', pageNumber: '090' },
   { label: '\u2588\u2588\u2588\u2588\u2588\u2588 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588', to: '/redacted/067', pageNumber: '067', redacted: true },
-  { label: 'Email 1:1', to: '/template/tmp1-email', pageNumber: 'TMP1' },
-  { label: 'Profile', to: '/template/tmp2-profile', pageNumber: 'TMP2' },
-  { label: 'COE', to: '/template/tmp3-coe', pageNumber: 'TMP3' },
-  { label: 'Artifact', to: '/template/tmp4-artifact', pageNumber: 'TMP4' },
-  { label: 'Survey', to: '/template/tmp5-survey', pageNumber: 'TMP5' },
   { label: 'Credits', to: '/credits', pageNumber: '999' },
-].sort((a, b) => a.pageNumber.localeCompare(b.pageNumber));
+];
+
+function buildEntries(states: Record<string, import('../data/loadState').CartridgeState>): NavEntry[] {
+  const wikiEntries: NavEntry[] = REGISTRY
+    .filter((e) => isDocVisible(e, states))
+    .map(({ data, route }) => ({
+      label: titleOf(data),
+      to: route,
+      pageNumber: data.pageNumber,
+    }));
+  return [...STATIC_ENTRIES, ...wikiEntries].sort((a, b) =>
+    a.pageNumber.localeCompare(b.pageNumber),
+  );
+}
 
 interface NavigationProps {
   onToggle?: (open: boolean) => void;
@@ -92,6 +93,8 @@ function NavLink({ entry, pathname, navigate, close }: { entry: NavEntry; pathna
 
 export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
   const [open, setOpen] = useState(false);
+  const states = useCartridgeStates();
+  const entries = useMemo(() => buildEntries(states), [states]);
 
   const toggle = (next: boolean) => {
     setOpen(next);
@@ -147,7 +150,7 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
           <span className="visually-hidden">0.2 // classified</span>
           <span className={styles.footerInner}>
             <span className={`${styles.footerLogo} ca-fx`} role="img" aria-hidden="true">
-              <span className={styles.footerLogoMask} />
+              <Rings className={styles.footerLogoSvg} />
             </span>
             <PixelatedText renderSize={7} letterSpacing={0.8}>0.2 // classified</PixelatedText>
           </span>

@@ -4,10 +4,18 @@ export const spectralCaul: ArtifactTemplate = {
   kind: 'artifact',
   pageNumber: '030',
   drift: 0.22,
+  slug: 'spectral-caul',
+  filename: 'defense-spectral-caul-mk-vii.artifact',
+  filetype: 'ARTIFACT',
+  author: 'Applied Psi-Defense',
+  sharedWith: ['Sector 9 — Field Operations', 'Issue Control'],
+  meta: [
+    { label: 'Class', value: 'III' },
+    { label: 'Custody', value: 'Active Service' },
+  ],
   header: {
     classification: 'Standard Issue — Psi-Shielding',
     title: 'The Spectral Caul',
-    subtitle: 'See clearly. Think clearly. Do not ask what it is made of.',
     tags: ['equipment', 'psi-shielding', 'sector 9 issue', 'class-iii rated'],
   },
   image: {
@@ -21,7 +29,7 @@ export const spectralCaul: ArtifactTemplate = {
       blocks: [
         {
           type: 'paragraph',
-          text: "The Spectral Caul is a psi-shielding headpiece issued to all Sector 9 deep reconnaissance operatives rated for Class III void exposure or above. It is the primary piece of protective equipment carried by [[Aria Vex|/character/aria-vex]] and was standard kit for all members of the [[Operation Sable Threshold|/report/sable-threshold]] fireteam. The device functions by generating a low-amplitude counter-resonance field around the wearer's cerebral cortex, dampening the entropic psionic frequencies emitted by void-born entities.",
+          text: "The Spectral Caul is a psi-shielding headpiece issued to all Sector 9 deep reconnaissance operatives rated for Class III void exposure or above. It is the primary piece of protective equipment carried by [[Aria Vex|/personnel/aria-vex]] and was standard kit for all members of the [[Operation Sable Threshold|/coe/sable-threshold]] fireteam. The device functions by generating a low-amplitude counter-resonance field around the wearer's cerebral cortex, dampening the entropic psionic frequencies emitted by void-born entities.",
         },
         {
           type: 'paragraph',
@@ -51,7 +59,7 @@ export const spectralCaul: ArtifactTemplate = {
         },
         {
           type: 'paragraph',
-          text: "Current Mark IV Cauls are manufactured at the Meridian Compact's secure fabrication facility on Station Vantage. Each unit requires approximately 40 hours of calibration and is keyed to its assigned operative's neural signature. The Caul cannot be shared between personnel without a full recalibration cycle. [[Operation Glass Litany|/report/glass-litany]] field teams were among the first to deploy the Mark IV revision in active void-contaminated terrain.",
+          text: "Current Mark IV Cauls are manufactured at the Meridian Compact's secure fabrication facility on Station Vantage. Each unit requires approximately 40 hours of calibration and is keyed to its assigned operative's neural signature. The Caul cannot be shared between personnel without a full recalibration cycle. [[Operation Glass Litany|/coe/glass-litany]] field teams were among the first to deploy the Mark IV revision in active void-contaminated terrain.",
         },
       ],
     },
@@ -81,7 +89,6 @@ export const spectralCaul: ArtifactTemplate = {
     },
   ],
   footer: {
-    media: ['text', 'image'],
     viewingHistory: [
       { who: 'Applied Psi-Defense', when: 'C4427 D180 · 11:00' },
       { who: 'A. Vex (issued unit)', when: 'C4427 D175 · 09:30' },

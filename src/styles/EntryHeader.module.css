@@ -1,5 +1,5 @@
 .header {
-  margin-bottom: var(--space-lg);
+  margin-bottom: 0;
 }
 
 .classification {
@@ -8,36 +8,36 @@
 }
 
 .title {
-  margin-bottom: var(--space-sm);
-}
-
-.subtitle {
   margin-bottom: var(--space-md);
 }
 
-.tags {
-  display: flex;
-  gap: var(--space-sm);
-  flex-wrap: wrap;
+/* Header metadata renders as plaintext lines — `label: value` per row,
+   no border, no inset, no column alignment. Just monospace prose. */
+.metaBlock {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-bottom: var(--space-md);
 }
 
-.tag {
-  color: var(--color-accent);
-  opacity: 0.7;
-  border: var(--border-width) solid var(--color-border);
-  padding: var(--space-xs) var(--space-sm);
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.row {
+  display: block;
+}
+
+.rowLabel {
+  color: var(--color-text-dim);
+  letter-spacing: 0.08em;
+  margin-right: 0.5ch;
+}
+
+.rowValue {
+  color: var(--color-text);
+  overflow-wrap: anywhere;
 }
 
 .divider {
   width: 100%;
-  margin-top: var(--space-md);
+  margin-top: var(--space-sm);
   display: flex;
   align-items: center;
   gap: 0;

@@ -4,10 +4,18 @@ export const greyfieldChoir: ArtifactTemplate = {
   kind: 'artifact',
   pageNumber: '016',
   drift: 0.51,
+  slug: 'greyfield-choir',
+  filename: 'bestiary-c3-greyfield-choir.artifact',
+  filetype: 'ARTIFACT',
+  author: 'Bestiary Division',
+  sharedWith: ['Sector 9 — All Hands'],
+  meta: [
+    { label: 'Class', value: 'III' },
+    { label: 'Custody', value: 'Observed · Wasting Expanse' },
+  ],
   header: {
     classification: 'Hostile Entity — Class II (Swarm)',
     title: 'The Greyfield Choir',
-    subtitle: 'They move together. They sing together. They are not together.',
     tags: ['void-born', 'swarm-class', 'subsonic', 'recurring threat'],
   },
   image: {
@@ -38,7 +46,7 @@ export const greyfieldChoir: ArtifactTemplate = {
         },
         {
           type: 'paragraph',
-          text: "Engagements have proven partially effective. Kinetic weapons disperse individual figures, which collapse into an ash-like particulate that sublimates within seconds. However, the swarm reconstitutes to full count within 4–8 hours, typically in a different location. [[Operation Glass Litany|/report/glass-litany]] was the first sustained attempt to study the Choir's reconstitution cycle.",
+          text: "Engagements have proven partially effective. Kinetic weapons disperse individual figures, which collapse into an ash-like particulate that sublimates within seconds. However, the swarm reconstitutes to full count within 4–8 hours, typically in a different location. [[Operation Glass Litany|/coe/glass-litany]] was the first sustained attempt to study the Choir's reconstitution cycle.",
         },
       ],
     },
@@ -82,7 +90,6 @@ export const greyfieldChoir: ArtifactTemplate = {
     },
   ],
   footer: {
-    media: ['text', 'image'],
     viewingHistory: [
       { who: 'Expanse Perimeter Watch', when: 'C4427 D195 · 06:30' },
       { who: 'C. Wren', when: 'C4427 D188 · 22:14' },

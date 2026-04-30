@@ -4,10 +4,18 @@ export const outpostKaya: SurveyTemplate = {
   kind: 'survey',
   pageNumber: '048',
   drift: 0.43,
+  slug: 'outpost-kaya',
+  filename: 'survey-outpost-kaya-c4426.survey',
+  filetype: 'SURVEY',
+  author: 'Survey Division',
+  sharedWith: ['Sector 9 — Operations Planning'],
+  meta: [
+    { label: 'Phase', value: 'Active · Monitoring' },
+    { label: 'Status', value: 'Standing' },
+  ],
   header: {
     classification: 'Abandoned Installation — Hazard Level: Moderate',
     title: 'Outpost Kaya',
-    subtitle: 'Forward operating base, Wasting Expanse sector W5. Evacuated Cycle 4418.',
     tags: ['abandoned', 'scavenger activity', 'unauthorized occupation', 'expanse perimeter'],
   },
   image: {
@@ -89,7 +97,6 @@ export const outpostKaya: SurveyTemplate = {
   casualties: [],
   recommendations: [],
   footer: {
-    media: ['text', 'image'],
     viewingHistory: [
       { who: 'Expanse Patrol', when: 'C4427 D194 · 18:42' },
       { who: 'E. Tan (drone op)', when: 'C4422 D178 · 03:00' },

@@ -9,8 +9,17 @@ export const tmp3COE: COETemplate = {
   kind: 'coe',
   pageNumber: 'TMP3',
   drift: 0.0,
+  slug: 'tmp3-coe',
+  filename: 'tmp3-coe.coe',
+  filetype: 'COE',
+  author: 'Incident Review Board',
+  sharedWith: ['Sector 9 — All Hands', 'Incident Review Board'],
+  meta: [
+    { label: 'Severity', value: 'SEV-1' },
+    { label: 'Status', value: '{Phase 1 Mitigation Complete · Action Items In Progress}' },
+  ],
   incidentId: '{COE-XXXX-NNN}',
-  title: 'COE Name',
+  title: '{COE Name}',
   service: '{Affected service / team}',
   status: '{Phase 1 Mitigation Complete · Action Items In Progress}',
   severity: 'SEV-1',
@@ -126,7 +135,6 @@ export const tmp3COE: COETemplate = {
   ],
 
   footer: {
-    media: ['text'],
     viewingHistory: [
       { who: '{Director or VP review}', when: '{Cycle / day / time}' },
       { who: '{Author}', when: '{Cycle / day / time}' },

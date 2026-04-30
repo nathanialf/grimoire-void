@@ -4,6 +4,15 @@ export const yaelMox: ProfileTemplate = {
   kind: 'profile',
   pageNumber: '010',
   drift: 0.58,
+  slug: 'yael-mox',
+  filename: 'mox-y-s9-1809.profile',
+  filetype: 'PROFILE',
+  author: 'Records Division',
+  sharedWith: ['Sector 9 — Personnel', 'Records', 'Cognitive Monitoring'],
+  meta: [
+    { label: 'Department', value: 'Sector 9 · Cognitive Monitoring' },
+    { label: 'Site', value: 'Meridian Compact Medical Research · Restricted Wing · Cell 4' },
+  ],
   name: 'Yael Mox',
   employeeNumber: 'S9-1809',
   role: 'Field Operative · Class III (Suspended)',
@@ -21,7 +30,7 @@ export const yaelMox: ProfileTemplate = {
     { date: 'Cycle 4416', entry: 'Promoted to Class III. Fourteen deep-field missions logged without incident.' },
     { date: 'Cycle 4418', entry: 'Sole survivor of the [[Omicron Collapse|/lore/omicron-collapse]]. Recovered from Relay Station Omicron-7 hull, T+72h.' },
     { date: 'Cycle 4418', entry: 'Field status suspended. Cognitive monitoring initiated under Article 7 of [[the Threshold Accords|/lore/threshold-accords]].' },
-    { date: 'Cycle 4419', entry: 'Field logs canonized as primary source for [[Operation Sable Threshold|/report/sable-threshold]] threat assessment.' },
+    { date: 'Cycle 4419', entry: 'Field logs canonized as primary source for [[Operation Sable Threshold|/coe/sable-threshold]] threat assessment.' },
     { date: 'Cycle 4421', entry: 'Cognitive dampener implanted. Efficacy uncertain.' },
     { date: 'Cycle 4422', entry: 'Clearance revoked. Personal effects removed to secure storage.' },
     { date: 'Cycle 4427', entry: 'Active monitoring. Twice-daily psionic baseline scans ongoing.' },
@@ -46,7 +55,7 @@ export const yaelMox: ProfileTemplate = {
     },
     {
       type: 'paragraph',
-      text: 'Mox\'s field logs from the Collapse — recorded on a personal device recovered with her — form the backbone of [[Operation Sable Threshold|/report/sable-threshold]]\'s threat assessment. Her descriptions of the Watcher\'s behavior remain unmatched in their detail and coherence, a fact that has itself become a source of concern: no other void-exposed individual has retained such clarity of recall. Medical staff note that Mox can describe the entity\'s movements with a precision that suggests ongoing perceptual contact, though all instruments register her psionic signature as baseline.',
+      text: 'Mox\'s field logs from the Collapse — recorded on a personal device recovered with her — form the backbone of [[Operation Sable Threshold|/coe/sable-threshold]]\'s threat assessment. Her descriptions of the Watcher\'s behavior remain unmatched in their detail and coherence, a fact that has itself become a source of concern: no other void-exposed individual has retained such clarity of recall. Medical staff note that Mox can describe the entity\'s movements with a precision that suggests ongoing perceptual contact, though all instruments register her psionic signature as baseline.',
     },
     {
       type: 'paragraph',
@@ -74,7 +83,6 @@ export const yaelMox: ProfileTemplate = {
   ],
   sections: [],
   footer: {
-    media: ['text'],
     viewingHistory: [
       { who: 'L. Ashara', when: 'C4427 D196 · 18:42' },
       { who: 'N. Solenne', when: 'C4427 D188 · 11:02' },

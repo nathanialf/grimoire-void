@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
 import {
   AdditiveBlending,
   BackSide,
@@ -21,13 +21,16 @@ import {
 } from 'three'
 import { useFrame } from '@react-three/fiber'
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js'
+import { useGLTF } from '@react-three/drei'
 import {
   ROOM,
   PEDESTAL_SIZE,
   pedestalPositions,
   EXIT_Z_POS,
-  ARTIFACT_NAMES,
+  MUSEUM_PEDESTALS,
 } from './sceneConstants'
+import { REGISTRY_BY_SLUG, hashSlug, titleOf, type DocEntry } from '../data'
+import { useCartridgeStates } from '../data/loadState'
 import {
   DOOR_W,
   DOOR_H,
@@ -644,9 +647,14 @@ function ChipPanel({ seed, name }: { seed: number; name: string }) {
   )
 }
 
-function VoxelPedestal({ x, z, seed, name, topGlow }: { x: number; z: number; seed: number; name: string | undefined; topGlow: CanvasTexture }) {
+function VoxelPedestal({ x, z, entry, topGlow }: { x: number; z: number; entry: DocEntry | undefined; topGlow: CanvasTexture }) {
   const emissiveIntensity = pedestalEmissiveIntensity(x, z)
-  if (!name) {
+  // 'absent' renders the same bare pedestal as an empty slot (no entry).
+  // 'partial' and 'complete' both render the cartridge for now — visual
+  // distinction (desaturated / glitched material for partial) is deferred.
+  const states = useCartridgeStates()
+  const state = entry ? (states[entry.data.slug] ?? 'complete') : 'absent'
+  if (!entry || state === 'absent') {
     return (
       <group position={[x, 0, z]}>
         <mesh position={[0, PEDESTAL_SIZE / 2, 0]}>
@@ -662,6 +670,12 @@ function VoxelPedestal({ x, z, seed, name, topGlow }: { x: number; z: number; se
       </group>
     )
   }
+  // Slug-hashed seed makes the cartridge appearance stable per-document
+  // regardless of which pedestal slot the doc lands in. An explicit
+  // `museum.cartridge.seed` on the doc takes precedence.
+  const seed = entry.data.museum?.cartridge?.seed ?? hashSlug(entry.data.slug)
+  const name = (entry.data.museum?.cartridge?.label ?? titleOf(entry.data)).toUpperCase()
+  const modelSrc = entry.data.museum?.model?.src
   const opts: ArtifactOpts = { ombre: true, cellsX: 44, pixel: 18 }
   const pattern = useMemo(() => computeArtifactPattern(seed, opts), [seed])
   const cellSize = PEDESTAL_SIZE / pattern.cellsX
@@ -852,7 +866,18 @@ function VoxelPedestal({ x, z, seed, name, topGlow }: { x: number; z: number; se
         <primitive object={accentMaterial} attach="material" />
       </instancedMesh>
       <PedestalTicker />
-      <ChipPanel seed={seed} name={name} />
+      {modelSrc ? (
+        <Suspense fallback={<ChipPanel seed={seed} name={name} />}>
+          <PedestalModel
+            src={modelSrc}
+            scale={entry.data.museum?.model?.scale}
+            rotation={entry.data.museum?.model?.rotation}
+            yOffset={entry.data.museum?.model?.yOffset}
+          />
+        </Suspense>
+      ) : (
+        <ChipPanel seed={seed} name={name} />
+      )}
       {/* Soft warm glow on top of the pedestal — radial gradient, additive,
           so it reads as light dissipating outward from the surface. */}
       <mesh
@@ -881,6 +906,33 @@ function VoxelPedestal({ x, z, seed, name, topGlow }: { x: number; z: number; se
         color="#fff4dd"
       />
     </group>
+  )
+}
+
+// Renders an optional glTF/GLB model on top of the pedestal in place of
+// the procedural cartridge. Lazy-loads via drei's useGLTF (Suspense at the
+// call site falls back to ChipPanel during load). Position defaults sit
+// just above the pedestal's top face; per-doc model overrides tune scale,
+// rotation, and y-offset.
+function PedestalModel({
+  src,
+  scale,
+  rotation,
+  yOffset,
+}: {
+  src: string
+  scale?: number
+  rotation?: [number, number, number]
+  yOffset?: number
+}) {
+  const { scene } = useGLTF(src) as { scene: Group }
+  return (
+    <primitive
+      object={scene}
+      position={[0, PEDESTAL_SIZE + (yOffset ?? 0.4), 0]}
+      rotation={rotation}
+      scale={scale ?? 1}
+    />
   )
 }
 
@@ -1219,9 +1271,11 @@ export function Scene() {
 
       <MuseumRoom ceilingLightMap={ceilingLightmap} floorLightMap={floorLightmap} wallLightMap={wallLightmap} />
 
-      {pedestalPositions.map(([x, z], i) => (
-        <VoxelPedestal key={i} x={x} z={z} seed={i} name={ARTIFACT_NAMES[i]} topGlow={pedestalGlow} />
-      ))}
+      {pedestalPositions.map(([x, z], i) => {
+        const slug = MUSEUM_PEDESTALS[i]
+        const entry = slug ? REGISTRY_BY_SLUG.get(slug) : undefined
+        return <VoxelPedestal key={i} x={x} z={z} entry={entry} topGlow={pedestalGlow} />
+      })}
 
 
       <ExitDoor />

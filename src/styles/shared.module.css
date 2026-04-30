@@ -2,7 +2,7 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-md);
 }
 
 /* ── Prose text ── */
@@ -65,6 +65,31 @@
 /* ── Full-bleed image wrapper ── */
 .fullBleed {
   margin: 0 calc(-1 * var(--space-lg));
+}
+
+/* ── Inline media (image / audio / video blocks inside .prose) ── */
+.inlineMedia {
+  margin: var(--space-md) 0;
+}
+
+.audio,
+.video {
+  width: 100%;
+  display: block;
+}
+
+.video {
+  background: var(--color-bg-inset);
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+.mediaCaption {
+  margin-top: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-text-dim);
+  letter-spacing: 0.06em;
 }
 
 /* ── Inline data table ── */

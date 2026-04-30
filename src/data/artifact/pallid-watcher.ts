@@ -4,10 +4,18 @@ export const pallidWatcher: ArtifactTemplate = {
   kind: 'artifact',
   pageNumber: '013',
   drift: 0.74,
+  slug: 'pallid-watcher',
+  filename: 'bestiary-c4-pallid-watcher.artifact',
+  filetype: 'ARTIFACT',
+  author: 'Bestiary Division',
+  sharedWith: ['Sector 9 — All Hands'],
+  meta: [
+    { label: 'Class', value: 'IV (Confirmed)' },
+    { label: 'Custody', value: 'Catalogued · No Specimen' },
+  ],
   header: {
     classification: 'Hostile Entity — Class IV',
     title: 'The Pallid Watcher',
-    subtitle: 'That which observes from the threshold',
     tags: ['void-born', 'psionic', 'apex predator', 'non-euclidean'],
   },
   image: {
@@ -64,7 +72,6 @@ export const pallidWatcher: ArtifactTemplate = {
     },
   ],
   footer: {
-    media: ['text', 'image'],
     viewingHistory: [
       { who: 'Sector 9 Threat Index', when: 'C4427 D188 · 09:00' },
       { who: 'L. Ashara', when: 'C4427 D170 · 14:30' },

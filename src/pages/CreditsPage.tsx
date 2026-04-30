@@ -21,7 +21,15 @@ export function CreditsPage() {
         <EntryHeader
           classification="End Matter"
           title="Credits"
-          subtitle="Hands that shaped the archive"
+          filename="credits.intranet"
+          filetype="CREDITS"
+          author="archive.intranet"
+          sharedWith={['All Personnel']}
+          meta={[
+            { label: 'Section', value: 'End Matter' },
+            { label: 'Revision', value: 'Final' },
+          ]}
+          drift={0}
         />
 
         <ChapterDivider label="Team" />

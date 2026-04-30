@@ -31,6 +31,16 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: none;
+  /* Hide the scrollbar visually but keep the list scrollable. Firefox
+     uses `scrollbar-width`; WebKit/Chromium needs the ::-webkit-scrollbar
+     pseudo-element zeroed. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .listInner {
@@ -122,19 +132,11 @@
   margin-top: -0.25em;
 }
 
-.footerLogoMask {
+.footerLogoSvg {
   display: block;
   width: 100%;
   height: 100%;
-  background-color: var(--color-text-dim);
-  mask-image: url('/images/rings.svg');
-  -webkit-mask-image: url('/images/rings.svg');
-  mask-size: contain;
-  -webkit-mask-size: contain;
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
-  mask-position: center;
-  -webkit-mask-position: center;
+  color: var(--color-text-dim);
 }
 
 .copyright {

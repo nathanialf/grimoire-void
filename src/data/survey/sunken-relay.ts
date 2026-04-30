@@ -4,10 +4,18 @@ export const sunkenRelay: SurveyTemplate = {
   kind: 'survey',
   pageNumber: '042',
   drift: 0.66,
+  slug: 'sunken-relay',
+  filename: 'survey-sunken-relay-c4424.survey',
+  filetype: 'SURVEY',
+  author: 'Survey Division',
+  sharedWith: ['Sector 9 — Operations Planning'],
+  meta: [
+    { label: 'Phase', value: 'Closed · Recovery' },
+    { label: 'Status', value: 'Final' },
+  ],
   header: {
     classification: 'Derelict Installation — Hazard Level: Severe',
     title: 'The Sunken Relay',
-    subtitle: 'Relay Station Omicron-7, subsurface sector',
     tags: ['derelict', 'void-contaminated', 'restricted', 'salvage-priority'],
   },
   image: {
@@ -67,7 +75,6 @@ export const sunkenRelay: SurveyTemplate = {
   casualties: [],
   recommendations: [],
   footer: {
-    media: ['text', 'image'],
     viewingHistory: [
       { who: 'Sector 9 Salvage', when: 'C4427 D192 · 08:00' },
       { who: 'A. Vex (last on-site)', when: 'C4417 D085 · 03:30' },
