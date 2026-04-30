@@ -2,7 +2,7 @@ export const ROOM = { w: 24, d: 24, h: 5 }
 export const PEDESTAL_SIZE = 1
 
 // One slug per pedestal slot (16 total). null = bare empty pedestal — no
-// chip, voxels, ticker, or top light. Order matches `pedestalPositions`
+// chip, ticker, or top light. Order matches `pedestalPositions`
 // below; reordering this array changes which pedestal a document occupies,
 // but the cartridge's appearance is slug-hashed (see hashSlug in data/index)
 // so the document's look is stable regardless of slot.
@@ -32,7 +32,7 @@ export const MUSEUM_PEDESTALS: (string | null)[] = [
 // 4×4 floor grid (16 pedestals). Pedestals are inset from every wall and
 // offset from the x=0 axis so the entry (+Z) and Carcosa (-Z) doors share
 // a clear path. Slots beyond ARTIFACT_NAMES.length render as bare empty
-// pedestals — no chip, voxels, ticker, or top light.
+// pedestals — no chip, ticker, or top light.
 const PEDESTAL_GRID = [-7.5, -2.5, 2.5, 7.5] as const
 export const pedestalPositions: [number, number][] = PEDESTAL_GRID.flatMap(
   (x) => PEDESTAL_GRID.map((z): [number, number] => [x, z]),

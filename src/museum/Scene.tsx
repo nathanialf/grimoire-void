@@ -4,13 +4,8 @@ import {
   BackSide,
   BufferAttribute,
   CanvasTexture,
-  Color,
   ExtrudeGeometry,
-  InstancedMesh,
-  Matrix4,
-  MeshStandardMaterial,
   NearestFilter,
-  Object3D,
   Path,
   RepeatWrapping,
   Shape,
@@ -446,24 +441,6 @@ function DebugFrame() {
   )
 }
 
-// Voxel-relief pedestal — each ink/accent cell becomes a small instanced
-// cube protruding from one of four side faces. On scene-load the voxels
-// extrude from scale=0 with staggered timing, and ink voxels animate THROUGH
-// the bright accent color first before lerping down to dark ink. Per-instance
-// emissive is achieved by patching the meshStandardMaterial to multiply
-// `emissive` by the instance's vColor.
-type Voxel = {
-  posBase: [number, number, number]
-  normal: [number, number, number]
-  spawnDelay: number
-  instanceIdx: number
-  finalized: boolean
-}
-
-const REVEAL_TOTAL_MS = 1800
-const VOXEL_DURATION_MS = 500
-const COLOR_PHASE_START = 0.5
-
 // Small static "cartridge/chip" panel that mirrors the pedestal's pixel
 // pattern as a flat texture on its front and back. N64-style — narrower
 // than tall, thin slab, with rounded shoulders / arched top. Casing is
@@ -523,10 +500,10 @@ function ChipPanel({ seed, name }: { seed: number; name: string }) {
   }, [])
 
   // Both faces use the same custom palette: accent base (matches the
-  // cartridge casing — no white background showing through), palette ink
-  // for the dark pattern (matches the pedestal's voxel ink), and white
-  // pop highlights. Front and back use different seeds so the cartridge
-  // looks different from each side without mismatching colors.
+  // cartridge casing — no white background showing through), pure black
+  // for the dark pattern, and white pop highlights. Front and back use
+  // different seeds so the cartridge looks different from each side
+  // without mismatching colors.
   // Ink stays pure black so it reads as dark; pop cells are a LIGHT shade
   // of the accent (instead of pure white) so the dense bottom of the ombre
   // — where black ink + white pops were averaging into gray — now mixes
@@ -651,7 +628,7 @@ function ChipPanel({ seed, name }: { seed: number; name: string }) {
   )
 }
 
-function VoxelPedestal({ x, z, entry, topGlow }: { x: number; z: number; entry: DocEntry | undefined; topGlow: CanvasTexture }) {
+function Pedestal({ x, z, entry, topGlow }: { x: number; z: number; entry: DocEntry | undefined; topGlow: CanvasTexture }) {
   const emissiveIntensity = pedestalEmissiveIntensity(x, z)
   // 'absent' renders the same bare pedestal as an empty slot (no entry).
   // 'partial' and 'complete' both render the cartridge for now — visual
@@ -680,174 +657,6 @@ function VoxelPedestal({ x, z, entry, topGlow }: { x: number; z: number; entry: 
   const seed = entry.data.museum?.cartridge?.seed ?? hashSlug(entry.data.slug)
   const name = (entry.data.museum?.cartridge?.label ?? titleOf(entry.data)).toUpperCase()
   const modelSrc = entry.data.museum?.model?.src
-  const opts: ArtifactOpts = { ombre: true, cellsX: 44, pixel: 18 }
-  const pattern = useMemo(() => computeArtifactPattern(seed, opts), [seed])
-  const cellSize = PEDESTAL_SIZE / pattern.cellsX
-
-  const data = useMemo(() => {
-    const halfPS = PEDESTAL_SIZE / 2
-    const faces = [
-      { normal: [ 1, 0, 0], uDir: [0, 0, -1], vDir: [0, -1, 0], origin: [ halfPS, PEDESTAL_SIZE,  halfPS] },
-      { normal: [-1, 0, 0], uDir: [0, 0,  1], vDir: [0, -1, 0], origin: [-halfPS, PEDESTAL_SIZE, -halfPS] },
-      { normal: [0, 0,  1], uDir: [ 1, 0, 0], vDir: [0, -1, 0], origin: [-halfPS, PEDESTAL_SIZE,  halfPS] },
-      { normal: [0, 0, -1], uDir: [-1, 0, 0], vDir: [0, -1, 0], origin: [ halfPS, PEDESTAL_SIZE, -halfPS] },
-    ] as const
-    const inkV: Voxel[] = []
-    const accentV: Voxel[] = []
-    const rand = seeded(seed + 31415)
-    const maxSpawn = REVEAL_TOTAL_MS - VOXEL_DURATION_MS
-    for (const face of faces) {
-      for (const cell of pattern.cells) {
-        const isInk = cell.color === pattern.ink
-        const uPos = (cell.x + 0.5) * cellSize
-        const vPos = (cell.y + 0.5) * cellSize
-        const posBase: [number, number, number] = [
-          face.origin[0] + uPos * face.uDir[0] + vPos * face.vDir[0],
-          face.origin[1] + uPos * face.uDir[1] + vPos * face.vDir[1],
-          face.origin[2] + uPos * face.uDir[2] + vPos * face.vDir[2],
-        ]
-        const target = isInk ? inkV : accentV
-        target.push({
-          posBase,
-          normal: [face.normal[0], face.normal[1], face.normal[2]],
-          spawnDelay: rand() * maxSpawn,
-          instanceIdx: target.length,
-          finalized: false,
-        })
-      }
-    }
-    return { inkVoxels: inkV, accentVoxels: accentV }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pattern, cellSize, seed])
-
-  // Ink material: no emissive at all so the dark final state actually reads
-  // dark. Per-instance color drives diffuse only — phase 1 voxels appear as
-  // matte accent cubes (no bloomy glow), phase 2 lerps the diffuse to the
-  // palette's ink color.
-  const inkMaterial = useMemo(
-    () =>
-      new MeshStandardMaterial({
-        color: 0xffffff,
-        roughness: 0.85,
-        metalness: 0,
-      }),
-    [],
-  )
-  const accentMaterial = useMemo(
-    () =>
-      new MeshStandardMaterial({
-        color: pattern.accent,
-        emissive: pattern.accent,
-        emissiveIntensity: 2.4,
-        roughness: 0.85,
-        metalness: 0,
-      }),
-    [pattern.accent],
-  )
-
-  const inkMeshRef = useRef<InstancedMesh>(null)
-  const accentMeshRef = useRef<InstancedMesh>(null)
-  const startTimeRef = useRef<number | null>(null)
-  const dummy = useMemo(() => new Object3D(), [])
-  const tmpColor = useMemo(() => new Color(), [])
-  const inkColor = useMemo(() => new Color(pattern.ink), [pattern.ink])
-  const accentColor = useMemo(() => new Color(pattern.accent), [pattern.accent])
-
-  // Initialize all voxels at scale=0 (invisible) and seed ink instance
-  // colors at accent (the color they animate from).
-  useEffect(() => {
-    const inkMesh = inkMeshRef.current
-    const accentMesh = accentMeshRef.current
-    if (!inkMesh || !accentMesh) return
-    const zero = new Matrix4().makeScale(0, 0, 0)
-    for (let i = 0; i < data.inkVoxels.length; i++) {
-      inkMesh.setMatrixAt(i, zero)
-      inkMesh.setColorAt(i, accentColor)
-    }
-    inkMesh.count = data.inkVoxels.length
-    inkMesh.instanceMatrix.needsUpdate = true
-    if (inkMesh.instanceColor) inkMesh.instanceColor.needsUpdate = true
-    for (let i = 0; i < data.accentVoxels.length; i++) {
-      accentMesh.setMatrixAt(i, zero)
-    }
-    accentMesh.count = data.accentVoxels.length
-    accentMesh.instanceMatrix.needsUpdate = true
-    for (const v of data.inkVoxels) v.finalized = false
-    for (const v of data.accentVoxels) v.finalized = false
-    startTimeRef.current = performance.now()
-  }, [data, accentColor])
-
-  useFrame(() => {
-    const inkMesh = inkMeshRef.current
-    const accentMesh = accentMeshRef.current
-    if (!inkMesh || !accentMesh || startTimeRef.current === null) return
-    const elapsed = performance.now() - startTimeRef.current
-    if (elapsed > REVEAL_TOTAL_MS + 50) return // animation finished
-
-    let inkChanged = false
-    let accentChanged = false
-
-    for (const v of data.inkVoxels) {
-      if (v.finalized) continue
-      const localT = elapsed - v.spawnDelay
-      if (localT <= 0) continue
-      const progress = Math.min(1, localT / VOXEL_DURATION_MS)
-      // Phase 1: extrude (scale grows, with ease-out).
-      const scaleT = Math.min(1, progress / COLOR_PHASE_START)
-      const easedScale = 1 - (1 - scaleT) ** 3
-      const curDepth = easedScale * cellSize
-      const off = curDepth / 2
-      dummy.position.set(
-        v.posBase[0] + off * v.normal[0],
-        v.posBase[1] + off * v.normal[1],
-        v.posBase[2] + off * v.normal[2],
-      )
-      dummy.scale.set(
-        v.normal[0] !== 0 ? curDepth : cellSize,
-        v.normal[1] !== 0 ? curDepth : cellSize,
-        v.normal[2] !== 0 ? curDepth : cellSize,
-      )
-      dummy.updateMatrix()
-      inkMesh.setMatrixAt(v.instanceIdx, dummy.matrix)
-      // Phase 2: instance color lerps accent → ink (and via the shader patch,
-      // emissive lerps with it so the cube fades from glowing to matte).
-      const colorT = Math.max(0, (progress - COLOR_PHASE_START) / (1 - COLOR_PHASE_START))
-      tmpColor.copy(accentColor).lerp(inkColor, colorT)
-      inkMesh.setColorAt(v.instanceIdx, tmpColor)
-      inkChanged = true
-      if (progress >= 1) v.finalized = true
-    }
-
-    for (const v of data.accentVoxels) {
-      if (v.finalized) continue
-      const localT = elapsed - v.spawnDelay
-      if (localT <= 0) continue
-      const progress = Math.min(1, localT / VOXEL_DURATION_MS)
-      const eased = 1 - (1 - progress) ** 3
-      const curDepth = eased * (cellSize / 2)
-      const off = curDepth / 2
-      dummy.position.set(
-        v.posBase[0] + off * v.normal[0],
-        v.posBase[1] + off * v.normal[1],
-        v.posBase[2] + off * v.normal[2],
-      )
-      dummy.scale.set(
-        v.normal[0] !== 0 ? curDepth : cellSize,
-        v.normal[1] !== 0 ? curDepth : cellSize,
-        v.normal[2] !== 0 ? curDepth : cellSize,
-      )
-      dummy.updateMatrix()
-      accentMesh.setMatrixAt(v.instanceIdx, dummy.matrix)
-      accentChanged = true
-      if (progress >= 1) v.finalized = true
-    }
-
-    if (inkChanged) {
-      inkMesh.instanceMatrix.needsUpdate = true
-      if (inkMesh.instanceColor) inkMesh.instanceColor.needsUpdate = true
-    }
-    if (accentChanged) accentMesh.instanceMatrix.needsUpdate = true
-  })
 
   return (
     <group position={[x, 0, z]}>
@@ -861,14 +670,6 @@ function VoxelPedestal({ x, z, entry, topGlow }: { x: number; z: number; entry: 
           emissiveIntensity={emissiveIntensity}
         />
       </mesh>
-      <instancedMesh ref={inkMeshRef} args={[undefined, undefined, data.inkVoxels.length]} visible={false}>
-        <boxGeometry args={[1, 1, 1]} />
-        <primitive object={inkMaterial} attach="material" />
-      </instancedMesh>
-      <instancedMesh ref={accentMeshRef} args={[undefined, undefined, data.accentVoxels.length]} visible={false}>
-        <boxGeometry args={[1, 1, 1]} />
-        <primitive object={accentMaterial} attach="material" />
-      </instancedMesh>
       <PedestalTicker />
       {modelSrc ? (
         <Suspense fallback={<ChipPanel seed={seed} name={name} />}>
@@ -1278,7 +1079,7 @@ export function Scene() {
       {pedestalPositions.map(([x, z], i) => {
         const slug = MUSEUM_PEDESTALS[i]
         const entry = slug ? REGISTRY_BY_SLUG.get(slug) : undefined
-        return <VoxelPedestal key={i} x={x} z={z} entry={entry} topGlow={pedestalGlow} />
+        return <Pedestal key={i} x={x} z={z} entry={entry} topGlow={pedestalGlow} />
       })}
 
 

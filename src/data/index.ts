@@ -22,6 +22,8 @@ import { greyfieldChoir } from './artifact/greyfield-choir'
 import { hollowBlade } from './artifact/hollow-blade'
 import { spectralCaul } from './artifact/spectral-caul'
 import { thresholdAccords } from './artifact/threshold-accords'
+import { recordingAperture } from './artifact/recording-aperture'
+import { variantTerminal } from './artifact/variant-terminal'
 import { tmp4Artifact } from './artifact/tmp4-artifact'
 import { omicronCollapse } from './coe/omicron-collapse'
 import { sableThreshold } from './coe/sable-threshold'
@@ -32,6 +34,7 @@ import { vexDeploymentC4427 } from './comm/vex-deployment-c4427'
 import { sunkenRelay } from './survey/sunken-relay'
 import { outpostKaya } from './survey/outpost-kaya'
 import { wastingExpanse } from './survey/wasting-expanse'
+import { theMuseum } from './survey/the-museum'
 import { tmp5Survey } from './survey/tmp5-survey'
 
 // 'placeholder' / 'template' picks the ticker text variant; 'none' suppresses
@@ -59,9 +62,12 @@ export const REGISTRY: DocEntry[] = [
   { data: greyfieldChoir,   route: '/bestiary/greyfield-choir',   ticker: 'placeholder' },
   { data: hollowBlade,      route: '/artifact/hollow-blade',      ticker: 'placeholder' },
   { data: spectralCaul,     route: '/artifact/spectral-caul',     ticker: 'placeholder' },
+  { data: recordingAperture, route: '/artifact/recording-aperture', ticker: 'none'        },
+  { data: variantTerminal,  route: '/artifact/variant-terminal',  ticker: 'none'        },
   { data: sunkenRelay,      route: '/location/sunken-relay',      ticker: 'placeholder' },
   { data: outpostKaya,      route: '/location/outpost-kaya',      ticker: 'placeholder' },
   { data: wastingExpanse,   route: '/map/wasting-expanse',        ticker: 'placeholder' },
+  { data: theMuseum,        route: '/location/the-museum',        ticker: 'none'        },
   { data: omicronCollapse,  route: '/lore/omicron-collapse',      ticker: 'placeholder' },
   { data: thresholdAccords, route: '/lore/threshold-accords',     ticker: 'placeholder' },
   { data: sableThreshold,   route: '/coe/sable-threshold',        ticker: 'placeholder' },
@@ -101,8 +107,9 @@ export function isCartridgeDoc(slug: string): boolean {
 //     'complete'. Per documents.md, ambient docs have no partial state —
 //     they appear all-or-nothing on full cartridge insertion.
 //   - Standalone ambient doc (no attachedTo, not a cartridge): always
-//     visible. None exist today; left open for future chrome-style wiki
-//     entries that aren't tied to any cartridge.
+//     visible — unlocked at first boot. Used for archive-fixture entries
+//     that document the player's instruments rather than the world (e.g.
+//     the Recording Aperture, the Variant Terminal).
 export function isDocVisible(
   entry: DocEntry,
   states: Record<string, CartridgeState>,

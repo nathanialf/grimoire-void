@@ -300,10 +300,10 @@ export function MuseumPage() {
         <color attach="background" args={[sceneBackground]} />
         <Suspense fallback={null}>
           {/* Both scenes stay mounted so swapping between them is instant —
-              re-mounting Scene on return rebuilds every voxel pedestal +
-              cartridge label canvas, which is what made the museum
-              re-entry feel laggy. visible=false skips draw + most
-              traversal but preserves all useMemo state. */}
+              re-mounting Scene on return rebuilds every cartridge label
+              canvas, which is what made the museum re-entry feel laggy.
+              visible=false skips draw + most traversal but preserves all
+              useMemo state. */}
           <group visible={activeScene === 'museum'}>
             <Scene />
           </group>

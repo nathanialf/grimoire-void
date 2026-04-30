@@ -62,7 +62,7 @@ export function CartDispenser() {
   return (
     <group>
       {/* Body — same warm-off-white + emissive recipe as the museum's
-          voxel pedestals; sits dead-center so it gets the maximum
+          pedestals; sits dead-center so it gets the maximum
           ~8× emissive baseline. */}
       <mesh position={[cx, cy, cz]}>
         <boxGeometry args={[w, h, d]} />

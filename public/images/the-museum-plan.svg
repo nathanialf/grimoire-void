@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 32 32" font-family="JetBrains Mono, ui-monospace, monospace" shape-rendering="crispEdges">
+  <rect x="-16" y="-16" width="32" height="32" fill="#000"/>
+  <defs>
+    <pattern id="pillarHatch" width="0.18" height="0.18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="0.18" stroke="#bfff00" stroke-width="0.025"/>
+    </pattern>
+  </defs>
+
+  <g stroke="#bfff00" fill="none" stroke-linecap="square" stroke-linejoin="miter">
+
+    <!-- Outer registration ticks at the four corners of the plot area -->
+    <g stroke-width="0.04">
+      <line x1="-15.4" y1="-13.6" x2="-13.6" y2="-13.6"/><line x1="-13.6" y1="-15.4" x2="-13.6" y2="-13.6"/>
+      <line x1="13.6"  y1="-13.6" x2="15.4"  y2="-13.6"/><line x1="13.6"  y1="-15.4" x2="13.6"  y2="-13.6"/>
+      <line x1="-15.4" y1="13.6"  x2="-13.6" y2="13.6"/> <line x1="-13.6" y1="13.6"  x2="-13.6" y2="15.4"/>
+      <line x1="13.6"  y1="13.6"  x2="15.4"  y2="13.6"/> <line x1="13.6"  y1="13.6"  x2="13.6"  y2="15.4"/>
+    </g>
+
+    <!-- Outer dimension lines (24m × 24m) -->
+    <g stroke-width="0.03">
+      <line x1="-12" y1="-13.1" x2="12" y2="-13.1"/>
+      <line x1="-12" y1="-13.25" x2="-12" y2="-12.95"/>
+      <line x1="12"  y1="-13.25" x2="12"  y2="-12.95"/>
+      <line x1="13.1" y1="-12" x2="13.1" y2="12"/>
+      <line x1="12.95" y1="-12" x2="13.25" y2="-12"/>
+      <line x1="12.95" y1="12"  x2="13.25" y2="12"/>
+    </g>
+
+    <!-- Outer walls. Gaps for the carcosa threshold (-Z wall) and the
+         return egress (+Z wall). Wall stroke is heavier than fixture lines. -->
+    <g stroke-width="0.18">
+      <!-- top wall (-Z, y = -12): broken by carcosa threshold -->
+      <line x1="-12" y1="-12" x2="-0.6" y2="-12"/>
+      <line x1="0.6"  y1="-12" x2="12"  y2="-12"/>
+      <!-- bottom wall (+Z, y = 12): broken by return egress -->
+      <line x1="-12" y1="12" x2="-0.9" y2="12"/>
+      <line x1="0.9"  y1="12" x2="12"  y2="12"/>
+      <!-- left wall (-X) -->
+      <line x1="-12" y1="-12" x2="-12" y2="12"/>
+      <!-- right wall (+X) -->
+      <line x1="12"  y1="-12" x2="12"  y2="12"/>
+    </g>
+
+    <!-- Door jamb tick marks (short perpendiculars at each opening) -->
+    <g stroke-width="0.06">
+      <line x1="-0.6" y1="-12.18" x2="-0.6" y2="-11.82"/>
+      <line x1="0.6"  y1="-12.18" x2="0.6"  y2="-11.82"/>
+      <line x1="-0.9" y1="11.82"  x2="-0.9" y2="12.18"/>
+      <line x1="0.9"  y1="11.82"  x2="0.9"  y2="12.18"/>
+    </g>
+
+    <!-- Threshold path (player passage line) — dashed, traversing the room -->
+    <line x1="0" y1="11.7" x2="0" y2="-11.7" stroke-width="0.04" stroke-dasharray="0.4 0.3" opacity="0.55"/>
+
+    <!-- Variant terminal on -Z wall: centerX=-1.6, w=0.72, depth 0.09 inward -->
+    <rect x="-1.96" y="-12" width="0.72" height="0.09" stroke-width="0.06"/>
+
+    <!-- Central pillar: 0.4 × 0.4 at origin, hatched solid -->
+    <rect x="-0.2" y="-0.2" width="0.4" height="0.4" stroke-width="0.06" fill="url(#pillarHatch)"/>
+
+    <!-- Pillar +Z face fixtures: cart dispenser & tool mount stack vertically
+         in 3D but share the same plan footprint. Plotted as a single block
+         on the +Z face of the pillar, with a divider line to indicate the
+         two fixtures share the mount. -->
+    <g stroke-width="0.05">
+      <!-- combined footprint: x ∈ [-0.275, 0.275], z ∈ [0.20, 0.42] -->
+      <rect x="-0.275" y="0.20" width="0.55" height="0.22"/>
+      <line x1="-0.275" y1="0.31" x2="0.275" y2="0.31" stroke-dasharray="0.06 0.06"/>
+    </g>
+
+    <!-- Pedestals: 4×4 grid at x,z ∈ {-7.5, -2.5, 2.5, 7.5}, each 1×1 m
+         with a small inner ring marking the cartridge seat. -->
+    <g stroke-width="0.06">
+      <rect x="-8" y="-8" width="1" height="1"/><rect x="-8" y="-3" width="1" height="1"/><rect x="-8" y="2" width="1" height="1"/><rect x="-8" y="7" width="1" height="1"/>
+      <rect x="-3" y="-8" width="1" height="1"/><rect x="-3" y="-3" width="1" height="1"/><rect x="-3" y="2" width="1" height="1"/><rect x="-3" y="7" width="1" height="1"/>
+      <rect x="2"  y="-8" width="1" height="1"/><rect x="2"  y="-3" width="1" height="1"/><rect x="2"  y="2" width="1" height="1"/><rect x="2"  y="7" width="1" height="1"/>
+      <rect x="7"  y="-8" width="1" height="1"/><rect x="7"  y="-3" width="1" height="1"/><rect x="7"  y="2" width="1" height="1"/><rect x="7"  y="7" width="1" height="1"/>
+    </g>
+    <g stroke-width="0.04">
+      <circle cx="-7.5" cy="-7.5" r="0.18"/><circle cx="-7.5" cy="-2.5" r="0.18"/><circle cx="-7.5" cy="2.5" r="0.18"/><circle cx="-7.5" cy="7.5" r="0.18"/>
+      <circle cx="-2.5" cy="-7.5" r="0.18"/><circle cx="-2.5" cy="-2.5" r="0.18"/><circle cx="-2.5" cy="2.5" r="0.18"/><circle cx="-2.5" cy="7.5" r="0.18"/>
+      <circle cx="2.5"  cy="-7.5" r="0.18"/><circle cx="2.5"  cy="-2.5" r="0.18"/><circle cx="2.5"  cy="2.5" r="0.18"/><circle cx="2.5"  cy="7.5" r="0.18"/>
+      <circle cx="7.5"  cy="-7.5" r="0.18"/><circle cx="7.5"  cy="-2.5" r="0.18"/><circle cx="7.5"  cy="2.5" r="0.18"/><circle cx="7.5"  cy="7.5" r="0.18"/>
+    </g>
+
+    <!-- Compass — N points to -Z (toward Carcosa threshold) -->
+    <g stroke-width="0.05">
+      <circle cx="13.6" cy="-13.6" r="0.95"/>
+      <line x1="13.6" y1="-12.65" x2="13.6" y2="-14.55"/>
+      <polygon points="13.6,-14.6 13.4,-14.05 13.8,-14.05" fill="#bfff00" stroke="none"/>
+    </g>
+
+    <!-- Scale bar (5 m) — bottom-left -->
+    <g stroke-width="0.04">
+      <line x1="-13.6" y1="14.5" x2="-8.6" y2="14.5"/>
+      <line x1="-13.6" y1="14.35" x2="-13.6" y2="14.65"/>
+      <line x1="-12.6" y1="14.4"  x2="-12.6" y2="14.6"/>
+      <line x1="-11.6" y1="14.4"  x2="-11.6" y2="14.6"/>
+      <line x1="-10.6" y1="14.4"  x2="-10.6" y2="14.6"/>
+      <line x1="-9.6"  y1="14.4"  x2="-9.6"  y2="14.6"/>
+      <line x1="-8.6"  y1="14.35" x2="-8.6"  y2="14.65"/>
+    </g>
+
+    <!-- Title block — bottom-right -->
+    <g stroke-width="0.04">
+      <rect x="6.4" y="13.4" width="7.2" height="2"/>
+      <line x1="6.4" y1="14.05" x2="13.6" y2="14.05"/>
+      <line x1="10.0" y1="14.05" x2="10.0" y2="15.4"/>
+    </g>
+  </g>
+
+  <!-- Text labels -->
+  <g fill="#bfff00" font-size="0.42" letter-spacing="0.06">
+    <!-- Wall openings -->
+    <text x="0" y="-12.4" text-anchor="middle">CARCOSA THRESHOLD</text>
+    <text x="0" y="12.85" text-anchor="middle">RETURN EGRESS</text>
+
+    <!-- Wall fixtures -->
+    <text x="-1.6" y="-11.4" text-anchor="middle" font-size="0.3">VAR. TERM.</text>
+
+    <!-- Central pillar callout -->
+    <text x="0.85" y="0.20" text-anchor="start" font-size="0.32">CENTRAL FIXTURE</text>
+    <text x="0.85" y="0.55" text-anchor="start" font-size="0.28" opacity="0.7">DISPENSER · TOOL RACK</text>
+
+    <!-- Pedestal grid axis labels -->
+    <text x="-7.5" y="-8.85" text-anchor="middle" font-size="0.32">A</text>
+    <text x="-2.5" y="-8.85" text-anchor="middle" font-size="0.32">B</text>
+    <text x="2.5"  y="-8.85" text-anchor="middle" font-size="0.32">C</text>
+    <text x="7.5"  y="-8.85" text-anchor="middle" font-size="0.32">D</text>
+    <text x="-8.85" y="-7.35" text-anchor="middle" font-size="0.32">1</text>
+    <text x="-8.85" y="-2.35" text-anchor="middle" font-size="0.32">2</text>
+    <text x="-8.85" y="2.65"  text-anchor="middle" font-size="0.32">3</text>
+    <text x="-8.85" y="7.65"  text-anchor="middle" font-size="0.32">4</text>
+
+    <!-- Outer dimension labels -->
+    <text x="0" y="-13.4" text-anchor="middle" font-size="0.32" opacity="0.85">24.00 M</text>
+    <text x="13.4" y="0" text-anchor="middle" font-size="0.32" opacity="0.85" transform="rotate(90 13.4 0)">24.00 M</text>
+
+    <!-- Compass label -->
+    <text x="13.6" y="-12.45" text-anchor="middle" font-size="0.36">N</text>
+
+    <!-- Scale bar label -->
+    <text x="-11.1" y="14.05" text-anchor="middle" font-size="0.3">0   1   2   3   4   5 M</text>
+
+    <!-- Title block content -->
+    <text x="6.6" y="13.85" font-size="0.34">DRAWING</text>
+    <text x="10.2" y="13.85" font-size="0.34">SHEET 004</text>
+    <text x="6.6" y="14.55" font-size="0.4" letter-spacing="0.08">THE MUSEUM</text>
+    <text x="6.6" y="14.95" font-size="0.26" opacity="0.7">STANDING SITE</text>
+    <text x="10.2" y="14.55" font-size="0.26">SCALE 1 : 60</text>
+    <text x="10.2" y="14.95" font-size="0.26" opacity="0.7">PLAN · LVL 0</text>
+  </g>
+
+  <!-- Border frame -->
+  <rect x="-15.6" y="-15.6" width="31.2" height="31.2" stroke="#bfff00" stroke-width="0.06" fill="none"/>
+</svg>

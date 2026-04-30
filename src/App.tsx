@@ -2,7 +2,6 @@ import { useMemo, useRef, useState, useCallback, useEffect, lazy, Suspense, type
 import { Navigation } from './components/Navigation'
 import { NavigateProvider } from './hooks/useNavigate'
 import { PageNavProvider } from './hooks/usePageNav'
-import { SignalTear, type SignalTearHandle } from './components/SignalTear'
 import { Ticker, type TickerVariant as TickerRenderVariant } from './components/Ticker'
 import { SplashScreen } from './pages/SplashScreen'
 import { CoverPage } from './pages/CoverPage'
@@ -42,7 +41,6 @@ const PAGES: PageEntry[] = [
 
 export function App() {
   const contentRef = useRef<HTMLDivElement>(null)
-  const tearRef = useRef<SignalTearHandle>(null)
   const [navOpen, setNavOpen] = useState(false)
   const [pathname, setPathname] = useState(window.location.pathname)
   const [effectsOn] = useState(false)
@@ -64,11 +62,11 @@ export function App() {
     setBitmapsReady(false)
   }, [pathname])
 
-  // Reclone SignalTear after fonts load AND set bitmapsReady=true once the
-  // page's DOM has settled. PixelatedText/Heading render async (fonts.ready
-  // → setState → render), so we use a MutationObserver to detect when the
-  // staircase reflow stops, with a 1s hard fallback in case it never does.
-  // Re-runs on pathname change to catch each new page's render settle.
+  // Set bitmapsReady=true once the page's DOM has settled. PixelatedText/
+  // Heading render async (fonts.ready → setState → render), so we use a
+  // MutationObserver to detect when the staircase reflow stops, with a 1s
+  // hard fallback in case it never does. Re-runs on pathname change to
+  // catch each new page's render settle.
   useEffect(() => {
     if (!fontsReady) return
     let done = false
@@ -79,7 +77,6 @@ export function App() {
       if (done) return
       done = true
       observer?.disconnect()
-      tearRef.current?.reclone()
       setBitmapsReady(true)
     }
 
@@ -118,41 +115,12 @@ export function App() {
     return () => window.removeEventListener('popstate', onPop)
   }, [])
 
-  const onScroll = useCallback((scrollY: number) => {
-    tearRef.current?.syncScroll(scrollY)
-  }, [])
-
-  usePageScroll(contentRef, onScroll, pathname)
-
-  useEffect(() => {
-    tearRef.current?.syncRoute(pathname)
-    // Reclone after React finishes rendering so clones reflect new DOM state
-    const timeout = setTimeout(() => {
-      tearRef.current?.reclone()
-      // Re-sync nav scroll position after reclone so clones match the real list
-      const navList = document.querySelector('[data-nav-list]') as HTMLElement | null
-      if (navList) tearRef.current?.syncNavScroll(navList.scrollTop)
-    }, 150)
-    return () => clearTimeout(timeout)
-  }, [pathname])
-
-  // Sync nav list scroll into SignalTear clones
-  useEffect(() => {
-    if (!fontsReady) return
-    const navList = document.querySelector('[data-nav-list]') as HTMLElement | null
-    if (!navList) return
-    function onNavScroll() {
-      tearRef.current?.syncNavScroll(navList!.scrollTop)
-    }
-    navList.addEventListener('scroll', onNavScroll, { passive: true })
-    return () => navList.removeEventListener('scroll', onNavScroll)
-  }, [pathname, fontsReady])
+  usePageScroll(contentRef, undefined, pathname)
 
   // Alternating palette swap (dark ↔ blue)
   useEffect(() => {
     if (!effectsOn) {
       delete document.documentElement.dataset.palette
-      tearRef.current?.syncPalette(false)
       return
     }
 
@@ -166,17 +134,10 @@ export function App() {
       } else {
         delete document.documentElement.dataset.palette
       }
-      tearRef.current?.syncPalette(blue)
     }
 
     function toggle() {
-      if (tearRef.current) {
-        tearRef.current.triggerSurge(() => {
-          swapPalette()
-        })
-      } else {
-        swapPalette()
-      }
+      swapPalette()
       timeout = window.setTimeout(toggle, 30000)
     }
 
@@ -193,7 +154,6 @@ export function App() {
 
     if (!effectsOn) {
       if (root) root.style.filter = ''
-      tearRef.current?.syncInvert(false)
       return
     }
 
@@ -202,7 +162,6 @@ export function App() {
 
     function applyInvert(on: boolean) {
       if (root) root.style.filter = on ? 'invert(1)' : ''
-      tearRef.current?.syncInvert(on)
     }
 
     function schedule() {
@@ -221,7 +180,6 @@ export function App() {
 
   const handleNavToggle = useCallback((open: boolean) => {
     setNavOpen(open)
-    tearRef.current?.syncNavOpen(open)
   }, [])
 
   const cartridgeStates = useCartridgeStates()
@@ -296,7 +254,6 @@ export function App() {
     return (
       <NavigateProvider value={navigate}>
         <RedactedPage />
-        <SignalTear ref={tearRef} effectsOn={effectsOn} />
         <ChromaticAberrationFilter />
         {fullScreenOverlay}
       </NavigateProvider>
@@ -323,7 +280,6 @@ export function App() {
         </div>
       {showTicker && <Ticker position="top" variant={tickerVariant} />}
       {showTicker && <Ticker position="bottom" variant={tickerVariant} />}
-      <SignalTear ref={tearRef} effectsOn={effectsOn} />
       <ChromaticAberrationFilter />
       {mainOverlay}
     </NavigateProvider>

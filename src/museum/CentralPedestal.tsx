@@ -9,8 +9,8 @@ export function CentralPedestal() {
   return (
     <group>
       {/* Pillar + footplate + cap all use the same warm-off-white +
-          emissive recipe as the museum's voxel pedestals so the column
-          reads as the same fixture family. The pillar is dead-center,
+          emissive recipe as the museum's pedestals so the column reads
+          as the same fixture family. The pillar is dead-center,
           so its `pedestalEmissiveIntensity` works out to the maximum
           ~8× value (matches the inner pedestal slots). */}
       <mesh position={[centerX, height / 2, centerZ]}>

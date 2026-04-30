@@ -62,8 +62,8 @@ function makeScopeTexture(): { canvas: HTMLCanvasElement; ctx: CanvasRenderingCo
 function ToolModel({ screenTex }: { screenTex: CanvasTexture }) {
   return (
     <group>
-      {/* Same color/material recipe as the museum's voxel pedestals so
-          the recording tool reads as part of the same fixture family
+      {/* Same color/material recipe as the museum's pedestals so the
+          recording tool reads as part of the same fixture family
           regardless of which pedestal the player just walked past. */}
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[TOOL_BODY.w, TOOL_BODY.h, TOOL_BODY.d]} />
