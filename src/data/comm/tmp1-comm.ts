@@ -1,8 +1,8 @@
 import type { CommTemplate } from '../../types'
 
 // TMP1 — Communication schema reference. Models an in-fiction message
-// between named individuals or groups. Three variants ('1:1', 'group',
-// 'all-hands') share the same schema; this template uses '1:1'.
+// between named individuals or groups. Two variants ('group', 'all-hands')
+// share the same schema; this template uses 'group'.
 
 export const tmp1Comm: CommTemplate = {
   kind: 'comm',
@@ -17,7 +17,7 @@ export const tmp1Comm: CommTemplate = {
     { label: 'Subject', value: '{Subject line — concise, action-oriented if possible}' },
     { label: 'Sent', value: '{Timestamp · cycle / day / time standard}' },
   ],
-  variant: '1:1',
+  variant: 'group',
   title: '{Communication Name}',
   subject: '{Subject line — concise, action-oriented if possible}',
   from: '{Sender display name}',
@@ -27,7 +27,7 @@ export const tmp1Comm: CommTemplate = {
   body: [
     {
       type: 'paragraph',
-      text: '**Purpose.** The communication schema models an in-fiction message between named individuals or groups. Use this template when surfacing a 1:1 exchange, a small-group thread, or an all-hands broadcast. The variant field (`1:1` / `group` / `all-hands`) sets the eyebrow label in the header chrome and is the only structural difference between the three.',
+      text: '**Purpose.** The communication schema models an in-fiction message between named individuals or groups. Use this template when surfacing a small-group thread or an all-hands broadcast. The variant field (`group` / `all-hands`) sets the eyebrow label in the header chrome and is the only structural difference between the two.',
     },
     {
       type: 'paragraph',

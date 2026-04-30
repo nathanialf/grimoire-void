@@ -1,12 +1,12 @@
-import type { ArtifactTemplate } from '../../types'
+import type { SurveyTemplate } from '../../types'
 
-export const wastingExpanse: ArtifactTemplate = {
-  kind: 'artifact',
+export const wastingExpanse: SurveyTemplate = {
+  kind: 'survey',
   pageNumber: '058',
   drift: 0.38,
   slug: 'wasting-expanse',
-  filename: 'cartography-wasting-expanse.artifact',
-  filetype: 'ARTIFACT',
+  filename: 'survey-wasting-expanse-c4421.survey',
+  filetype: 'SURVEY',
   author: 'Cartographic Division',
   sharedWith: ['Sector 9 — All Hands', 'Operations Planning'],
   meta: [
@@ -59,30 +59,22 @@ export const wastingExpanse: ArtifactTemplate = {
       ],
     },
   ],
-  statBlocks: [
-    {
-      title: 'Region Profile',
-      stats: [
-        { label: 'Body', value: 'XR-881' },
-        { label: 'Hemisphere', value: 'Northern' },
-        { label: 'Span', value: '400 km' },
-        { label: 'Gravity', value: 'Low' },
-        { label: 'Terrain', value: 'Silicate desert' },
-        { label: 'Status', value: 'VOID-ACTIVE', variant: 'danger' },
-      ],
-    },
-    {
-      title: 'Access Protocol',
-      stats: [
-        { label: 'Class', value: 'IV', variant: 'danger' },
-        { label: 'Psi-Shield', value: 'Class III min.' },
-        { label: 'Provisions', value: '72 hr min.' },
-        { label: 'Solo Ops', value: 'PROHIBITED', variant: 'danger' },
-        { label: 'Order', value: '4419-7' },
-        { label: 'Markers', value: '6 (W1–W6)' },
-      ],
-    },
-  ],
+  missionStats: {
+    title: 'Site Parameters',
+    stats: [
+      { label: 'Hazard', value: 'VOID-ACTIVE', variant: 'danger' },
+      { label: 'Class', value: 'IV', variant: 'danger' },
+      { label: 'Body', value: 'XR-881' },
+      { label: 'Hemisphere', value: 'Northern' },
+      { label: 'Span', value: '400 km' },
+      { label: 'Gravity', value: 'Low' },
+      { label: 'Terrain', value: 'Silicate desert' },
+      { label: 'Solo Ops', value: 'PROHIBITED', variant: 'danger' },
+    ],
+  },
+  timeline: [],
+  casualties: [],
+  recommendations: [],
   footer: {
     viewingHistory: [
       { who: 'Sector 9 Cmd', when: 'C4427 D192 · 06:00' },

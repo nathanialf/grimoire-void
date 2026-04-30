@@ -1,9 +1,9 @@
 import type { CommTemplate } from '../../types'
 
 // Ambient placeholder communication — in the wiki and nav but absent from
-// MUSEUM_PEDESTALS, so it has no cartridge. A 1:1 from Captain Solenne to
-// Aria Vex (her direct report; see profile/aria-vex). Stand-in body until
-// real correspondence content lands.
+// MUSEUM_PEDESTALS, so it has no cartridge. A direct message from Captain
+// Solenne to Aria Vex (her direct report; see profile/aria-vex). Stand-in
+// body until real correspondence content lands.
 
 export const vexDeploymentC4427: CommTemplate = {
   kind: 'comm',
@@ -18,7 +18,7 @@ export const vexDeploymentC4427: CommTemplate = {
     { label: 'Subject', value: 'D192 perimeter sweep — kit + brief' },
     { label: 'Sent', value: 'C4427 D188 · 06:45' },
   ],
-  variant: '1:1',
+  variant: 'group',
   title: 'Deployment Notice [Vex]',
   subject: 'D192 perimeter sweep — kit + brief',
   from: 'N. Solenne · S9-0118',

@@ -156,7 +156,7 @@ export interface ChromeMeta {
 export interface CommTemplate extends ChromeMeta {
   kind: 'comm'
   pageNumber: string
-  variant: '1:1' | 'group' | 'all-hands'
+  variant: 'group' | 'all-hands'
   title: string
   subject: string
   from: string
