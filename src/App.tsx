@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useCallback, useEffect, lazy, Suspense, type ReactElement } from 'react'
+import { useMemo, useRef, useState, useCallback, useEffect, lazy, Suspense, type CSSProperties, type ReactElement } from 'react'
 import { Navigation } from './components/Navigation'
 import { NavigateProvider } from './hooks/useNavigate'
 import { PageNavProvider } from './hooks/usePageNav'
@@ -48,10 +48,21 @@ export function App() {
   // is stable. Resets to false on every pathname change so the overlay
   // re-shows during wiki-page navigation while new bitmaps render.
   const [bitmapsReady, setBitmapsReady] = useState(false)
+  // initialReady latches true once fonts AND the first bitmap settle have
+  // both completed. Until then the loading overlay stays full-screen so
+  // the sidebar/nav doesn't peek out unstyled while its PixelatedText
+  // bitmaps are still resolving. Subsequent navigations reset bitmapsReady
+  // (see above) but leave initialReady true, so per-page loads use the
+  // content-only overlay.
+  const [initialReady, setInitialReady] = useState(false)
 
   useEffect(() => {
     document.fonts.ready.then(() => setFontsReady(true))
   }, [])
+
+  useEffect(() => {
+    if (fontsReady && bitmapsReady) setInitialReady(true)
+  }, [fontsReady, bitmapsReady])
 
   // Reset the bitmap-ready gate on every navigation so the loading overlay
   // re-appears while the new page's PixelatedText bitmaps render.
@@ -208,18 +219,45 @@ export function App() {
   // bitmaps are also rendering and would look wonky. After fonts are loaded,
   // per-page transitions use a content-area-only overlay so the sidebar
   // stays visible and navigation feels responsive.
-  const showOverlay = !fontsReady || !bitmapsReady
+  // Gate on initialReady too: without it, showOverlay drops the frame
+  // both ready flags flip true, leaving the nav exposed for one render
+  // before the latch effect runs. With it, the full-screen overlay
+  // covers continuously through initial load.
+  const showOverlay = !fontsReady || !bitmapsReady || !initialReady
+  // The full-screen variant inlines its critical layout so it still
+  // covers the page in Vite dev mode, where CSS-module classes resolve
+  // to a stylesheet that is injected asynchronously — without inline
+  // styles, the className is present before its rules apply and the
+  // overlay renders as an unstyled inline-flow div, letting the
+  // underlying nav peek through. The CSS-module class still adds the
+  // centered ring + label layout once the stylesheet lands. The
+  // content-only variant only renders after the initial load (so the
+  // CSS module is guaranteed loaded by then) and can safely rely on
+  // its class for the responsive `left` value.
+  const fullScreenOverlayStyle: CSSProperties = {
+    position: 'fixed',
+    inset: 0,
+    background: '#0a0a0a',
+    zIndex: 9999,
+  }
   const fullScreenOverlay = showOverlay ? (
-    <div className={styles.loadingOverlay}>
+    <div className={styles.loadingOverlay} style={fullScreenOverlayStyle}>
       <span className={styles.loadingRing} role="img" aria-hidden="true" />
       <span className={styles.loadingText}>Loading</span>
     </div>
   ) : null
   const mainOverlay = showOverlay ? (
-    <div className={!fontsReady ? styles.loadingOverlay : styles.loadingOverlayContent}>
-      <span className={styles.loadingRing} role="img" aria-hidden="true" />
-      <span className={styles.loadingText}>Loading</span>
-    </div>
+    !initialReady ? (
+      <div className={styles.loadingOverlay} style={fullScreenOverlayStyle}>
+        <span className={styles.loadingRing} role="img" aria-hidden="true" />
+        <span className={styles.loadingText}>Loading</span>
+      </div>
+    ) : (
+      <div className={styles.loadingOverlayContent}>
+        <span className={styles.loadingRing} role="img" aria-hidden="true" />
+        <span className={styles.loadingText}>Loading</span>
+      </div>
+    )
   ) : null
 
   if (pathname === '/museum') {

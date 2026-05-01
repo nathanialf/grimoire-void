@@ -1,5 +1,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Html } from '@react-three/drei'
+import { Matrix4, Quaternion, Vector3 } from 'three'
 import { Scene } from '../museum/Scene'
 import { CarcosaScene, returnPortalZone } from '../museum/CarcosaScene'
 import {
@@ -11,6 +13,7 @@ import {
   cartDispenserFixture,
   toolMountFixture,
   variantTerminalFixture,
+  WALL_Z,
   wallFixtureAABB,
   fixtureBoxAABB,
   PEDESTAL_SIZE,
@@ -21,7 +24,7 @@ import { TouchControls } from '../museum/TouchControls'
 import { Effects } from '../museum/Effects'
 import { TerminalLog } from '../museum/TerminalLog'
 import { DoorPrompt } from '../museum/DoorPrompt'
-import { HeldTool } from '../museum/CartTool'
+import { HeldCart, HeldTool } from '../museum/CartTool'
 import { nodeAabb } from '../museum/nodeAabb'
 import { TerminalInput } from '../museum/TerminalInput'
 import { pixelSort } from '../museum/effects/pixelSortUniform'
@@ -60,6 +63,45 @@ const MUSEUM_SPAWN: SpawnPose = { pos: [0, 1.6, 11], lookAt: [0, 1.6, 0] }
 const MUSEUM_RETURN_SPAWN: SpawnPose = { pos: [0, 1.6, -10.5], lookAt: [0, 1.6, 0] }
 const CARCOSA_SPAWN: SpawnPose = { pos: [0, 1.6, -8.8], lookAt: [0, 1.6, 0] }
 
+// Diegetic terminal focus: the camera flies to a fixed pose squarely in
+// front of the variant terminal's screen and locks there so the input
+// overlay reads as the screen content. Screen plane sits just inside
+// the bezel; viewing distance is ~0.9m so the screen fills most of the
+// frame without consuming it. Look target is the screen center, so the
+// player sees the screen head-on regardless of which way they were
+// facing when they engaged.
+const TERMINAL_SCREEN_Z = WALL_Z + variantTerminalFixture.depth - 0.005
+const TERMINAL_FOCUS_POS: [number, number, number] = [
+  variantTerminalFixture.centerX,
+  1.6,
+  TERMINAL_SCREEN_Z + 0.9,
+]
+const TERMINAL_FOCUS_LOOKAT: [number, number, number] = [
+  variantTerminalFixture.centerX,
+  variantTerminalFixture.centerY,
+  TERMINAL_SCREEN_Z,
+]
+const TERMINAL_TRANSITION_MS = 480
+
+// Visible CRT screen rect — must match CarcosaTerminal's `screenW/screenH`
+// (78% × 70% of the fixture). The diegetic dialog is sized to cover it.
+const TERMINAL_SCREEN_W = variantTerminalFixture.width * 0.78
+const TERMINAL_SCREEN_H = variantTerminalFixture.height * 0.7
+// drei <Html transform> mounts children inside a CSS3D plane and
+// applies an internal `factor = 400 / (distanceFactor || 10)` divisor
+// to the matrix scale parts before emitting the CSS matrix3d (see
+// drei/web/Html.js — getObjectCSSMatrix multipliers `1/f`). With no
+// `distanceFactor` set the factor is 40, so my "intuitive" scale of
+// `world / dom_px` ends up rendered 40× smaller and the dialog
+// collapses to a few viewport pixels. The pre-multiply by 40 cancels
+// drei's divisor so the dialog actually occupies the screen rect.
+const TERMINAL_DOM_W = 720
+const TERMINAL_DOM_H = Math.round(TERMINAL_DOM_W * (TERMINAL_SCREEN_H / TERMINAL_SCREEN_W))
+const TERMINAL_HTML_FACTOR = 40
+const TERMINAL_HTML_SCALE = (TERMINAL_SCREEN_W / TERMINAL_DOM_W) * TERMINAL_HTML_FACTOR
+
+type TerminalPhase = 'closed' | 'enter' | 'open' | 'exit'
+
 // Carcosa play area (kept inline now that the scene lives inside the museum
 // page rather than its own route).
 const CARCOSA_BOUNDS = [{ minX: -15, maxX: 15, minZ: -9.8, maxZ: 15 }]
@@ -82,7 +124,14 @@ export function MuseumPage() {
   const [spawn, setSpawn] = useState<SpawnPose>(MUSEUM_SPAWN)
   const [isExiting, setIsExiting] = useState(false)
   const [activeVariationKey, setActiveVariationKey] = useState<string>(BOOT_VARIATIONS[0])
-  const [terminalOpen, setTerminalOpen] = useState(false)
+  const [terminalPhase, setTerminalPhase] = useState<TerminalPhase>('closed')
+  const terminalLocked = terminalPhase !== 'closed'
+  // Bumped each time the player physically dispenses a blank cart so
+  // the held cart visual flies out of the dispenser. Stays at the
+  // last bump value until the next dispense — partial-cart pickups
+  // (which also flip inv.cart non-null) don't bump it, so they snap
+  // into the loaded pose without replaying the animation.
+  const [cartDispenseAt, setCartDispenseAt] = useState<number | null>(null)
   const activeVariation: Variation = useMemo(
     () => findVariationByKey(activeVariationKey) ?? findVariationByKey(BOOT_VARIATIONS[0])!,
     [activeVariationKey],
@@ -233,7 +282,9 @@ export function MuseumPage() {
 
   const handleLoadVariation = useCallback((key: string) => {
     setActiveVariationKey(key)
-    setTerminalOpen(false)
+    // Skip the camera-back animation: the scene swap relocates us to
+    // CARCOSA_SPAWN anyway, and the swap fade hides the snap.
+    setTerminalPhase('closed')
     swapToScene('carcosa', CARCOSA_SPAWN)
   }, [])
 
@@ -262,7 +313,7 @@ export function MuseumPage() {
         const aabb = wallFixtureAABB(variantTerminalFixture)
         triggers.push({
           zone: { minX: aabb.min[0], maxX: aabb.max[0], minZ: aabb.min[2], maxZ: aabb.max[2] },
-          onActivate: () => { setTerminalOpen(true) },
+          onActivate: () => { setTerminalPhase('enter') },
           label: 'USE TERMINAL',
           aim: { min: aabb.min, max: aabb.max, maxDist: 3 },
         })
@@ -275,8 +326,10 @@ export function MuseumPage() {
         const aabb = fixtureBoxAABB(cartDispenserFixture)
         triggers.push({
           zone: { minX: aabb.min[0], maxX: aabb.max[0], minZ: aabb.min[2], maxZ: aabb.max[2] },
-          onActivate: () => { dispenseCart() },
-          label: 'DISPENSE',
+          onActivate: () => {
+            if (dispenseCart()) setCartDispenseAt(performance.now())
+          },
+          label: 'DISPENSE CART',
           aim: { min: aabb.min, max: aabb.max, maxDist: 2.4 },
         })
       }
@@ -286,7 +339,7 @@ export function MuseumPage() {
         triggers.push({
           zone: { minX: aabb.min[0], maxX: aabb.max[0], minZ: aabb.min[2], maxZ: aabb.max[2] },
           onActivate: () => { pickUpTool() },
-          label: 'PICK UP TOOL',
+          label: 'PICK UP APERTURE',
           aim: { min: aabb.min, max: aabb.max, maxDist: 2.4 },
         })
       }
@@ -334,7 +387,7 @@ export function MuseumPage() {
               for (const [k, v] of Object.entries(docked.gathered)) if (v) gathered[k] = true
               setSlot(i, docked.slug, allGathered ? 'complete' : 'partial', gathered)
             },
-            label: allGathered ? 'DOCK · COMPLETE' : 'DOCK · PARTIAL',
+            label: 'INSERT',
             aim: { min: aabb.min, max: aabb.max, maxDist: 3.5 },
           })
         } else if (seated && seated.state === 'partial' && !inv.cart) {
@@ -428,6 +481,61 @@ export function MuseumPage() {
               swaps without re-mounting (which would tear down its
               camera-attachment effect). */}
           <HeldTool />
+          <HeldCart dispenseAt={cartDispenseAt} />
+          <TerminalFocus
+            phase={terminalPhase}
+            focusPos={TERMINAL_FOCUS_POS}
+            focusLookAt={TERMINAL_FOCUS_LOOKAT}
+            durationMs={TERMINAL_TRANSITION_MS}
+            onArrived={() => setTerminalPhase('open')}
+            onExited={() => setTerminalPhase('closed')}
+          />
+          {/* Variant terminal dialog rendered ON the CRT screen plane
+              only while the player is actively using the terminal.
+              Always-on rendering caused buggy behaviour from far away
+              (drei's CSS3D layer composites separately from the
+              WebGL scene, so the dialog was visible/clickable from
+              positions where it shouldn't be). The wrapper div has
+              an explicit pixel size because drei mounts children
+              inside three nested divs and only the outermost gets
+              the `style` prop — the innermost collapses to natural
+              content size and `width: 100%` resolves to 0. Gated on
+              `activeScene === 'museum'` so it doesn't bleed into
+              Carcosa via drei's out-of-tree portal. */}
+          {activeScene === 'museum' && terminalPhase === 'open' && (
+            <Html
+              transform
+              occlude={false}
+              position={[
+                variantTerminalFixture.centerX,
+                variantTerminalFixture.centerY,
+                TERMINAL_SCREEN_Z + 0.001,
+              ]}
+              scale={[TERMINAL_HTML_SCALE, TERMINAL_HTML_SCALE, TERMINAL_HTML_SCALE]}
+              zIndexRange={[100, 0]}
+            >
+              <div
+                style={{
+                  width: `${TERMINAL_DOM_W}px`,
+                  height: `${TERMINAL_DOM_H}px`,
+                  pointerEvents: 'auto',
+                  color: '#7cffa3',
+                  fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                  // No solid bg here — let the embedded panel's
+                  // semi-transparent background composite over the
+                  // live CRT canvas behind so the green phosphor
+                  // bleeds through.
+                  background: 'transparent',
+                }}
+              >
+                <TerminalInput
+                  embedded
+                  onLoad={handleLoadVariation}
+                  onClose={() => setTerminalPhase('exit')}
+                />
+              </div>
+            </Html>
+          )}
           <Effects />
           <FirstFrameProbe onReady={() => setSceneReady(true)} />
         </Suspense>
@@ -440,7 +548,7 @@ export function MuseumPage() {
           spawn={spawn.pos}
           spawnLookAt={spawn.lookAt}
           onActiveTriggerChange={setActiveDoor}
-          locked={isExiting || terminalOpen}
+          locked={isExiting || terminalLocked}
         />
       </Canvas>
       </div>
@@ -451,10 +559,11 @@ export function MuseumPage() {
           (dispenser, tool rack, demo node), the doors array shrinks
           before Controls' next-frame update clears `activeDoor`. The
           stale index would dereference `undefined` without this check. */}
-      {activeDoor !== null && doors[activeDoor] && (
+      {activeDoor !== null && doors[activeDoor] && !terminalLocked && !isExiting && (
         <DoorPrompt
           label={doors[activeDoor].label ?? 'OPEN'}
           touch={touch}
+          carcosa={activeScene === 'carcosa'}
           onActivate={doors[activeDoor].onActivate}
         />
       )}
@@ -516,12 +625,6 @@ export function MuseumPage() {
           <span className={appStyles.loadingText}>Loading</span>
         </div>
       )}
-      {terminalOpen && (
-        <TerminalInput
-          onLoad={handleLoadVariation}
-          onClose={() => setTerminalOpen(false)}
-        />
-      )}
     </div>
   )
 }
@@ -536,5 +639,108 @@ function FirstFrameProbe({ onReady }: { onReady: () => void }) {
     fired.current = true
     requestAnimationFrame(() => onReady())
   })
+  return null
+}
+
+// Drives the diegetic terminal-focus camera flight. On `enter`, snapshots
+// the player's current pose and animates the camera to the focus pose
+// (in front of the screen, looking head-on); on `exit`, animates back
+// to the snapshotted pose. Phase transitions are owned by the parent —
+// this component just executes the flight and reports completion via
+// onArrived / onExited so the parent can step the state machine
+// forward. Controls is locked the whole time so player input doesn't
+// fight the animation.
+interface TerminalFocusProps {
+  phase: TerminalPhase
+  focusPos: [number, number, number]
+  focusLookAt: [number, number, number]
+  durationMs: number
+  onArrived: () => void
+  onExited: () => void
+}
+
+function TerminalFocus({ phase, focusPos, focusLookAt, durationMs, onArrived, onExited }: TerminalFocusProps) {
+  const { camera } = useThree()
+  const prevPoseRef = useRef<{ pos: Vector3; quat: Quaternion } | null>(null)
+  const animRef = useRef<{
+    kind: 'enter' | 'exit'
+    startTime: number
+    startPos: Vector3
+    startQuat: Quaternion
+    endPos: Vector3
+    endQuat: Quaternion
+  } | null>(null)
+  const onArrivedRef = useRef(onArrived)
+  const onExitedRef = useRef(onExited)
+  useEffect(() => { onArrivedRef.current = onArrived }, [onArrived])
+  useEffect(() => { onExitedRef.current = onExited }, [onExited])
+
+  // Reusable scratch buffers for computing the focus quaternion. Use
+  // Matrix4.lookAt directly (camera convention: -Z points at target) —
+  // Object3D.lookAt on a plain object instead orients +Z toward the
+  // target, which would 180°-flip the camera.
+  const helperMat = useMemo(() => new Matrix4(), [])
+  const helperPos = useMemo(() => new Vector3(), [])
+  const helperLook = useMemo(() => new Vector3(), [])
+  const tmpQuat = useMemo(() => new Quaternion(), [])
+
+  useEffect(() => {
+    if (phase === 'enter') {
+      const startPos = camera.position.clone()
+      const startQuat = camera.quaternion.clone()
+      prevPoseRef.current = { pos: startPos.clone(), quat: startQuat.clone() }
+      const endPos = new Vector3(...focusPos)
+      helperPos.copy(endPos)
+      helperLook.set(focusLookAt[0], focusLookAt[1], focusLookAt[2])
+      helperMat.lookAt(helperPos, helperLook, camera.up)
+      const endQuat = new Quaternion().setFromRotationMatrix(helperMat)
+      animRef.current = { kind: 'enter', startTime: performance.now(), startPos, startQuat, endPos, endQuat }
+    } else if (phase === 'exit') {
+      const prev = prevPoseRef.current
+      if (!prev) {
+        // No snapshot to return to — just complete immediately.
+        onExitedRef.current()
+        return
+      }
+      const startPos = camera.position.clone()
+      const startQuat = camera.quaternion.clone()
+      animRef.current = {
+        kind: 'exit',
+        startTime: performance.now(),
+        startPos,
+        startQuat,
+        endPos: prev.pos.clone(),
+        endQuat: prev.quat.clone(),
+      }
+    } else if (phase === 'closed') {
+      // External cancellation (scene swap from handleLoadVariation).
+      // Drop any in-flight animation; the new spawn will re-pose the
+      // camera via Controls' spawn effect.
+      animRef.current = null
+      prevPoseRef.current = null
+    }
+  }, [phase, camera, focusPos, focusLookAt, helperMat, helperPos, helperLook])
+
+  useFrame(() => {
+    const a = animRef.current
+    if (!a) return
+    const elapsed = performance.now() - a.startTime
+    const u = Math.min(1, elapsed / durationMs)
+    // Ease-in-out cubic so the flight starts gentle, accelerates, and
+    // settles cleanly at the endpoint.
+    const eased = u < 0.5
+      ? 4 * u * u * u
+      : 1 - Math.pow(-2 * u + 2, 3) / 2
+    camera.position.lerpVectors(a.startPos, a.endPos, eased)
+    tmpQuat.copy(a.startQuat).slerp(a.endQuat, eased)
+    camera.quaternion.copy(tmpQuat)
+    if (u >= 1) {
+      const ended = a.kind
+      animRef.current = null
+      if (ended === 'enter') onArrivedRef.current()
+      else onExitedRef.current()
+    }
+  })
+
   return null
 }

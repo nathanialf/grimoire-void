@@ -67,10 +67,10 @@
   transform: translateX(-50%);
   padding: 0.5rem 1rem;
   font-family: var(--font-mono);
-  font-size: 1.25rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  text-indent: 0.15em;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
   line-height: 1;
   color: #000;
   background: var(--color-accent);
@@ -82,6 +82,15 @@
 
 div.prompt { pointer-events: none; }
 button.prompt { pointer-events: auto; cursor: pointer; }
+
+/* Same Carcosa shift the cursor and hint chips use: the accent red
+   vanishes against Carcosa's ground, so the prompt flips to
+   white-on-black there. */
+.promptCarcosa {
+  composes: prompt;
+  color: #fff;
+  background: #000;
+}
 
 .cursor {
   position: fixed;
@@ -169,6 +178,12 @@ button.prompt { pointer-events: auto; cursor: pointer; }
     gap: 0.4rem;
   }
   .hint {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-indent: 0.15em;
+  }
+  .prompt {
     padding: 0.4rem 0.6rem;
     font-size: 0.75rem;
     letter-spacing: 0.15em;

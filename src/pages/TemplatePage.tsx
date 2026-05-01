@@ -6,6 +6,7 @@ import { Timeline } from '../components/Timeline'
 import { NumberedList } from '../components/NumberedList'
 import { PixelatedHeading } from '../components/PixelatedHeading'
 import { ImagePanel } from '../components/ImagePanel'
+import { MuseumPlanFigure } from '../components/MuseumPlanFigure'
 import { StatBlock } from '../components/StatBlock'
 import { ClassNoticeBlock } from '../components/ClassNoticeBlock'
 import { DocFooter } from '../components/DocChrome'
@@ -278,10 +279,16 @@ function ArtifactDoc({ doc }: { doc: ArtifactTemplate }) {
 // sections → mission stats → timeline → recommendations) and adds the
 // template chrome.
 function SurveyDoc({ doc }: { doc: SurveyTemplate }) {
+  // The Museum's plan view doubles as a live status board: the static
+  // SVG draws the room chrome, an overlay reflects each pedestal's slot
+  // state. Other surveys keep the plain ImagePanel.
+  const isMuseum = doc.slug === 'the-museum'
   return (
     <>
       <EntryHeader {...chromeProps(doc)} {...doc.header} />
-      {doc.image && <ImagePanel {...doc.image} />}
+      {doc.image && (isMuseum && doc.image.src
+        ? <MuseumPlanFigure src={doc.image.src} alt={doc.image.alt} caption={doc.image.caption} />
+        : <ImagePanel {...doc.image} />)}
       {renderSections(doc.sections)}
       {doc.missionStats && doc.missionStats.stats.length > 0 && (
         <>

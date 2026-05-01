@@ -73,6 +73,13 @@ export function EntryHeader({
 }
 
 function ChromeRow({ label, value }: { label: string; value: string }) {
+  // Render each word as its own PixelatedText bitmap with literal text-
+  // node spaces between, so long values wrap to additional lines on
+  // narrow containers instead of triggering the bitmap's `maxWidth:
+  // 100%` shrink-to-fit (which downscales the whole line and makes
+  // tags/long-strings unreadable). Browsers wrap inline-block siblings
+  // at whitespace text nodes the same as plain text.
+  const words = value.split(' ').filter((w) => w.length > 0);
   return (
     <div className={styles.row}>
       <span className="visually-hidden">{`${label}: ${value}`}</span>
@@ -80,7 +87,12 @@ function ChromeRow({ label, value }: { label: string; value: string }) {
         <PixelatedText renderSize={7} letterSpacing={0.6}>{`${label}:`}</PixelatedText>
       </span>
       <span className={styles.rowValue} aria-hidden="true">
-        <PixelatedText renderSize={7} letterSpacing={0.4}>{value}</PixelatedText>
+        {words.map((word, i) => (
+          <span key={i}>
+            {i > 0 && ' '}
+            <PixelatedText renderSize={7} letterSpacing={0.4}>{word}</PixelatedText>
+          </span>
+        ))}
       </span>
     </div>
   );

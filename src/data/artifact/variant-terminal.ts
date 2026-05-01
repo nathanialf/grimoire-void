@@ -20,7 +20,7 @@ export const variantTerminal: ArtifactTemplate = {
   ],
   header: {
     classification: 'Archive Fixture — Rewrite Needed',
-    title: 'The Variant Terminal',
+    title: 'Variant Terminal',
     tags: ['fixture', 'archive issue', 'threshold', 'variation loader'],
   },
   sections: [

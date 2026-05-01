@@ -19,7 +19,7 @@ export const recordingAperture: ArtifactTemplate = {
   ],
   header: {
     classification: 'Recording Instrument — Rewrite Needed',
-    title: 'The Recording Aperture',
+    title: 'Recording Aperture',
     tags: ['equipment', 'archive issue', 'field instrument', 'cartridge interface'],
   },
   sections: [

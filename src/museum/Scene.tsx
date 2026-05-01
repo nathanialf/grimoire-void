@@ -53,7 +53,7 @@ function seeded(seed: number) {
 }
 
 // Linear-interpolate two `#rrggbb` hex strings; t∈[0,1].
-function lerpHexColor(a: string, b: string, t: number): string {
+export function lerpHexColor(a: string, b: string, t: number): string {
   const ai = parseInt(a.slice(1), 16)
   const bi = parseInt(b.slice(1), 16)
   const ar = (ai >> 16) & 0xff, ag = (ai >> 8) & 0xff, ab = ai & 0xff
@@ -69,7 +69,7 @@ function lerpHexColor(a: string, b: string, t: number): string {
 // matches the wall. Accents are saturated, mid-luminance hues — never
 // pastel/near-white — so they hold their color against bloom and stand out
 // against the white pedestal body.
-const ARTIFACT_PALETTES: { base: string; ink: string; accent: string }[] = [
+export const ARTIFACT_PALETTES: { base: string; ink: string; accent: string }[] = [
   { base: '#ffffff', ink: '#0a0a0a', accent: '#ff4030' }, // red    + bold red-orange
   { base: '#ffffff', ink: '#120c1e', accent: '#a830ff' }, // purple + vivid magenta-purple
   { base: '#ffffff', ink: '#082014', accent: '#00c060' }, // green  + emerald
@@ -200,7 +200,7 @@ function paintArtifactBackground(ctx: CanvasRenderingContext2D, p: ArtifactPatte
 // One-shot static artifact texture — full pattern painted up front, no
 // reveal animation. Used by ChipPanel so the cartridge label doesn't
 // re-animate every time the player looks at it.
-function makeStaticArtifactTexture(seed: number, opts: ArtifactOpts): CanvasTexture {
+export function makeStaticArtifactTexture(seed: number, opts: ArtifactOpts): CanvasTexture {
   const pattern = computeArtifactPattern(seed, opts)
   const { ctx, tex } = newArtifactCanvasTexture(pattern)
   paintArtifactBackground(ctx, pattern)
@@ -658,6 +658,12 @@ function Pedestal({ slotIndex, x, z, topGlow }: { slotIndex: number; x: number; 
   const name = (entry.data.museum?.cartridge?.label ?? titleOf(entry.data)).toUpperCase()
   const modelSrc = entry.data.museum?.model?.src
 
+  // Partial pedestals glow amber so an unfinished cart reads at a glance
+  // from across the room; complete pedestals stay warm-white. Tints both
+  // the additive top-glow texture and the area light driving the
+  // cartridge faces so they agree.
+  const lightColor = seated.state === 'partial' ? '#ffb84d' : '#fff4dd'
+
   return (
     <group position={[x, 0, z]}>
       <mesh position={[0, PEDESTAL_SIZE / 2, 0]}>
@@ -692,6 +698,7 @@ function Pedestal({ slotIndex, x, z, topGlow }: { slotIndex: number; x: number; 
         <planeGeometry args={[PEDESTAL_SIZE, PEDESTAL_SIZE]} />
         <meshBasicMaterial
           map={topGlow}
+          color={lightColor}
           transparent
           blending={AdditiveBlending}
           depthWrite={false}
@@ -708,7 +715,7 @@ function Pedestal({ slotIndex, x, z, topGlow }: { slotIndex: number; x: number; 
         width={PEDESTAL_SIZE * 0.9}
         height={PEDESTAL_SIZE * 0.9}
         intensity={1}
-        color="#fff4dd"
+        color={lightColor}
       />
     </group>
   )

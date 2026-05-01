@@ -3,15 +3,17 @@ import styles from '../styles/Museum.module.css'
 interface Props {
   label: string
   touch: boolean
+  carcosa: boolean
   onActivate: () => void
 }
 
-export function DoorPrompt({ label, touch, onActivate }: Props) {
+export function DoorPrompt({ label, touch, carcosa, onActivate }: Props) {
+  const cls = carcosa ? styles.promptCarcosa : styles.prompt
   if (touch) {
     return (
       <button
         type="button"
-        className={styles.prompt}
+        className={cls}
         onTouchStart={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -22,5 +24,5 @@ export function DoorPrompt({ label, touch, onActivate }: Props) {
       </button>
     )
   }
-  return <div className={styles.prompt}>[E] {label}</div>
+  return <div className={cls}>[E] {label}</div>
 }

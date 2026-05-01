@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react'
 import { Color, Group, MeshStandardMaterial } from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useInventory } from '../data/inventory'
+import { useSlots } from '../data/loadState'
 import type { VariationNode } from '../data/variations'
 import { NODE_SIZE } from './nodeAabb'
 
@@ -18,10 +19,22 @@ const SIZE = NODE_SIZE
 
 export function Node({ node }: { node: VariationNode }) {
   const inv = useInventory()
+  const slots = useSlots()
   const groupRef = useRef<Group>(null)
   const matRef = useRef<MeshStandardMaterial>(null)
 
-  const archived = !!(inv.cart && inv.cart.gathered[node.id])
+  // A node reads as archived in two cases: the player's held cart has
+  // captured it, OR a docked cart for this slug already records it.
+  // The second case was missing — once a cart is docked the held-cart
+  // check returns false, so previously-collected nodes lit back up as
+  // un-collected when the player re-entered Carcosa.
+  const archived = useMemo(() => {
+    if (inv.cart && inv.cart.gathered[node.id]) return true
+    for (const slot of Object.values(slots)) {
+      if (slot.slug === node.slug && slot.gathered[node.id]) return true
+    }
+    return false
+  }, [inv.cart, slots, node.id, node.slug])
 
   const baseColor = useMemo(() => new Color('#7cffa3'), [])
   const archivedColor = useMemo(() => new Color('#2c2e34'), [])

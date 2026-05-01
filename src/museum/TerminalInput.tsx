@@ -14,6 +14,10 @@ import styles from '../styles/TerminalInput.module.css'
 interface TerminalInputProps {
   onLoad: (key: string) => void
   onClose: () => void
+  // When true, the dialog renders without its own backdrop so it can be
+  // embedded on the in-world CRT screen (drei `<Html transform>`).
+  // The panel itself fills the parent container instead of self-sizing.
+  embedded?: boolean
 }
 
 // HTML overlay (DOM, not WebGL) shown when the player engages the variant
@@ -25,7 +29,7 @@ interface TerminalInputProps {
 // PointerLockControls is unmounted while this is open (MuseumPage passes
 // locked=true to Controls) so the input can take focus without fighting
 // the FPS movement system.
-export function TerminalInput({ onLoad, onClose }: TerminalInputProps) {
+export function TerminalInput({ onLoad, onClose, embedded = false }: TerminalInputProps) {
   const discovered = useDiscoveredVariations()
   const [input, setInput] = useState('')
   const [status, setStatus] = useState<{ kind: 'idle' } | { kind: 'error'; msg: string } | { kind: 'ok'; msg: string }>({ kind: 'idle' })
@@ -64,9 +68,11 @@ export function TerminalInput({ onLoad, onClose }: TerminalInputProps) {
     onLoad(v.key)
   }
 
-  return (
-    <div className={styles.backdrop} onClick={onClose}>
-      <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
+  const panel = (
+    <div
+      className={embedded ? styles.panelEmbedded : styles.panel}
+      onClick={(e) => e.stopPropagation()}
+    >
         <div className={styles.header}>
           <span className={styles.title}>// VARIANT TERMINAL</span>
           <button className={styles.close} onClick={onClose} aria-label="Close terminal">×</button>
@@ -115,7 +121,18 @@ export function TerminalInput({ onLoad, onClose }: TerminalInputProps) {
             {status.kind === 'idle' ? ' ' : status.msg}
           </div>
         </div>
-      </div>
+    </div>
+  )
+
+  if (embedded) {
+    // Embedded mode: parent (drei <Html transform>) sized the surface
+    // to fit the in-world CRT screen, so the panel just fills it. No
+    // backdrop — the screen *is* the surface.
+    return panel
+  }
+  return (
+    <div className={styles.backdrop} onClick={onClose}>
+      {panel}
     </div>
   )
 }

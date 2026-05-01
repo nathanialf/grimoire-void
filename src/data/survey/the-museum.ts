@@ -20,7 +20,7 @@ export const theMuseum: SurveyTemplate = {
   ],
   header: {
     classification: 'Archive Facility — Rewrite Needed',
-    title: 'The Museum',
+    title: 'Museum',
     tags: ['archive', 'facility', 'standing site', 'threshold-adjacent'],
   },
   image: {
@@ -55,6 +55,7 @@ export const theMuseum: SurveyTemplate = {
   footer: {
     viewingHistory: [
       { who: 'Archive Custody', when: 'C4427 D200 · 08:00' },
+      { who: '████████ █████', when: '████ ████ · ██:██' },
       { who: 'archive.accession', when: 'C4419 D045 · 06:00' },
     ],
   },

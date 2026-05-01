@@ -23,6 +23,72 @@
   box-shadow: 0 0 80px rgba(124, 255, 163, 0.18);
 }
 
+/* Embedded variant — fully self-contained (no .panel base). Drei's
+   <Html transform> mounts children inside a CSS3DObject whose layout
+   shouldn't depend on inherited .panel rules (vw-based width,
+   max-height: 80vh, overflow: auto), which were collapsing the
+   visible content to a black rectangle.
+
+   Layout: fills the CSS3D wrapper exactly. CRT visual treatment
+   (scanlines, corner vignette, phosphor glow) is layered onto the
+   panel itself since the in-world CRT canvas behind it is now
+   fully covered. */
+.panelEmbedded {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.1rem 1.3rem;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  color: #7cffa3;
+  /* Background is intentionally semi-transparent so the live CRT
+     phosphor + boot-log behind the dialog bleeds through and the
+     screen still reads as a powered CRT rather than a flat opaque
+     panel. */
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0,
+      rgba(0, 0, 0, 0) 1px,
+      rgba(0, 0, 0, 0.18) 1px,
+      rgba(0, 0, 0, 0.18) 2px
+    ),
+    radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) 55%,
+      rgba(0, 0, 0, 0.55) 100%
+    ),
+    rgba(4, 8, 6, 0.55);
+  box-shadow:
+    0 0 24px rgba(124, 255, 163, 0.32),
+    inset 0 0 30px rgba(124, 255, 163, 0.06);
+  text-shadow: 0 0 6px rgba(124, 255, 163, 0.45);
+  /* Power-on entrance — quick fade + slight scale so the dialog
+     "boots" onto the screen instead of snapping. transform-origin
+     center keeps it anchored on the bezel. */
+  transform-origin: 50% 50%;
+  animation: terminalPowerOn 320ms cubic-bezier(0.2, 0.7, 0.35, 1) both;
+}
+
+@keyframes terminalPowerOn {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .header {
   display: flex;
   justify-content: space-between;
