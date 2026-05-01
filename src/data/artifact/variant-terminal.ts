@@ -38,7 +38,7 @@ export const variantTerminal: ArtifactTemplate = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'Keywords are not enumerated by the terminal. They are obtained from the archive itself — read out of documents in custody — and entered exactly. Approximate spellings, draft titles, and inferred names are not honoured. There is no list of unfound variations and there is no hint channel.',
+          text: 'Keywords are not enumerated by the terminal. They are obtained from the archive itself — read out of documents in custody — and entered exactly. Approximate spellings, draft titles, and inferred names are not honoured. There is no list of unfound variations and there is no hint channel. The first recognised keyword in operator hands has historically been *Glass Litany*, recovered from accession notes; later operators have added other entries to the index by reading further.',
         },
       ],
     },

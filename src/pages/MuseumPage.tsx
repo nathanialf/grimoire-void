@@ -10,7 +10,11 @@ import {
   EXIT_Z_POS,
   cartDispenserFixture,
   toolMountFixture,
+  variantTerminalFixture,
+  wallFixtureAABB,
   fixtureBoxAABB,
+  PEDESTAL_SIZE,
+  MUSEUM_PEDESTALS,
 } from '../museum/sceneConstants'
 import { DOOR_W, DOOR_H } from '../museum/frameTicker'
 import { Controls, type InputState, type Trigger } from '../museum/Controls'
@@ -19,17 +23,31 @@ import { Effects } from '../museum/Effects'
 import { TerminalLog } from '../museum/TerminalLog'
 import { DoorPrompt } from '../museum/DoorPrompt'
 import { HeldTool } from '../museum/CartTool'
-import { DEMO_NODE_ID, DEMO_NODE_SLUG, demoNodeAabb } from '../museum/DemoNode'
+import { nodeAabb } from '../museum/nodeAabb'
+import { TerminalInput } from '../museum/TerminalInput'
 import { pixelSort } from '../museum/effects/pixelSortUniform'
 import { datamosh } from '../museum/effects/datamoshUniform'
 import { useNavigate } from '../hooks/useNavigate'
 import {
   derez as derezInventory,
   dispenseCart,
+  dockCart,
+  pickUpPartialCart,
   pickUpTool,
   scanNode,
   useInventory,
 } from '../data/inventory'
+import {
+  cartridgeStateOf,
+  gatheredOf,
+  setCartridge,
+  useCartridgeStates,
+} from '../data/loadState'
+import {
+  BOOT_VARIATIONS,
+  findVariationByKey,
+  type Variation,
+} from '../data/variations'
 import styles from '../styles/Museum.module.css'
 import appStyles from '../styles/App.module.css'
 
@@ -65,6 +83,12 @@ export function MuseumPage() {
   const [activeScene, setActiveScene] = useState<SceneId>('museum')
   const [spawn, setSpawn] = useState<SpawnPose>(MUSEUM_SPAWN)
   const [isExiting, setIsExiting] = useState(false)
+  const [activeVariationKey, setActiveVariationKey] = useState<string>(BOOT_VARIATIONS[0])
+  const [terminalOpen, setTerminalOpen] = useState(false)
+  const activeVariation: Variation = useMemo(
+    () => findVariationByKey(activeVariationKey) ?? findVariationByKey(BOOT_VARIATIONS[0])!,
+    [activeVariationKey],
+  )
   const canvasContainerRef = useRef<HTMLDivElement>(null)
   // Brief flash overlay shown the instant a screenshot is taken so the
   // player has visual feedback that the capture fired.
@@ -207,6 +231,13 @@ export function MuseumPage() {
   }
 
   const inv = useInventory()
+  const cartridgeStates = useCartridgeStates()
+
+  const handleLoadVariation = useCallback((key: string) => {
+    setActiveVariationKey(key)
+    setTerminalOpen(false)
+    swapToScene('carcosa', CARCOSA_SPAWN)
+  }, [])
 
   const doors: Trigger[] = useMemo(() => {
     if (activeScene === 'museum') {
@@ -226,6 +257,18 @@ export function MuseumPage() {
         // Carcosa door — walk through to teleport, no prompt and no fade.
         { zone: carcosaDoorZone, onActivate: () => swapToScene('carcosa', CARCOSA_SPAWN), facing: [0, -1], instant: true },
       ]
+      // Variant terminal — opens the keyword/known-variations overlay.
+      // Aim-only (no zone) so the player can engage from across the room
+      // when looking at it.
+      {
+        const aabb = wallFixtureAABB(variantTerminalFixture)
+        triggers.push({
+          zone: { minX: aabb.min[0], maxX: aabb.max[0], minZ: aabb.min[2], maxZ: aabb.max[2] },
+          onActivate: () => { setTerminalOpen(true) },
+          label: 'USE TERMINAL',
+          aim: { min: aabb.min, max: aabb.max, maxDist: 3 },
+        })
+      }
       // Dispenser is only interactable when the player has the tool
       // equipped AND no cart held — suppress the trigger entirely
       // otherwise. Without the tool there's nothing to load the cart
@@ -249,6 +292,80 @@ export function MuseumPage() {
           aim: { min: aabb.min, max: aabb.max, maxDist: 2.4 },
         })
       }
+
+      // Per-pedestal triggers: dock the held cart, retrieve a partial
+      // cart that was previously docked, or surface a wrong-cart hover
+      // label naming the slug the pedestal expects. Pedestals already
+      // 'complete' contribute no trigger — the entry is permanent.
+      const variationNodeIdsBySlug = new Map<string, string[]>()
+      for (const v of [activeVariation]) {
+        for (const n of v.nodes) {
+          const list = variationNodeIdsBySlug.get(n.slug) ?? []
+          list.push(n.id)
+          variationNodeIdsBySlug.set(n.slug, list)
+        }
+      }
+      for (let i = 0; i < MUSEUM_PEDESTALS.length; i++) {
+        const slug = MUSEUM_PEDESTALS[i]
+        if (!slug) continue
+        const [px, pz] = pedestalPositions[i]
+        const half = PEDESTAL_SIZE / 2
+        const aabb = {
+          min: [px - half, 0, pz - half] as [number, number, number],
+          max: [px + half, PEDESTAL_SIZE + 0.6, pz + half] as [number, number, number],
+        }
+        const zone = { minX: aabb.min[0], maxX: aabb.max[0], minZ: aabb.min[2], maxZ: aabb.max[2] }
+        const state = cartridgeStateOf(slug)
+        if (state === 'complete') continue
+
+        if (inv.cart && inv.cart.slug === slug) {
+          // Dock — partial unless every node in the active variation that
+          // binds to this slug is gathered. (Other variations may bind to
+          // the same slug; we only know the current variation's expected
+          // count, so completion is "all currently-known nodes for this
+          // slug are gathered." Future authoring may extend this.)
+          const expected = variationNodeIdsBySlug.get(slug) ?? []
+          const cart = inv.cart
+          const allGathered = expected.length > 0 && expected.every((id) => cart.gathered[id])
+          triggers.push({
+            zone,
+            onActivate: () => {
+              const docked = dockCart()
+              if (!docked || !docked.slug) return
+              const gathered: Record<string, true> = {}
+              for (const [k, v] of Object.entries(docked.gathered)) if (v) gathered[k] = true
+              setCartridge(docked.slug, allGathered ? 'complete' : 'partial', gathered)
+            },
+            label: allGathered ? 'DOCK · COMPLETE' : 'DOCK · PARTIAL',
+            aim: { min: aabb.min, max: aabb.max, maxDist: 3.5 },
+          })
+        } else if (inv.cart && inv.cart.slug && inv.cart.slug !== slug) {
+          // Wrong-cart HUD — hover label only, no activate. Names the
+          // slug this pedestal expects so the player knows where their
+          // current cart belongs (and where this one wants to go).
+          triggers.push({
+            zone,
+            onActivate: () => {},
+            label: `WRONG CART · ${slug.replace(/-/g, ' ').toUpperCase()}`,
+            aim: { min: aabb.min, max: aabb.max, maxDist: 3.5 },
+          })
+        } else if (!inv.cart && state === 'partial') {
+          // Retrieve a partial cart so it can be finished later or in a
+          // different variation. Per cartridges.md, partial pedestals
+          // continue to surface their bound doc in the wiki — so we
+          // leave the persisted state alone here. The held cart is
+          // re-bound with the same gathered set.
+          triggers.push({
+            zone,
+            onActivate: () => {
+              const ok = pickUpPartialCart(slug, gatheredOf(slug))
+              if (ok) setCartridge(slug, 'absent', {})
+            },
+            label: 'RETRIEVE CART',
+            aim: { min: aabb.min, max: aabb.max, maxDist: 3.5 },
+          })
+        }
+      }
       return triggers
     }
     // In Carcosa.
@@ -256,29 +373,31 @@ export function MuseumPage() {
       // Walk through the return portal to teleport back.
       { zone: returnPortalZone, onActivate: () => swapToScene('museum', MUSEUM_RETURN_SPAWN), facing: [0, -1], instant: true },
     ]
-    // Demo scan node — only useful while the tool is equipped, the cart
-    // is loaded, the cart's slug matches the node, and the node hasn't
-    // been gathered yet. Anything else, suppress the prompt to keep the
-    // HUD honest about what's actionable.
+    // One scan trigger per node in the active variation. Suppress the
+    // prompt entirely once a node is gathered (archived nodes stay
+    // visible in the world per spec but become non-interactive). The
+    // tool must be equipped — without it, scanning is a no-op anyway.
     if (inv.tool.equipped) {
       const cart = inv.cart
-      const wrongSlug = cart && cart.slug !== null && cart.slug !== DEMO_NODE_SLUG
-      const alreadyGathered = !!(cart && cart.gathered[DEMO_NODE_ID])
-      if (!alreadyGathered) {
+      for (const n of activeVariation.nodes) {
+        const alreadyGathered = !!(cart && cart.gathered[n.id])
+        if (alreadyGathered) continue
+        const aabb = nodeAabb(n)
+        const wrongSlug = cart && cart.slug !== null && cart.slug !== n.slug
         let label = 'SCAN'
         if (!cart) label = 'NO CART'
-        else if (wrongSlug) label = 'WRONG CART'
+        else if (wrongSlug) label = `WRONG CART · ${n.slug.replace(/-/g, ' ').toUpperCase()}`
         triggers.push({
-          zone: { minX: demoNodeAabb.min[0], maxX: demoNodeAabb.max[0], minZ: demoNodeAabb.min[2], maxZ: demoNodeAabb.max[2] },
-          onActivate: () => { scanNode(DEMO_NODE_ID, DEMO_NODE_SLUG) },
+          zone: { minX: aabb.min[0], maxX: aabb.max[0], minZ: aabb.min[2], maxZ: aabb.max[2] },
+          onActivate: () => { scanNode(n.id, n.slug) },
           label,
-          aim: { min: demoNodeAabb.min, max: demoNodeAabb.max, maxDist: 3 },
+          aim: { min: aabb.min, max: aabb.max, maxDist: 3 },
         })
       }
     }
     return triggers
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeScene, inv])
+  }, [activeScene, inv, cartridgeStates, activeVariation])
 
   const sceneWalkable = activeScene === 'museum' ? walkableRects : CARCOSA_BOUNDS
   const scenePedestals = activeScene === 'museum' ? pedestalPositions : []
@@ -303,7 +422,7 @@ export function MuseumPage() {
             <Scene />
           </group>
           <group visible={activeScene === 'carcosa'}>
-            <CarcosaScene />
+            <CarcosaScene variation={activeVariation} />
           </group>
           {/* Held tool sits at top-level so it persists across scene
               swaps without re-mounting (which would tear down its
@@ -321,7 +440,7 @@ export function MuseumPage() {
           spawn={spawn.pos}
           spawnLookAt={spawn.lookAt}
           onActiveTriggerChange={setActiveDoor}
-          locked={isExiting}
+          locked={isExiting || terminalOpen}
         />
       </Canvas>
       </div>
@@ -391,6 +510,12 @@ export function MuseumPage() {
           <span className={appStyles.loadingRing} role="img" aria-hidden="true" />
           <span className={appStyles.loadingText}>Loading</span>
         </div>
+      )}
+      {terminalOpen && (
+        <TerminalInput
+          onLoad={handleLoadVariation}
+          onClose={() => setTerminalOpen(false)}
+        />
       )}
     </div>
   )

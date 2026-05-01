@@ -5,6 +5,7 @@ export const ariaVex: ProfileTemplate = {
   pageNumber: '007',
   drift: 0.31,
   slug: 'aria-vex',
+  partialFraction: 0.33,
   filename: 'vex-a-s9-2207.profile',
   filetype: 'PROFILE',
   author: 'Records Division',

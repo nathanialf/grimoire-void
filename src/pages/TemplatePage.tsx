@@ -11,7 +11,9 @@ import { ClassNoticeBlock } from '../components/ClassNoticeBlock'
 import { DocFooter } from '../components/DocChrome'
 import { renderBlocks } from '../utils/renderBlocks'
 import { renderText } from '../utils/renderText'
+import { applyPartial } from '../utils/applyPartial'
 import { deriveMedia } from '../data'
+import { useCartridgeStates } from '../data/loadState'
 import shared from '../styles/shared.module.css'
 import styles from '../styles/TemplatePage.module.css'
 import type {
@@ -35,15 +37,24 @@ import type {
 // not a parallel one.
 
 export function TemplatePage(props: TemplateData) {
+  // Partial-state cropping: when the bound cart is half-docked (state =
+  // 'partial') and the doc declares a partialFraction, swap in the
+  // cropped body before dispatching to the kind-specific renderer.
+  // 'complete' shows the whole body; ambient docs (no pedestal) never
+  // reach 'partial' state and bypass this entirely.
+  const states = useCartridgeStates()
+  const doc = props.partialFraction !== undefined && states[props.slug] === 'partial'
+    ? applyPartial(props, props.partialFraction)
+    : props
   return (
-    <PageFrame pageNumber={props.pageNumber}>
+    <PageFrame pageNumber={doc.pageNumber}>
       <div className={shared.page}>
-        {props.kind === 'comm' && <CommDoc doc={props} />}
-        {props.kind === 'profile' && <ProfileDoc doc={props} />}
-        {props.kind === 'coe' && <COEDoc doc={props} />}
-        {props.kind === 'artifact' && <ArtifactDoc doc={props} />}
-        {props.kind === 'survey' && <SurveyDoc doc={props} />}
-        <DocFooter footer={props.footer} />
+        {doc.kind === 'comm' && <CommDoc doc={doc} />}
+        {doc.kind === 'profile' && <ProfileDoc doc={doc} />}
+        {doc.kind === 'coe' && <COEDoc doc={doc} />}
+        {doc.kind === 'artifact' && <ArtifactDoc doc={doc} />}
+        {doc.kind === 'survey' && <SurveyDoc doc={doc} />}
+        <DocFooter footer={doc.footer} />
       </div>
     </PageFrame>
   )

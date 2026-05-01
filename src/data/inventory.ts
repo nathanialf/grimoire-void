@@ -101,6 +101,32 @@ export function derez(): void {
   notify()
 }
 
+// Pulls the current cart's payload off and clears the held slot. The
+// caller (museum dock-trigger) is responsible for writing it into the
+// pedestal store via setCartridge. Decoupled so inventory.ts doesn't
+// import loadState.
+export function dockCart(): { slug: string | null; gathered: Record<string, boolean> } | null {
+  const cart = state.cart
+  if (!cart) return null
+  const payload = { slug: cart.slug, gathered: cart.gathered }
+  state = { ...state, cart: null }
+  notify()
+  return payload
+}
+
+// Re-binds an in-hand cart to a known slug pre-populated from a pedestal
+// (the inverse of dockCart). Used when the player retrieves a partial
+// cart they previously docked. Refuses if the player already holds a
+// cart so the one-cart-at-a-time invariant survives.
+export function pickUpPartialCart(slug: string, gathered: Record<string, true>): boolean {
+  if (state.cart) return false
+  const cleaned: Record<string, boolean> = {}
+  for (const [k, v] of Object.entries(gathered)) if (v) cleaned[k] = true
+  state = { ...state, cart: { slug, gathered: cleaned } }
+  notify()
+  return true
+}
+
 // Test/debug helper — fully resets the inventory to its initial blank
 // state. Not used in normal play.
 export function resetInventory(): void {

@@ -151,6 +151,12 @@ export interface ChromeMeta {
   meta: [HeaderMetaSlot, HeaderMetaSlot]
   drift: number
   museum?: MuseumPresence
+  // Fraction (0..1) of the document body visible while the bound
+  // cartridge is in 'partial' state. Author-defined per doc; missing
+  // → 1 (full body even when partial). The remainder of each section
+  // is replaced with a sentinel "fragment missing" paragraph by
+  // applyPartial. Ambient docs have no partial state and ignore this.
+  partialFraction?: number
 }
 
 export interface CommTemplate extends ChromeMeta {
