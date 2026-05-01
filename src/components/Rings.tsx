@@ -23,6 +23,7 @@ export function Rings({ className, ariaHidden = true }: RingsProps) {
       aria-hidden={ariaHidden}
       focusable="false"
     >
+      <g className="rings-rotor">
       <path
         fillRule="evenodd"
         d="
@@ -50,6 +51,7 @@ export function Rings({ className, ariaHidden = true }: RingsProps) {
           Z
         "
       />
+      </g>
     </svg>
   )
 }

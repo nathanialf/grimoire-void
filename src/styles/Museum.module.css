@@ -48,7 +48,7 @@
   padding: 0 0.4em;
 }
 
-.terminalTimer_ok     { color: var(--color-accent); }
+.terminalTimer_ok     { color: #4ade80; }
 .terminalTimer_amber  { color: #ffb84d; }
 .terminalTimer_danger { color: var(--color-danger); }
 .terminalTimer_blink  {
@@ -168,7 +168,7 @@ button.prompt { pointer-events: auto; cursor: pointer; }
   position: absolute;
   width: 128px;
   height: 128px;
-  border: 2px solid rgba(191, 255, 0, 0.5);
+  border: 2px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
   border-radius: 50%;
   opacity: 0;
   transition: opacity 150ms ease;
@@ -182,6 +182,6 @@ button.prompt { pointer-events: auto; cursor: pointer; }
   width: 48px;
   height: 48px;
   margin: -24px 0 0 -24px;
-  background: rgba(191, 255, 0, 0.6);
+  background: color-mix(in srgb, var(--color-accent) 60%, transparent);
   border-radius: 50%;
 }

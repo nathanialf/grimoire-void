@@ -1,6 +1,7 @@
 import { PageFrame } from '../components/PageFrame';
 import { PixelatedText } from '../components/PixelatedText';
 import { Rings } from '../components/Rings';
+import { Defnf } from '../components/Defnf';
 import { useNavigate } from '../hooks/useNavigate';
 import styles from '../styles/SplashScreen.module.css';
 
@@ -9,13 +10,9 @@ export function SplashScreen() {
   return (
     <PageFrame locked>
       <div className={styles.splash}>
-        <div className={`${styles.ringContainer} ca-fx`}>
-          <Rings className={styles.rings} />
-          <img
-            src="/images/defnf-logo.png"
-            alt="defnf logo"
-            className={styles.logo}
-          />
+        <div className={styles.ringContainer}>
+          <Rings className={`${styles.rings} ca-fx-soft`} />
+          <Defnf className={`${styles.logo} ca-fx-soft`} />
         </div>
         <span className={styles.enterLabel}>
           <span className="visually-hidden">Enter</span>

@@ -127,6 +127,8 @@
   display: inline-block;
   height: 1.4em;
   width: 1.4em;
+  padding-inline: 0.45em;
+  box-sizing: content-box;
   flex-shrink: 0;
   align-self: center;
   margin-top: -0.25em;
@@ -143,6 +145,7 @@
   color: var(--color-text-dim);
   opacity: 0.4;
   margin-top: var(--space-sm);
+  padding-left: 0.675em;
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -181,6 +184,8 @@
   align-items: center;
   height: 0.85em;
   width: 1.275em;
+  padding-inline: 0.45em;
+  box-sizing: content-box;
   flex-shrink: 0;
   margin-right: 0.3em;
   line-height: 0;

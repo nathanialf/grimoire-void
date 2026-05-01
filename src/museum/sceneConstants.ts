@@ -191,39 +191,28 @@ export function fixtureBoxAABB(b: FixtureBox): AABB {
   }
 }
 
-// The central pedestal is a thin column dead-center of the room, used
-// as the mount for both the cart dispenser and the tool wall-mount.
-// Player has to pass it on the way to/from the carcosa door.
-export const CENTRAL_PEDESTAL = {
-  centerX: 0,
-  centerZ: 0,
-  // Square footprint so the pillar reads from any approach angle.
-  width: 0.4,
-  depth: 0.4,
-  height: 1.95,
-} as const
-
-// Both fixtures hang off the +Z face of the pillar (facing the entry
-// door) so the player sees them on approach. Fixtures protrude forward
-// from the pillar's front face by half their depth.
-const PILLAR_FRONT_Z = CENTRAL_PEDESTAL.centerZ + CENTRAL_PEDESTAL.depth / 2
+// Tool + dispenser are wall-mounted on the +X (east) side wall, side by
+// side at chest height. Each fixture's AABB is its world-space bounding
+// box; rendering rotates the meshes -π/2 around Y so their original +Z
+// front faces become world -X (facing into the room).
+export const toolMountFixture: FixtureBox = {
+  center: [
+    ROOM.w / 2 - 0.07,
+    1.05,
+    0,
+  ],
+  size: [0.16, 0.18, 0.4],
+}
+export const toolMountRotationY = -Math.PI / 2
 
 export const cartDispenserFixture: FixtureBox = {
   center: [
-    CENTRAL_PEDESTAL.centerX,
-    1.55,
-    PILLAR_FRONT_Z + 0.11,
-  ],
-  size: [0.5, 0.42, 0.22],
-}
-
-export const toolMountFixture: FixtureBox = {
-  center: [
-    CENTRAL_PEDESTAL.centerX,
+    ROOM.w / 2 - 0.11,
     1.05,
-    PILLAR_FRONT_Z + 0.11,
+    0.55,
   ],
-  size: [0.55, 0.3, 0.22],
+  size: [0.22, 0.42, 0.5],
 }
+export const cartDispenserRotationY = -Math.PI / 2
 
 export { WALL_Z }

@@ -37,7 +37,6 @@ import { renderPixelBitmap } from '../utils/renderPixelBitmap'
 import { CarcosaTerminal } from './CarcosaTerminal'
 import { CartDispenser } from './CartDispenser'
 import { ToolWallMount } from './CartTool'
-import { CentralPedestal } from './CentralPedestal'
 
 // RectAreaLight requires a one-time uniform texture LUT init before use.
 RectAreaLightUniformsLib.init()
@@ -1092,9 +1091,20 @@ export function Scene() {
           the door. Dispenser + tool rack hang off a thin central
           pedestal mid-room so the player passes them on the way in. */}
       <CarcosaTerminal />
-      <CentralPedestal />
       <CartDispenser />
       <ToolWallMount />
+
+      {/* Downward spot above the wall-mounted tool rack so it reads in
+          the dark — the central ceiling panel only pools at the room's
+          midpoint, leaving the side walls dim without a local source. */}
+      <rectAreaLight
+        position={[ROOM.w / 2 - 0.3, 2.6, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        width={1.0}
+        height={0.6}
+        intensity={10}
+        color="#fff4dd"
+      />
     </>
   )
 }

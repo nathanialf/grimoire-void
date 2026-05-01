@@ -11,6 +11,7 @@ import { CreditsPage } from './pages/CreditsPage'
 import { TemplatePage } from './pages/TemplatePage'
 import { usePageScroll } from './hooks/usePageScroll'
 import { REGISTRY, isDocVisible, type TickerVariant } from './data'
+import { buildNavEntries } from './data/navOrder'
 import { useCartridgeStates } from './data/loadState'
 import styles from './styles/App.module.css'
 
@@ -22,15 +23,11 @@ interface PageEntry {
   ticker: TickerVariant
 }
 
-// `/redacted/067` sits between the wiki entries and `/credits`; the
-// registry's order preserves the legacy prev/next sweep.
-const REDACTED_INSERT_INDEX = REGISTRY.length
-
 const PAGES: PageEntry[] = [
   { path: '/', component: SplashScreen, ticker: 'none' },
   { path: '/cover', component: CoverPage, ticker: 'none' },
   { path: '/blank', component: BlankPage, ticker: 'none' },
-  ...REGISTRY.slice(0, REDACTED_INSERT_INDEX).map(({ data, route, ticker }) => ({
+  ...REGISTRY.map(({ data, route, ticker }) => ({
     path: route,
     component: () => <TemplatePage {...data} />,
     ticker,
@@ -184,21 +181,13 @@ export function App() {
 
   const cartridgeStates = useCartridgeStates()
 
-  // Wiki entries gate on cartridge state. Chrome pages (no REGISTRY entry
-  // for the route) bypass the gate and stay always-known. An invisible
-  // route falls through to the existing RedactedPage 404 branch.
-  const navigablePages = useMemo(
-    () => PAGES.filter(({ path }) => {
-      if (path === '/') return false
-      const entry = REGISTRY.find(({ route }) => route === path)
-      return !entry || isDocVisible(entry, cartridgeStates)
-    }),
-    [cartridgeStates],
-  )
-
-  const navIndex = navigablePages.findIndex(({ path }) => path === pathname)
-  const prevPath = navIndex > 0 ? navigablePages[navIndex - 1].path : undefined
-  const nextPath = navIndex >= 0 && navIndex < navigablePages.length - 1 ? navigablePages[navIndex + 1].path : undefined
+  // Prev/next walks the same page-number-sorted list the sidebar shows, so
+  // the buttons land on whatever the user sees as the visually adjacent
+  // entry. Splash (`/`) is intentionally absent from the sequence.
+  const navEntries = useMemo(() => buildNavEntries(cartridgeStates), [cartridgeStates])
+  const navIndex = navEntries.findIndex((e) => e.to === pathname)
+  const prevPath = navIndex > 0 ? navEntries[navIndex - 1].to : undefined
+  const nextPath = navIndex >= 0 && navIndex < navEntries.length - 1 ? navEntries[navIndex + 1].to : undefined
 
   const isKnownPage = useMemo(() => {
     const page = PAGES.find(({ path }) => path === pathname)
@@ -286,21 +275,25 @@ export function App() {
   )
 }
 
-// Hidden SVG filter used by .ca-fx. Splits the source into R/G/B channel-
-// isolated layers, offsets red left and blue right by a fraction of a pixel,
-// and screen-blends them. Two important wrinkles:
-//   1. Each channel's alpha is set equal to its color value (matrix row
-//      `1 0 0 0 0` for the alpha row of rOnly, etc). If we kept A=A like a
-//      naive split would, a channel that's zero in the source (e.g. blue in
-//      lime #BFFF00, or all three in black) would still produce an opaque
-//      black silhouette — and screen-blending three offset opaque silhouettes
-//      just dilates the alpha union, fattening the glyphs into a "cutout"
-//      shape with no visible color fringe. Tying alpha to channel value means
-//      a zero channel contributes nothing.
-//   2. The split layers are merged on top of SourceGraphic so pure-black
-//      text (where all three channels are zero and the split produces nothing)
-//      still renders as the original silhouette. For colored text the split
-//      is fully opaque at the stationary position and overrides the source.
+// Hidden SVG filters used by .ca-fx{,-soft,-strong}. Tints two copies of
+// the source's alpha silhouette (cyan and magenta), offsets them in
+// opposite directions, and merges the originals on top. Tinting via
+// feFlood + feComposite=in instead of channel-isolating the source means
+// the fringe colors are independent of source color — so red glyphs show
+// cyan/magenta CA fringes instead of red-on-red invisibility.
+// SourceGraphic merged last keeps the body of the glyph in its native
+// color; the fringes only show where the offset layers extend past the
+// source silhouette.
+//
+// Three strengths are defined so callers can dial intensity per-element
+// (e.g. white pixelated text reads better with stronger fringe; subtle
+// chrome wants soft).
+const CA_FILTERS: Array<{ id: string; dx: number; alpha: number }> = [
+  { id: 'wiki-ca-soft', dx: 1.45, alpha: 0.625 },
+  { id: 'wiki-ca',      dx: 1.9, alpha: 0.8  },
+  { id: 'wiki-ca-strong', dx: 2.4, alpha: 0.9 },
+]
+
 function ChromaticAberrationFilter() {
   return (
     <svg
@@ -311,34 +304,23 @@ function ChromaticAberrationFilter() {
       focusable="false"
     >
       <defs>
-        <filter id="wiki-ca" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
-          <feColorMatrix
-            in="SourceGraphic"
-            type="matrix"
-            values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0"
-            result="rOnly"
-          />
-          <feOffset in="rOnly" dx="-2.5" dy="0" result="rShift" />
-          <feColorMatrix
-            in="SourceGraphic"
-            type="matrix"
-            values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 1 0 0 0"
-            result="gOnly"
-          />
-          <feColorMatrix
-            in="SourceGraphic"
-            type="matrix"
-            values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 1 0 0"
-            result="bOnly"
-          />
-          <feOffset in="bOnly" dx="2.5" dy="0" result="bShift" />
-          <feBlend in="rShift" in2="gOnly" mode="screen" result="rg" />
-          <feBlend in="rg" in2="bShift" mode="screen" result="ca" />
-          <feMerge>
-            <feMergeNode in="SourceGraphic" />
-            <feMergeNode in="ca" />
-          </feMerge>
-        </filter>
+        {CA_FILTERS.map(({ id, dx, alpha }) => (
+          <filter key={id} id={id} x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+            <feFlood floodColor="#00e8de" result="cyanFlood" />
+            <feComposite in="cyanFlood" in2="SourceAlpha" operator="in" result="cyanLayer" />
+            <feColorMatrix in="cyanLayer" type="matrix" values={`1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 ${alpha} 0`} result="cyanDim" />
+            <feOffset in="cyanDim" dx={-dx} dy="0" result="cyanShift" />
+            <feFlood floodColor="#e800c4" result="magentaFlood" />
+            <feComposite in="magentaFlood" in2="SourceAlpha" operator="in" result="magentaLayer" />
+            <feColorMatrix in="magentaLayer" type="matrix" values={`1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 ${alpha} 0`} result="magentaDim" />
+            <feOffset in="magentaDim" dx={dx} dy="0" result="magentaShift" />
+            <feMerge>
+              <feMergeNode in="cyanShift" />
+              <feMergeNode in="magentaShift" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        ))}
       </defs>
     </svg>
   )

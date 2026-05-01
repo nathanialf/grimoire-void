@@ -10,8 +10,8 @@
   --color-text:      #c8c8c8;
   --color-text-dim:  #6a6a6a;
   --color-text-bright: #e8e8e8;
-  --color-accent:    #bfff00;
-  --color-accent-dim: rgba(191, 255, 0, 0.2);
+  --color-accent:    #e8202a;
+  --color-accent-dim: color-mix(in srgb, var(--color-accent) 20%, transparent);
   --color-accent-inv: #4000ff;
   --color-danger:    #ff3333;
   --color-secondary:     #1e3a8f;
@@ -128,9 +128,17 @@ button {
 /* ── Utility ── */
 /* Chromatic aberration utility — apply to specific elements where the
    RGB-split is decorative (page titles, sidebar header, image panels).
-   Filter id #wiki-ca is defined once in App.tsx. */
+   Three strengths defined as separate filters in App.tsx; pick whichever
+   dial fits the element. White text typically wants -strong; subtle
+   chrome wants -soft. */
+.ca-fx-soft {
+  filter: url(#wiki-ca-soft);
+}
 .ca-fx {
   filter: url(#wiki-ca);
+}
+.ca-fx-strong {
+  filter: url(#wiki-ca-strong);
 }
 
 .visually-hidden {

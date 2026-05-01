@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { CanvasTexture, Group, NearestFilter, SRGBColorSpace } from 'three'
 import { useThree } from '@react-three/fiber'
-import { toolMountFixture } from './sceneConstants'
+import { toolMountFixture, toolMountRotationY } from './sceneConstants'
 import { type Cartridge, useInventory } from '../data/inventory'
 
 // Tool geometry (shared by wall mount + held). Body, grip, scope.
@@ -119,8 +119,9 @@ function ToolModel({ screenTex }: { screenTex: CanvasTexture }) {
   )
 }
 
-// Tool rack mounted on the central pedestal pillar. Holds the tool
-// until the player picks it up; renders an empty rack once equipped.
+// Tool wall-mounted on the +X (east) side wall. No rack/pegs — the tool
+// sits directly against the wall, its long axis parallel to the wall
+// (along world Z after the wrapping group's -π/2 Y rotation).
 export function ToolWallMount() {
   const inv = useInventory()
   const f = toolMountFixture
@@ -133,55 +134,11 @@ export function ToolWallMount() {
     tex.needsUpdate = true
   }, [ctx, tex])
 
-  const [cx, cy, cz] = f.center
-  const [w, h, d] = f.size
-  const frontZ = cz + d / 2
-
-  // Tool rests forward of the rack plate's front face so it reads as
-  // sitting on the pegs rather than embedded in the plate.
-  const toolZ = frontZ + 0.02
+  if (inv.tool.equipped) return null
 
   return (
-    <group>
-      {/* Rack plate — same pedestal recipe so the rack reads as part
-          of the central pillar's fixture family. */}
-      <mesh position={[cx, cy, cz]}>
-        <boxGeometry args={[w, h, d * 0.45]} />
-        <meshStandardMaterial
-          color="#e8e4dc"
-          roughness={0.95}
-          metalness={0}
-          emissive="#1a1814"
-          emissiveIntensity={8}
-        />
-      </mesh>
-      {/* Two pegs the tool rests on. */}
-      <mesh position={[cx - 0.18, cy - 0.04, frontZ - d * 0.27]}>
-        <boxGeometry args={[0.04, 0.04, 0.09]} />
-        <meshStandardMaterial
-          color="#e8e4dc"
-          roughness={0.95}
-          metalness={0}
-          emissive="#1a1814"
-          emissiveIntensity={8}
-        />
-      </mesh>
-      <mesh position={[cx + 0.18, cy - 0.04, frontZ - d * 0.27]}>
-        <boxGeometry args={[0.04, 0.04, 0.09]} />
-        <meshStandardMaterial
-          color="#e8e4dc"
-          roughness={0.95}
-          metalness={0}
-          emissive="#1a1814"
-          emissiveIntensity={8}
-        />
-      </mesh>
-      {/* Tool itself — only visible while not equipped. */}
-      {!inv.tool.equipped && (
-        <group position={[cx, cy, toolZ]} rotation={[0, Math.PI / 2, 0]}>
-          <ToolModel screenTex={tex} />
-        </group>
-      )}
+    <group position={f.center} rotation={[0, toolMountRotationY, 0]}>
+      <ToolModel screenTex={tex} />
     </group>
   )
 }

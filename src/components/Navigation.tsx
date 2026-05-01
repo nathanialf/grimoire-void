@@ -1,40 +1,10 @@
 import { useMemo, useState } from 'react';
 import { PixelatedHeading } from './PixelatedHeading';
 import { PixelatedText } from './PixelatedText';
-import { REGISTRY, isDocVisible, titleOf } from '../data';
 import { useCartridgeStates } from '../data/loadState';
+import { buildNavEntries, type NavEntry } from '../data/navOrder';
 import { Rings } from './Rings';
 import styles from '../styles/Navigation.module.css';
-
-interface NavEntry {
-  label: string;
-  to: string;
-  pageNumber: string;
-  redacted?: boolean;
-}
-
-// Hand-curated entries: chrome pages and the redacted slot. Wiki entries
-// come from REGISTRY and are spliced in below \u2014 adding/removing/renaming
-// a document only needs to touch its data file, not this list.
-const STATIC_ENTRIES: NavEntry[] = [
-  { label: 'Cover', to: '/cover', pageNumber: '001' },
-  { label: '<UNTITLED>', to: '/blank', pageNumber: '002' },
-  { label: '\u2588\u2588\u2588\u2588\u2588\u2588 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588', to: '/redacted/067', pageNumber: '067', redacted: true },
-  { label: 'Credits', to: '/credits', pageNumber: '999' },
-];
-
-function buildEntries(states: Record<string, import('../data/loadState').CartridgeState>): NavEntry[] {
-  const wikiEntries: NavEntry[] = REGISTRY
-    .filter((e) => isDocVisible(e, states))
-    .map(({ data, route }) => ({
-      label: titleOf(data),
-      to: route,
-      pageNumber: data.pageNumber,
-    }));
-  return [...STATIC_ENTRIES, ...wikiEntries].sort((a, b) =>
-    a.pageNumber.localeCompare(b.pageNumber),
-  );
-}
 
 interface NavigationProps {
   onToggle?: (open: boolean) => void;
@@ -94,7 +64,7 @@ function NavLink({ entry, pathname, navigate, close }: { entry: NavEntry; pathna
 export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
   const [open, setOpen] = useState(false);
   const states = useCartridgeStates();
-  const entries = useMemo(() => buildEntries(states), [states]);
+  const entries = useMemo(() => buildNavEntries(states), [states]);
 
   const toggle = (next: boolean) => {
     setOpen(next);
@@ -106,7 +76,7 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
   return (
     <>
       <button
-        className={`${styles.toggle} ca-fx`}
+        className={`${styles.toggle} ca-fx-soft`}
         onClick={() => toggle(!open)}
         aria-label="Toggle navigation"
       >
@@ -129,6 +99,7 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
             scale={2}
             align="left"
             textTransform="uppercase"
+            caStrength="soft"
             color={getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim()}
             letterSpacing={2}
           />
@@ -149,7 +120,7 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
         <div className={styles.footer}>
           <span className="visually-hidden">0.2 // classified</span>
           <span className={styles.footerInner}>
-            <span className={`${styles.footerLogo} ca-fx`} role="img" aria-hidden="true">
+            <span className={`${styles.footerLogo} ca-fx-soft`} role="img" aria-hidden="true">
               <Rings className={styles.footerLogoSvg} />
             </span>
             <PixelatedText renderSize={7} letterSpacing={0.8}>0.2 // classified</PixelatedText>
@@ -168,7 +139,7 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
             </span>
             <PixelatedText renderSize={7}>{`${new Date().getFullYear()}`}</PixelatedText>
           </span>
-          <span className={`${styles.copyrightLogo} ca-fx`} role="img" aria-label="defnf">
+          <span className={`${styles.copyrightLogo} ca-fx-soft`} role="img" aria-label="defnf">
             <span className={styles.copyrightLogoMask} />
           </span>
           <span className={styles.copyrightCell}>

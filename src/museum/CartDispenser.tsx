@@ -1,11 +1,11 @@
 import { useEffect, useMemo } from 'react'
 import { CanvasTexture, NearestFilter, SRGBColorSpace } from 'three'
-import { cartDispenserFixture } from './sceneConstants'
+import { cartDispenserFixture, cartDispenserRotationY } from './sceneConstants'
 import { useInventory } from '../data/inventory'
 
-// Free-standing blank-cartridge dispenser hung off the central pillar.
-// Visual reacts to inventory state; the trigger that calls
-// dispenseCart() lives in MuseumPage so the prompt UI reuses the
+// Wall-mounted blank-cartridge dispenser on the +X (east) wall, next to
+// the recording tool. Visual reacts to inventory state; the trigger that
+// calls dispenseCart() lives in MuseumPage so the prompt UI reuses the
 // existing Trigger system.
 
 const STATUS_W_PX = 256
@@ -45,27 +45,29 @@ export function CartDispenser() {
     tex.needsUpdate = true
   }, [ctx, tex, ready])
 
-  const [cx, cy, cz] = f.center
-  const [w, h, d] = f.size
-  const frontZ = cz + d / 2
+  // Local frame (back of body at z = -bodyD/2, front at +bodyD/2). The
+  // wrapping group at f.center applies the world rotation so the body
+  // faces -X on the east wall.
+  const bodyW = 0.5
+  const bodyH = 0.42
+  const bodyD = 0.22
+  const frontZ = bodyD / 2
 
-  // Status panel sits in the top third of the front face.
-  const panelW = w * 0.78
+  const panelW = bodyW * 0.78
   const panelH = 0.11
-  const panelY = cy + h / 2 - 0.085
+  const panelY = bodyH / 2 - 0.085
 
-  // Cart-emerging slot in the bottom third.
-  const slotW = w * 0.7
+  const slotW = bodyW * 0.7
   const slotH = 0.065
-  const slotY = cy - h / 2 + 0.075
+  const slotY = -bodyH / 2 + 0.075
 
   return (
-    <group>
+    <group position={f.center} rotation={[0, cartDispenserRotationY, 0]}>
       {/* Body — same warm-off-white + emissive recipe as the museum's
           pedestals; sits dead-center so it gets the maximum
           ~8× emissive baseline. */}
-      <mesh position={[cx, cy, cz]}>
-        <boxGeometry args={[w, h, d]} />
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[bodyW, bodyH, bodyD]} />
         <meshStandardMaterial
           color="#e8e4dc"
           roughness={0.95}
@@ -76,21 +78,21 @@ export function CartDispenser() {
       </mesh>
       {/* Status panel bezel — recessed dark so the green readout reads
           against it. */}
-      <mesh position={[cx, panelY, frontZ - 0.004]}>
+      <mesh position={[0, panelY, frontZ - 0.004]}>
         <boxGeometry args={[panelW + 0.04, panelH + 0.04, 0.012]} />
         <meshStandardMaterial color="#0c0d0f" roughness={0.9} metalness={0} />
       </mesh>
-      <mesh position={[cx, panelY, frontZ - 0.002]}>
+      <mesh position={[0, panelY, frontZ - 0.002]}>
         <planeGeometry args={[panelW, panelH]} />
         <meshBasicMaterial map={tex} toneMapped={false} />
       </mesh>
       {/* Slot — simple recessed dark rectangle, no luminous insert. */}
-      <mesh position={[cx, slotY, frontZ - 0.003]}>
+      <mesh position={[0, slotY, frontZ - 0.003]}>
         <boxGeometry args={[slotW + 0.05, slotH + 0.04, 0.014]} />
         <meshStandardMaterial color="#050505" roughness={0.95} metalness={0} />
       </mesh>
       {/* Caution chevron strip just below the slot. */}
-      <mesh position={[cx, slotY - 0.06, frontZ - 0.002]}>
+      <mesh position={[0, slotY - 0.06, frontZ - 0.002]}>
         <planeGeometry args={[panelW, 0.022]} />
         <meshBasicMaterial color="#ffb84d" toneMapped={false} />
       </mesh>

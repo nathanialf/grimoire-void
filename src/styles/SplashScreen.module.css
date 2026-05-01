@@ -41,12 +41,19 @@
   width: 100%;
   height: 100%;
   color: var(--color-accent);
+}
+
+/* Rotate the inner <g> rather than the <svg> so the ca-fx filter on the
+   SVG resamples each frame on the post-rotation render — keeps cyan/
+   magenta fringes horizontally offset regardless of ring orientation. */
+.rings :global(.rings-rotor) {
+  transform-origin: 50% 50%;
   animation: ringsRotate 60s linear infinite;
   animation-play-state: paused;
 }
 
-.splash:hover .rings,
-.splash:focus-within .rings {
+.splash:hover .rings :global(.rings-rotor),
+.splash:focus-within .rings :global(.rings-rotor) {
   animation-play-state: running;
 }
 
@@ -56,20 +63,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rings {
+  .rings :global(.rings-rotor) {
     animation: none;
   }
-  .splash:hover .rings,
-  .splash:focus-within .rings {
+  .splash:hover .rings :global(.rings-rotor),
+  .splash:focus-within .rings :global(.rings-rotor) {
     animation: none;
   }
 }
 
 .logo {
   width: 28%;
-  height: auto;
+  aspect-ratio: 3 / 2;
   position: relative;
-  image-rendering: pixelated;
+  display: block;
+  color: var(--color-accent);
 }
 
 .enterLabel {

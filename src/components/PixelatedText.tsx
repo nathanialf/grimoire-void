@@ -14,6 +14,13 @@ interface PixelatedTextProps {
   align?: 'left' | 'center';
   as?: 'span' | 'div';
   className?: string;
+  caStrength?: 'soft' | 'default' | 'strong';
+}
+
+const CA_CLASS: Record<NonNullable<PixelatedTextProps['caStrength']>, string> = {
+  soft: 'ca-fx-soft',
+  default: 'ca-fx',
+  strong: 'ca-fx-strong',
 }
 
 export function PixelatedText({
@@ -28,6 +35,7 @@ export function PixelatedText({
   align = 'left',
   as: Tag = 'span',
   className,
+  caStrength = 'soft',
 }: PixelatedTextProps) {
   const [result, setResult] = useState<RenderPixelBitmapResult | null>(null);
 
@@ -70,7 +78,7 @@ export function PixelatedText({
   // text-shape edges.
   return (
     <Tag
-      className={`${styles.wrap} ca-fx ${className || ''}`}
+      className={`${styles.wrap} ${CA_CLASS[caStrength]} ${className || ''}`}
       aria-hidden="true"
       style={{
         width: w,

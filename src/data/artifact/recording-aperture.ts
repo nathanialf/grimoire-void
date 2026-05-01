@@ -18,7 +18,7 @@ export const recordingAperture: ArtifactTemplate = {
     { label: 'Custody', value: 'Active Service' },
   ],
   header: {
-    classification: 'Standard Issue — Recording Instrument',
+    classification: 'Recording Instrument — Rewrite Needed',
     title: 'The Recording Aperture',
     tags: ['equipment', 'archive issue', 'field instrument', 'cartridge interface'],
   },

@@ -11,7 +11,6 @@ import {
   cartDispenserFixture,
   toolMountFixture,
   fixtureBoxAABB,
-  CENTRAL_PEDESTAL,
 } from '../museum/sceneConstants'
 import { DOOR_W, DOOR_H } from '../museum/frameTicker'
 import { Controls, type InputState, type Trigger } from '../museum/Controls'
@@ -282,11 +281,7 @@ export function MuseumPage() {
   }, [activeScene, inv])
 
   const sceneWalkable = activeScene === 'museum' ? walkableRects : CARCOSA_BOUNDS
-  // Central pedestal pillar shares the museum's pedestal push-out so the
-  // player can't walk through it. Carcosa has no pedestals.
-  const scenePedestals = activeScene === 'museum'
-    ? [...pedestalPositions, [CENTRAL_PEDESTAL.centerX, CENTRAL_PEDESTAL.centerZ] as [number, number]]
-    : []
+  const scenePedestals = activeScene === 'museum' ? pedestalPositions : []
   const sceneBackground = activeScene === 'museum' ? '#f0f0f0' : '#ffffff'
 
   return (

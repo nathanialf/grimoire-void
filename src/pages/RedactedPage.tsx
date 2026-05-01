@@ -211,7 +211,7 @@ export function RedactedPage() {
   return (
     <PageFrame locked>
       <div className={styles.page}>
-        <pre className={`${styles.noiseField} ca-fx`}>
+        <pre className={`${styles.noiseField} ca-fx-soft`}>
           {segments.map((seg, i) => {
             switch (seg.kind) {
               case 'banner':

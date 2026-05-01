@@ -15,6 +15,13 @@ interface PixelatedHeadingProps {
   textTransform?: 'none' | 'uppercase';
   alphaThreshold?: number;
   className?: string;
+  caStrength?: 'soft' | 'default' | 'strong';
+}
+
+const CA_CLASS: Record<NonNullable<PixelatedHeadingProps['caStrength']>, string> = {
+  soft: 'ca-fx-soft',
+  default: 'ca-fx',
+  strong: 'ca-fx-strong',
 }
 
 export function PixelatedHeading({
@@ -30,6 +37,7 @@ export function PixelatedHeading({
   textTransform = 'none',
   alphaThreshold = 80,
   className,
+  caStrength = 'strong',
 }: PixelatedHeadingProps) {
   const [result, setResult] = useState<RenderPixelBitmapResult | null>(null);
 
@@ -69,7 +77,7 @@ export function PixelatedHeading({
 
   return (
     <div
-      className={`${styles.wrapper} ca-fx ${className || ''}`}
+      className={`${styles.wrapper} ${CA_CLASS[caStrength]} ${className || ''}`}
       aria-hidden="true"
       style={align === 'center' ? { textAlign: 'center' } : undefined}
     >

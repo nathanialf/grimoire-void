@@ -49,7 +49,7 @@
   display: inline-block;
   width: 1.4em;
   height: 1.4em;
-  background-color: #bfff00;
+  background-color: var(--color-accent);
   mask-image: url('/images/rings.svg');
   -webkit-mask-image: url('/images/rings.svg');
   mask-size: contain;
@@ -65,7 +65,7 @@
   font-family: monospace;
   font-size: 0.85rem;
   letter-spacing: 0.3em;
-  color: #bfff00;
+  color: var(--color-accent);
   text-transform: uppercase;
 }
 

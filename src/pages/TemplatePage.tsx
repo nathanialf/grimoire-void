@@ -242,11 +242,7 @@ function ArtifactDoc({ doc }: { doc: ArtifactTemplate }) {
   return (
     <>
       <EntryHeader {...chromeProps(doc)} {...doc.header} />
-      {doc.image && (
-        <div className={shared.fullBleed}>
-          <ImagePanel {...doc.image} />
-        </div>
-      )}
+      {doc.image && <ImagePanel {...doc.image} />}
       <div className={shared.twoCol}>
         <div className={shared.sectionCol}>
           {doc.sections.flatMap((section, i) => [
@@ -274,11 +270,7 @@ function SurveyDoc({ doc }: { doc: SurveyTemplate }) {
   return (
     <>
       <EntryHeader {...chromeProps(doc)} {...doc.header} />
-      {doc.image && (
-        <div className={shared.fullBleed}>
-          <ImagePanel {...doc.image} />
-        </div>
-      )}
+      {doc.image && <ImagePanel {...doc.image} />}
       {renderSections(doc.sections)}
       <ChapterDivider label="Mission Parameters" />
       <MetaTable rows={doc.missionStats.stats.map((s) => ({

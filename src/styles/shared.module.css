@@ -62,11 +62,6 @@
   gap: var(--space-lg);
 }
 
-/* ── Full-bleed image wrapper ── */
-.fullBleed {
-  margin: 0 calc(-1 * var(--space-lg));
-}
-
 /* ── Inline media (image / audio / video blocks inside .prose) ── */
 .inlineMedia {
   margin: var(--space-md) 0;

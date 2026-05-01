@@ -19,7 +19,7 @@ export const variantTerminal: ArtifactTemplate = {
     { label: 'Custody', value: 'In Place · Threshold' },
   ],
   header: {
-    classification: 'Archive Fixture — Threshold Console',
+    classification: 'Archive Fixture — Rewrite Needed',
     title: 'The Variant Terminal',
     tags: ['fixture', 'archive issue', 'threshold', 'variation loader'],
   },

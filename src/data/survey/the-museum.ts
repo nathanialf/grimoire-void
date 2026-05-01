@@ -19,13 +19,13 @@ export const theMuseum: SurveyTemplate = {
     { label: 'Status', value: 'In Place' },
   ],
   header: {
-    classification: 'Archive Facility — Hazard Level: Nominal',
+    classification: 'Archive Facility — Rewrite Needed',
     title: 'The Museum',
     tags: ['archive', 'facility', 'standing site', 'threshold-adjacent'],
   },
   image: {
     aspect: 'square',
-    src: '/images/the-museum-plan.png',
+    src: '/images/the-museum-plan.svg',
     alt: 'Schematic floor plan of the museum, plan view, level 0.',
     caption: 'Sheet 004 — The Museum, plan view. Sixteen pedestals on a 4 × 4 grid; central fixture houses the dispenser and tool rack; the variant terminal flanks the Carcosa threshold on the north wall.',
   },
@@ -44,7 +44,7 @@ export const theMuseum: SurveyTemplate = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'Each pedestal in the grid is keyed to a single document. A pedestal may stand empty, hold a partially seated cartridge, or hold a complete one. The central pillar carries the tool rack and the cartridge dispenser. The Carcosa threshold is fronted by the Variant Terminal and is not locked — once a variation has been entered, it remains addressable.',
+          text: 'Each pedestal in the grid is keyed to a single document. A pedestal may stand empty, hold a partially seated cartridge, or hold a complete one. The east wall carries the recording tool and the cartridge dispenser, side by side. The Carcosa threshold is fronted by the Variant Terminal and is not locked — once a variation has been entered, it remains addressable.',
         },
       ],
     },

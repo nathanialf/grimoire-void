@@ -19,9 +19,9 @@ export function ImagePanel({
   placeholderLabel = 'illustration pending',
 }: ImagePanelProps) {
   return (
-    <figure className={`${styles.panel} ca-fx`}>
+    <figure className={styles.panel}>
       {src ? (
-        <img className={styles.image} src={src} alt={alt || ''} />
+        <img className={`${styles.image} ca-fx-soft`} src={src} alt={alt || ''} draggable={false} />
       ) : (
         <div className={`${styles.placeholder} ${aspect ? styles[aspect] : ''}`}>
           <span className={styles.placeholderText}>
