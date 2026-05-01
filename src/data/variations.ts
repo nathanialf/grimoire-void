@@ -32,12 +32,12 @@ export interface Variation {
 
 export const VARIATIONS: Variation[] = [
   {
-    key: 'ironwood-tideline',
-    title: 'IRONWOOD TIDELINE',
+    key: 'test-variation',
+    title: 'TEST VARIATION',
     nodes: [
-      { id: 'iw-001', slug: 'test-cartridge', position: [-3.5, 1.4, -3] },
-      { id: 'iw-002', slug: 'test-cartridge', position: [3.5, 1.4, -3] },
-      { id: 'iw-003', slug: 'test-cartridge', position: [0, 1.4, 4] },
+      { id: 'tv-001', slug: 'test-cartridge', position: [-3.5, 1.4, -3] },
+      { id: 'tv-002', slug: 'test-cartridge', position: [3.5, 1.4, -3] },
+      { id: 'tv-003', slug: 'test-cartridge', position: [0, 1.4, 4] },
     ],
   },
   {
@@ -56,7 +56,7 @@ export const VARIATIONS: Variation[] = [
 // pre-seeded into the discovered set so the terminal isn't empty on a
 // fresh save (and the first scan/dock loop is reachable without any
 // reading first).
-export const BOOT_VARIATIONS: string[] = ['ironwood-tideline']
+export const BOOT_VARIATIONS: string[] = ['test-variation']
 
 const VARIATIONS_BY_KEY: Map<string, Variation> = new Map(
   VARIATIONS.map((v) => [v.key, v]),
