@@ -95,6 +95,13 @@ button.prompt { pointer-events: auto; cursor: pointer; }
   z-index: 10;
 }
 
+/* Carcosa's ground is the same accent red, so the HUD swaps to a
+   black-on-white scheme there for legibility. */
+.cursorCarcosa {
+  composes: cursor;
+  background: #000;
+}
+
 .hintRow {
   position: fixed;
   bottom: var(--space-md);
@@ -125,6 +132,12 @@ button.prompt { pointer-events: auto; cursor: pointer; }
   text-align: center;
 }
 
+.hintCarcosa {
+  composes: hint;
+  color: #fff;
+  background: #000;
+}
+
 .hintButton {
   composes: hint;
   border: none;
@@ -137,6 +150,12 @@ button.prompt { pointer-events: auto; cursor: pointer; }
 
 .hintButton:active {
   opacity: 0.6;
+}
+
+.hintButtonCarcosa {
+  composes: hintButton;
+  color: #fff;
+  background: #000;
 }
 
 /* Mobile portrait: move the controls hints to the top so they don't

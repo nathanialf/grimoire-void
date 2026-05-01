@@ -458,29 +458,34 @@ export function MuseumPage() {
           onActivate={doors[activeDoor].onActivate}
         />
       )}
-      <div className={styles.cursor} />
+      <div className={activeScene === 'carcosa' ? styles.cursorCarcosa : styles.cursor} />
       <div className={styles.hintRow}>
-        {touch ? (
-          <>
-            <span className={styles.hint}>LEFT MOVE</span>
-            <span className={styles.hint}>RIGHT LOOK</span>
-            <button
-              type="button"
-              className={styles.hintButton}
-              onPointerDown={(e) => { e.stopPropagation(); captureScreenshot() }}
-              aria-label="Take photo"
-            >
-              PHOTO
-            </button>
-          </>
-        ) : (
-          <>
-            <span className={styles.hint}>WASD/ARROWS</span>
-            <span className={styles.hint}>MOUSE LOOK</span>
-            <span className={styles.hint}>E INTERACT</span>
-            <span className={styles.hint}>P PHOTO</span>
-          </>
-        )}
+        {(() => {
+          const inCarcosa = activeScene === 'carcosa'
+          const hintCls = inCarcosa ? styles.hintCarcosa : styles.hint
+          const hintBtnCls = inCarcosa ? styles.hintButtonCarcosa : styles.hintButton
+          return touch ? (
+            <>
+              <span className={hintCls}>LEFT MOVE</span>
+              <span className={hintCls}>RIGHT LOOK</span>
+              <button
+                type="button"
+                className={hintBtnCls}
+                onPointerDown={(e) => { e.stopPropagation(); captureScreenshot() }}
+                aria-label="Take photo"
+              >
+                PHOTO
+              </button>
+            </>
+          ) : (
+            <>
+              <span className={hintCls}>WASD/ARROWS</span>
+              <span className={hintCls}>MOUSE LOOK</span>
+              <span className={hintCls}>E INTERACT</span>
+              <span className={hintCls}>P PHOTO</span>
+            </>
+          )
+        })()}
       </div>
       {/* Fade overlay shared by door-to-cover fades and scene-swap fades. */}
       <div
