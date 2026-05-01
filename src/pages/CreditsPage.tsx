@@ -32,7 +32,7 @@ export function CreditsPage() {
     <PageFrame pageNumber="999">
       <div className={shared.page}>
         <EntryHeader
-          classification="End Matter"
+          classification="End Matter — Rewrite Needed"
           title="Credits"
           filename="credits.intranet"
           filetype="CREDITS"

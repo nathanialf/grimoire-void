@@ -19,8 +19,8 @@
 }
 
 .template {
-  background: var(--color-accent);
-  border-block-color: color-mix(in srgb, var(--color-accent) 70%, black);
+  background: #2ea84a;
+  border-block-color: #1a6a2d;
 }
 
 .top {

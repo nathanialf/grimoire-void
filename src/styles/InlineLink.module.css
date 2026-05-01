@@ -10,6 +10,10 @@
 
 .link:hover {
   background: var(--color-text-bright);
+  /* Pin text color so the global `a:hover` rule (which flips color to
+     --color-text-bright) doesn't collide with our hover background of
+     the same value and produce white-on-white. */
+  color: var(--color-bg);
 }
 
 .danger {

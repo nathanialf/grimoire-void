@@ -13,7 +13,7 @@ export function InlineLink({ to, variant, children }: InlineLinkProps) {
   return (
     <a
       href={to}
-      className={`${styles.link}${variant === 'danger' ? ` ${styles.danger}` : ''}`}
+      className={`ca-fx-soft ${styles.link}${variant === 'danger' ? ` ${styles.danger}` : ''}`}
       onClick={(e) => {
         e.preventDefault()
         navigate(to)
