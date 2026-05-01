@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { BackSide, BufferAttribute, CanvasTexture, Euler, ExtrudeGeometry, Group, NearestFilter, Quaternion, SRGBColorSpace, Shape, ShapeGeometry, TextureLoader, Vector3 } from 'three'
+import { BackSide, BufferAttribute, CanvasTexture, Euler, ExtrudeGeometry, Group, NearestFilter, PerspectiveCamera, Quaternion, SRGBColorSpace, Shape, ShapeGeometry, TextureLoader, Vector3 } from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
 import { cartDispenserFixture, toolMountFixture, toolMountRotationY } from './sceneConstants'
 import { type Cartridge, useInventory } from '../data/inventory'
@@ -188,9 +188,23 @@ export function ToolWallMount() {
   )
 }
 
-// Held aperture's resting transform in camera-local space.
-const HELD_REST_POS: [number, number, number] = [0.22, -0.18, -0.5]
+// Held aperture's resting transform in camera-local space. Lateral
+// offset is scaled by `viewportXFactor(aspect)` each frame so portrait
+// phone aspects don't push the aperture off the right edge of the
+// narrow viewport.
+const HELD_REST_X = 0.22
+const HELD_REST_Y = -0.18
+const HELD_REST_Z = -0.5
 const HELD_REST_ROT: [number, number, number] = [0, Math.PI / 2 + 0.15, -0.04]
+
+// In portrait viewports the camera-local +X offset shared by the held
+// aperture and cart can fall outside the visible frustum. Scale lateral
+// offsets by the aspect ratio when narrower than 1:1 so they slide
+// toward the centerline at the same rate the viewport narrows.
+function viewportXFactor(camera: PerspectiveCamera | { aspect?: number }): number {
+  const aspect = (camera as { aspect?: number }).aspect ?? 1
+  return Math.min(1, aspect)
+}
 
 // Pickup animation duration. Long enough to read as a deliberate flight,
 // short enough not to gate the next interaction.
@@ -201,7 +215,6 @@ const PICKUP_DURATION_MS = 550
 // derivation happens each frame (the camera can rotate during pickup).
 const wallWorldPos = new Vector3(...toolMountFixture.center)
 const wallWorldQuat = new Quaternion().setFromEuler(new Euler(0, toolMountRotationY, 0))
-const restPos = new Vector3(...HELD_REST_POS)
 const restQuat = new Quaternion().setFromEuler(new Euler(...HELD_REST_ROT))
 
 // Held tool — camera-parented so it follows the view 1:1. Renders nothing
@@ -220,6 +233,7 @@ export function HeldTool() {
   const prevEquippedRef = useRef(inv.tool.equipped)
   // Scratch buffers reused inside useFrame.
   const tmpPos = useMemo(() => new Vector3(), [])
+  const tmpRest = useMemo(() => new Vector3(), [])
   const tmpQuat = useMemo(() => new Quaternion(), [])
 
   // Target scope state derived from the cart; the rendered progress
@@ -270,14 +284,21 @@ export function HeldTool() {
   // — i.e. the aperture flies through world space from the wall to
   // wherever the player's hand currently is, even if they're turning
   // during the pickup. Snaps to rest pose once the flight completes.
+  // Also re-poses every idle frame so a viewport resize/orientation
+  // change pulls the aperture back on-screen in narrow aspects.
   useFrame(() => {
     const group = groupRef.current
     if (!group) return
+    const restX = HELD_REST_X * viewportXFactor(camera)
+    tmpRest.set(restX, HELD_REST_Y, HELD_REST_Z)
     const pickup = pickupRef.current
-    if (!pickup) return
+    if (!pickup) {
+      group.position.copy(tmpRest)
+      return
+    }
     const elapsed = performance.now() - pickup.startTime
     if (elapsed >= PICKUP_DURATION_MS) {
-      group.position.copy(restPos)
+      group.position.copy(tmpRest)
       group.quaternion.copy(restQuat)
       pickupRef.current = null
       return
@@ -288,7 +309,7 @@ export function HeldTool() {
     // Wall transform expressed in the camera's local frame this frame.
     tmpPos.copy(wallWorldPos)
     camera.worldToLocal(tmpPos)
-    group.position.copy(tmpPos).lerp(restPos, eased)
+    group.position.copy(tmpPos).lerp(tmpRest, eased)
     tmpQuat.copy(camera.quaternion).invert().multiply(wallWorldQuat)
     group.quaternion.copy(tmpQuat).slerp(restQuat, eased)
   })
@@ -343,7 +364,7 @@ export function HeldTool() {
   // pose a hint of slack. Screen normal -X then maps to camera +Z, so
   // the display faces the camera. Subtle scale keeps FPS proportions.
   return (
-    <group ref={groupRef} position={[0.22, -0.18, -0.5]} rotation={[0, Math.PI / 2 + 0.15, -0.04]} scale={0.7}>
+    <group ref={groupRef} position={[HELD_REST_X, HELD_REST_Y, HELD_REST_Z]} rotation={HELD_REST_ROT} scale={0.7}>
       <ToolModel screenTex={tex} />
     </group>
   )
@@ -371,7 +392,10 @@ const CART_BAR_D = CART_D + 0.012
 // broad face presented to the camera's left so the narrow edge stays
 // vertical-in-view; only the long axis swings from horizontal to
 // vertical compared to the muzzle-aligned variant.
-const CART_LOADED_POS: [number, number, number] = [0.22, -0.32, -0.6]
+const CART_LOADED_X = 0.22
+const CART_LOADED_Y = -0.32
+const CART_LOADED_Z = -0.6
+const CART_LOADED_POS: [number, number, number] = [CART_LOADED_X, CART_LOADED_Y, CART_LOADED_Z]
 const CART_LOADED_ROT: [number, number, number] = [Math.PI, -Math.PI / 2, 0]
 const CART_DISPENSE_DURATION_MS = 720
 
@@ -570,7 +594,12 @@ export function HeldCart({ dispenseAt }: HeldCartProps) {
   // Animation start timestamp (perf clock). Null when not animating.
   const animRef = useRef<number | null>(null)
   const tmpVec = useMemo(() => new Vector3(), [])
-  const loadedVec = useMemo(() => new Vector3(...CART_LOADED_POS), [])
+  // useRef instead of useMemo because the loaded x is rewritten each
+  // frame to track viewport aspect; the React compiler refuses to
+  // memoize a value that is later mutated.
+  const loadedVecRef = useRef<Vector3>(null)
+  if (loadedVecRef.current === null) loadedVecRef.current = new Vector3(...CART_LOADED_POS)
+  const loadedVec = loadedVecRef.current
 
   // Trigger the dispense animation when MuseumPage bumps `dispenseAt`.
   // We don't fire on partial-pickups — those leave dispenseAt
@@ -596,6 +625,9 @@ export function HeldCart({ dispenseAt }: HeldCartProps) {
   useFrame(() => {
     const group = groupRef.current
     if (!group || !inv.cart) return
+    // Match the held aperture's portrait-aware lateral offset so the
+    // cart stays plugged into the barrel in narrow viewports.
+    loadedVec.x = CART_LOADED_X * viewportXFactor(camera)
     const start = animRef.current
     if (start === null) {
       // No animation pending — sit at the loaded pose.

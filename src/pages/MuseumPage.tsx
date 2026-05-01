@@ -145,6 +145,16 @@ export function MuseumPage() {
   // frame, so the player doesn't see a blank canvas during scene init.
   const [sceneReady, setSceneReady] = useState(false)
 
+  // Held inventory lives in module state (intentionally — see
+  // inventory.ts), which means it survives a browser-back into the
+  // museum. Re-entering the museum is a "leaving" event by the same
+  // logic that wipes on refresh / EXIT / derez, so reset on mount so
+  // the player always starts the run with the aperture racked and no
+  // cart in hand.
+  useEffect(() => {
+    derezInventory()
+  }, [])
+
   // Countdown loop (rAF-based) — keeps running through scene swaps so the
   // timer persists when the player is in Carcosa.
   useEffect(() => {
