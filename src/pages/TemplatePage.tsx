@@ -272,12 +272,16 @@ function SurveyDoc({ doc }: { doc: SurveyTemplate }) {
       <EntryHeader {...chromeProps(doc)} {...doc.header} />
       {doc.image && <ImagePanel {...doc.image} />}
       {renderSections(doc.sections)}
-      <ChapterDivider label="Mission Parameters" />
-      <MetaTable rows={doc.missionStats.stats.map((s) => ({
-        label: s.label,
-        value: s.value,
-        variant: s.variant,
-      }))} />
+      {doc.missionStats && doc.missionStats.stats.length > 0 && (
+        <>
+          <ChapterDivider label="Mission Parameters" />
+          <MetaTable rows={doc.missionStats.stats.map((s) => ({
+            label: s.label,
+            value: s.value,
+            variant: s.variant,
+          }))} />
+        </>
+      )}
       {doc.timeline.length > 0 && (
         <>
           <ChapterDivider label="Operational Timeline" />

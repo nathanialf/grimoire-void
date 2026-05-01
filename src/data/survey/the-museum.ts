@@ -49,17 +49,6 @@ export const theMuseum: SurveyTemplate = {
       ],
     },
   ],
-  missionStats: {
-    title: 'Site Parameters',
-    stats: [
-      { label: 'Hazard', value: 'NOMINAL', variant: 'accent' },
-      { label: 'Type', value: 'Archive Floor' },
-      { label: 'Pedestals', value: '16' },
-      { label: 'Atmo', value: 'Conditioned' },
-      { label: 'Void Level', value: 'None' },
-      { label: 'Access', value: 'Standing' },
-    ],
-  },
   timeline: [],
   casualties: [],
   recommendations: [],

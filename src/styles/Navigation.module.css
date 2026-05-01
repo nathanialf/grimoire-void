@@ -31,16 +31,30 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: none;
-  /* Hide the scrollbar visually but keep the list scrollable. Firefox
-     uses `scrollbar-width`; WebKit/Chromium needs the ::-webkit-scrollbar
-     pseudo-element zeroed. */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  /* Thin custom scrollbar styled to match the archive chrome. Firefox
+     reads scrollbar-width / scrollbar-color; WebKit/Chromium uses the
+     ::-webkit-scrollbar pseudo-elements below. */
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-accent) 60%, transparent) transparent;
+  padding-right: 4px;
 }
 
 .list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+  width: 6px;
+}
+
+.list::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--color-border) 40%, transparent);
+  border-radius: 0;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-accent) 60%, transparent);
+  border-radius: 0;
+}
+
+.list::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
 }
 
 .listInner {
@@ -53,9 +67,8 @@
 .link {
   display: block;
   position: relative;
-  color: var(--color-text-dim);
+  color: #ffffff;
   padding: var(--space-xs) var(--space-sm);
-  padding-left: calc(var(--space-sm) + 1.2em);
   transition: color var(--transition-fast), background var(--transition-fast);
   text-decoration: none;
 }
@@ -67,27 +80,18 @@
   min-width: 0;
   align-items: center;
 }
-.link::before {
-  content: '>';
-  position: absolute;
-  left: var(--space-sm);
-  top: var(--space-xs);
-  line-height: 1;
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-}
 .link:hover {
-  color: var(--color-accent);
-}
-.link:hover::before {
-  opacity: 1;
+  color: #ffffff;
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  box-shadow: inset 3px 0 0 var(--color-accent);
 }
 .linkActive {
-  color: var(--color-accent);
+  color: #ffffff;
   background: var(--color-accent-dim);
+  box-shadow: inset 3px 0 0 var(--color-accent);
 }
-.linkActive::before {
-  opacity: 1;
+.linkActive:hover {
+  background: var(--color-accent-dim);
 }
 
 .linkRedacted {
@@ -96,15 +100,12 @@
   user-select: none;
 }
 .linkRedacted:hover {
-  color: var(--color-text-dim);
-}
-.linkRedacted::before {
-  content: none;
+  color: #ffffff;
 }
 
 .pageNum {
-  color: var(--color-text-dim);
-  opacity: 0.5;
+  color: #ffffff;
+  opacity: 0.7;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -230,7 +231,7 @@
 
 @media (max-width: 768px) {
   .nav {
-    width: 280px;
+    width: 320px;
     transform: translateX(-100%);
     transition: transform var(--transition-base);
   }

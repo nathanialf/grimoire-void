@@ -14,10 +14,11 @@ interface PixelatedTextProps {
   align?: 'left' | 'center';
   as?: 'span' | 'div';
   className?: string;
-  caStrength?: 'soft' | 'default' | 'strong';
+  caStrength?: 'none' | 'soft' | 'default' | 'strong';
 }
 
 const CA_CLASS: Record<NonNullable<PixelatedTextProps['caStrength']>, string> = {
+  none: '',
   soft: 'ca-fx-soft',
   default: 'ca-fx',
   strong: 'ca-fx-strong',

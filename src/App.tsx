@@ -289,8 +289,8 @@ export function App() {
 // (e.g. white pixelated text reads better with stronger fringe; subtle
 // chrome wants soft).
 const CA_FILTERS: Array<{ id: string; dx: number; alpha: number }> = [
-  { id: 'wiki-ca-soft', dx: 1.45, alpha: 0.625 },
-  { id: 'wiki-ca',      dx: 1.9, alpha: 0.8  },
+  { id: 'wiki-ca-soft', dx: 0.9, alpha: 0.4 },
+  { id: 'wiki-ca',      dx: 1.6, alpha: 0.7  },
   { id: 'wiki-ca-strong', dx: 2.4, alpha: 0.9 },
 ]
 

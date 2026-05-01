@@ -75,8 +75,13 @@ export function EntryHeader({
 function ChromeRow({ label, value }: { label: string; value: string }) {
   return (
     <div className={styles.row}>
-      <span className={styles.rowLabel}>{`${label}:`}</span>
-      <span className={styles.rowValue}>{value}</span>
+      <span className="visually-hidden">{`${label}: ${value}`}</span>
+      <span className={styles.rowLabel} aria-hidden="true">
+        <PixelatedText renderSize={7} letterSpacing={0.6}>{`${label}:`}</PixelatedText>
+      </span>
+      <span className={styles.rowValue} aria-hidden="true">
+        <PixelatedText renderSize={7} letterSpacing={0.4}>{value}</PixelatedText>
+      </span>
     </div>
   );
 }

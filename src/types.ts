@@ -79,7 +79,7 @@ export interface ReportData {
   pageNumber: string
   header: EntryHeaderData
   sections: Section[]
-  missionStats: StatBlockData
+  missionStats?: StatBlockData
   timeline: { timestamp: string; event: string }[]
   casualties: { status: 'KIA' | 'MIA' | 'LOST'; text: string }[]
   recommendations: string[]

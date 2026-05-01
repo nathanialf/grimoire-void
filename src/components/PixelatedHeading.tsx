@@ -15,10 +15,11 @@ interface PixelatedHeadingProps {
   textTransform?: 'none' | 'uppercase';
   alphaThreshold?: number;
   className?: string;
-  caStrength?: 'soft' | 'default' | 'strong';
+  caStrength?: 'none' | 'soft' | 'default' | 'strong';
 }
 
 const CA_CLASS: Record<NonNullable<PixelatedHeadingProps['caStrength']>, string> = {
+  none: '',
   soft: 'ca-fx-soft',
   default: 'ca-fx',
   strong: 'ca-fx-strong',

@@ -95,7 +95,7 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
           <span className="visually-hidden">Grimoire Void</span>
           <PixelatedHeading
             lines={['Grimoire Void']}
-            renderSize={10}
+            renderSize={16}
             scale={2}
             align="left"
             textTransform="uppercase"
@@ -106,7 +106,7 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
         </a>
         <div className={styles.subtitle}>
           <span className="visually-hidden">Restricted Archive</span>
-          <PixelatedText letterSpacing={2} textTransform="uppercase">Restricted Archive</PixelatedText>
+          <PixelatedText renderSize={10} letterSpacing={2} textTransform="uppercase">Restricted Archive</PixelatedText>
         </div>
         <div className={styles.list} data-nav-list>
           <ul className={styles.listInner} data-nav-list-inner>
