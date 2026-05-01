@@ -1,4 +1,5 @@
 import { useSlots } from '../data/loadState';
+import { REGISTRY_BY_SLUG, titleOf } from '../data';
 import { pedestalPositions } from '../museum/sceneConstants';
 import styles from '../styles/ImagePanel.module.css';
 
@@ -46,6 +47,8 @@ export function MuseumPlanFigure({ src, alt, caption }: Props) {
           {pedestalPositions.map(([x, z], i) => {
             const seated = slots[i];
             if (!seated) return null;
+            const entry = REGISTRY_BY_SLUG.get(seated.slug);
+            const label = entry ? titleOf(entry.data).toUpperCase() : seated.slug.toUpperCase();
             return (
               <g key={i}>
                 <rect
@@ -63,6 +66,23 @@ export function MuseumPlanFigure({ src, alt, caption }: Props) {
                 {seated.state === 'partial' && (
                   <circle cx={x} cy={z} r={0.18} fill="#000" />
                 )}
+                {/* Cartridge name labelled below the pedestal square so
+                    the plan view doubles as a directory of canonised
+                    artifacts. Font sized in SVG viewBox units (1 unit =
+                    1m); the chrome fill keeps it on-palette with the
+                    rest of the plan drawing. */}
+                <text
+                  x={x}
+                  y={z + 0.95}
+                  fill={PEDESTAL_FILL}
+                  fontSize={0.36}
+                  fontFamily="JetBrains Mono, ui-monospace, monospace"
+                  fontWeight={700}
+                  textAnchor="middle"
+                  dominantBaseline="hanging"
+                >
+                  {label}
+                </text>
               </g>
             );
           })}

@@ -140,6 +140,14 @@ button {
 .ca-fx-strong {
   filter: url(#wiki-ca-strong);
 }
+/* Operator setting (Settings → Post-processing) suppresses every wiki CA
+   filter at once. Element classes stay in place so toggling back on is
+   a single attribute flip. */
+html[data-postfx='off'] .ca-fx-soft,
+html[data-postfx='off'] .ca-fx,
+html[data-postfx='off'] .ca-fx-strong {
+  filter: none;
+}
 
 .visually-hidden {
   position: absolute;

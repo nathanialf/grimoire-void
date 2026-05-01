@@ -116,12 +116,41 @@
   color: var(--color-text-dim);
   border-top: var(--border-width) solid var(--color-border);
   padding-top: var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
 }
 
 .footerInner {
   display: inline-flex;
   align-items: center;
   gap: 0.15em;
+}
+
+.settingsBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2em;
+  height: 2em;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--color-text-dim);
+  font: inherit;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.settingsBtn:hover,
+.settingsBtn:focus-visible {
+  color: var(--color-accent);
+  opacity: 1;
+  outline: none;
 }
 
 .footerLogo {

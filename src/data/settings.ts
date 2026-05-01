@@ -9,44 +9,54 @@ import { useSyncExternalStore } from 'react'
 export type VisionTier = 0 | 1 | 2 // 0=vertices, 1=wireframe, 2=full
 
 export const DEFAULT_VISION_TIER: VisionTier = 2
+export const DEFAULT_POST_PROCESSING = true
 
 const STORAGE_KEY = 'gv:settings'
-const STORAGE_VERSION = 1
+const STORAGE_VERSION = 2
 
 interface StoredSettings {
   v: number
   visionTier: VisionTier
+  postProcessing: boolean
+}
+
+interface State {
+  visionTier: VisionTier
+  postProcessing: boolean
 }
 
 function isVisionTier(v: unknown): v is VisionTier {
   return v === 0 || v === 1 || v === 2
 }
 
-function readStorage(): VisionTier {
-  if (typeof window === 'undefined') return DEFAULT_VISION_TIER
+function readStorage(): State {
+  const fallback: State = { visionTier: DEFAULT_VISION_TIER, postProcessing: DEFAULT_POST_PROCESSING }
+  if (typeof window === 'undefined') return fallback
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return DEFAULT_VISION_TIER
+    if (!raw) return fallback
     const parsed = JSON.parse(raw) as Partial<StoredSettings>
-    if (parsed?.v !== STORAGE_VERSION) return DEFAULT_VISION_TIER
-    if (!isVisionTier(parsed.visionTier)) return DEFAULT_VISION_TIER
-    return parsed.visionTier
+    if (parsed?.v !== STORAGE_VERSION) return fallback
+    return {
+      visionTier: isVisionTier(parsed.visionTier) ? parsed.visionTier : DEFAULT_VISION_TIER,
+      postProcessing: typeof parsed.postProcessing === 'boolean' ? parsed.postProcessing : DEFAULT_POST_PROCESSING,
+    }
   } catch {
-    return DEFAULT_VISION_TIER
+    return fallback
   }
 }
 
 function writeStorage(): void {
   if (typeof window === 'undefined') return
   try {
-    const payload: StoredSettings = { v: STORAGE_VERSION, visionTier }
+    const payload: StoredSettings = { v: STORAGE_VERSION, visionTier: state.visionTier, postProcessing: state.postProcessing }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
   } catch {
     // Quota exceeded or private-mode storage refusal.
   }
 }
 
-let visionTier: VisionTier = readStorage()
+let state: State = readStorage()
 const listeners = new Set<() => void>()
 
 function notify(): void {
@@ -60,21 +70,39 @@ function subscribe(cb: () => void): () => void {
   }
 }
 
-function getSnapshot(): VisionTier {
-  return visionTier
-}
+const tierSnapshotRef = { value: state.visionTier }
+const postSnapshotRef = { value: state.postProcessing }
+function getTierSnapshot(): VisionTier { return tierSnapshotRef.value }
+function getPostSnapshot(): boolean { return postSnapshotRef.value }
 
 export function setVisionTier(tier: VisionTier): void {
-  if (visionTier === tier) return
-  visionTier = tier
+  if (state.visionTier === tier) return
+  state = { ...state, visionTier: tier }
+  tierSnapshotRef.value = tier
   writeStorage()
   notify()
 }
 
 export function getVisionTier(): VisionTier {
-  return visionTier
+  return state.visionTier
 }
 
 export function useVisionTier(): VisionTier {
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+  return useSyncExternalStore(subscribe, getTierSnapshot, getTierSnapshot)
+}
+
+export function setPostProcessing(on: boolean): void {
+  if (state.postProcessing === on) return
+  state = { ...state, postProcessing: on }
+  postSnapshotRef.value = on
+  writeStorage()
+  notify()
+}
+
+export function getPostProcessing(): boolean {
+  return state.postProcessing
+}
+
+export function usePostProcessing(): boolean {
+  return useSyncExternalStore(subscribe, getPostSnapshot, getPostSnapshot)
 }

@@ -125,6 +125,14 @@ export function Navigation({ onToggle, pathname, navigate }: NavigationProps) {
             </span>
             <PixelatedText renderSize={7} letterSpacing={0.8}>0.2 // classified</PixelatedText>
           </span>
+          <button
+            type="button"
+            className={`${styles.settingsBtn} ca-fx-soft`}
+            aria-label="Settings"
+            onClick={() => { navigate('/settings'); close(); }}
+          >
+            <span aria-hidden="true">⚙</span>
+          </button>
         </div>
         <a
           className={styles.copyright}

@@ -11,12 +11,14 @@ import { GrainChromaEffect } from './effects/GrainChroma'
 import { DitherEffect } from './effects/Dither'
 import { PixelSortEffect } from './effects/PixelSort'
 import { DatamoshEffect } from './effects/Datamosh'
+import { usePostProcessing } from '../data/settings'
 
 function EffectWrapper({ effect }: { effect: Effect }) {
   return <primitive object={effect} dispose={null} />
 }
 
 export function Effects() {
+  const postFx = usePostProcessing()
   const halation = useMemo(() => new HalationEffect(), [])
   const tone = useMemo(() => new ToneMapEffect(), [])
   const grade = useMemo(() => new ColorGradeEffect(), [])
@@ -36,6 +38,11 @@ export function Effects() {
     const ux = targetPx / w
     return new Vector2(ux, ux * 0.6)
   }, [])
+
+  // Operator-disabled post-processing → render the raw scene. Skip the
+  // entire EffectComposer so bloom/CA/grain/scanlines/dither/etc don't
+  // touch the framebuffer.
+  if (!postFx) return null
 
   return (
     <EffectComposer multisampling={0} frameBufferType={UnsignedByteType}>

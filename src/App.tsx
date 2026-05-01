@@ -8,11 +8,13 @@ import { CoverPage } from './pages/CoverPage'
 import { BlankPage } from './pages/BlankPage'
 import { RedactedPage } from './pages/RedactedPage'
 import { CreditsPage } from './pages/CreditsPage'
+import { SettingsPage } from './pages/SettingsPage'
 import { TemplatePage } from './pages/TemplatePage'
 import { usePageScroll } from './hooks/usePageScroll'
 import { REGISTRY, isDocVisible, type TickerVariant } from './data'
 import { buildNavEntries } from './data/navOrder'
 import { useCartridgeStates } from './data/loadState'
+import { usePostProcessing } from './data/settings'
 import styles from './styles/App.module.css'
 
 const MuseumPage = lazy(() => import('./pages/MuseumPage').then(m => ({ default: m.MuseumPage })))
@@ -34,6 +36,7 @@ const PAGES: PageEntry[] = [
   })),
   { path: '/redacted/067', component: RedactedPage, ticker: 'none' },
   { path: '/credits', component: CreditsPage, ticker: 'none' },
+  { path: '/settings', component: SettingsPage, ticker: 'none' },
 ]
 
 export function App() {
@@ -59,6 +62,19 @@ export function App() {
   useEffect(() => {
     document.fonts.ready.then(() => setFontsReady(true))
   }, [])
+
+  // Post-processing operator toggle. Off → drop the `ca-fx*` filter URL
+  // refs (handled by the html[data-postfx='off'] selectors in global.css)
+  // and signal the museum's <Effects> pipeline to bail. Mounted high here
+  // so the attribute is set before any wiki CA filter would compute.
+  const postFx = usePostProcessing()
+  useEffect(() => {
+    if (postFx) {
+      delete document.documentElement.dataset.postfx
+    } else {
+      document.documentElement.dataset.postfx = 'off'
+    }
+  }, [postFx])
 
   useEffect(() => {
     if (fontsReady && bitmapsReady) setInitialReady(true)

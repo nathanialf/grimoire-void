@@ -5,6 +5,8 @@ import {
   BufferAttribute,
   CanvasTexture,
   ExtrudeGeometry,
+  Mesh,
+  MeshBasicMaterial,
   NearestFilter,
   Path,
   RepeatWrapping,
@@ -444,7 +446,7 @@ function DebugFrame() {
 // than tall, thin slab, with rounded shoulders / arched top. Casing is
 // tinted with the palette's accent color so each pedestal's cartridge
 // matches its pixel pattern.
-function ChipPanel({ seed, name }: { seed: number; name: string }) {
+function ChipPanel({ seed, name, wireframe }: { seed: number; name: string; wireframe?: boolean }) {
   const W = 0.22, H = 0.32, D = 0.025
   // Thin title bar; thicker (z) than the cart so its faces sit clearly forward
   // of the cart's faces. Combined with polygonOffset on the bar materials,
@@ -568,6 +570,20 @@ function ChipPanel({ seed, name }: { seed: number; name: string }) {
   // bar's front and back faces sit just outside the cart's faces.
   const barCenterX = -W / 2 + BAR_W / 2
 
+  // Partial-state fallback (no model on the doc): render the cartridge
+  // silhouette as a white wireframe instead of the textured shaded chip.
+  // Drops face textures, casing fill, title bar, and title planes — the
+  // extruded body alone reads as a schematic in-progress artifact.
+  if (wireframe) {
+    return (
+      <group ref={groupRef} position={[0, baseY, 0]}>
+        <mesh geometry={bodyGeo}>
+          <meshBasicMaterial color="#ffffff" wireframe toneMapped={false} />
+        </mesh>
+      </group>
+    )
+  }
+
   return (
     <group ref={groupRef} position={[0, baseY, 0]}>
       {/* Cartridge body — tinted accent-color casing visible on the side
@@ -657,12 +673,15 @@ function Pedestal({ slotIndex, x, z, topGlow }: { slotIndex: number; x: number; 
   const seed = entry.data.museum?.cartridge?.seed ?? hashSlug(entry.data.slug)
   const name = (entry.data.museum?.cartridge?.label ?? titleOf(entry.data)).toUpperCase()
   const modelSrc = entry.data.museum?.model?.src
+  // Partial slots show the artifact (or fallback cartridge) as a white
+  // wireframe to read as in-progress. Complete slots show the fully-
+  // shaded model / textured cartridge.
+  const wireframe = seated.state === 'partial'
 
-  // Partial pedestals glow amber so an unfinished cart reads at a glance
-  // from across the room; complete pedestals stay warm-white. Tints both
-  // the additive top-glow texture and the area light driving the
-  // cartridge faces so they agree.
-  const lightColor = seated.state === 'partial' ? '#ffb84d' : '#fff4dd'
+  // Light/glow is the same warm-white whether the slot is partial or
+  // complete — the wireframe vs. shaded artifact carries the state
+  // distinction.
+  const lightColor = '#fff4dd'
 
   return (
     <group position={[x, 0, z]}>
@@ -678,16 +697,17 @@ function Pedestal({ slotIndex, x, z, topGlow }: { slotIndex: number; x: number; 
       </mesh>
       {entry.ticker !== 'none' && <PedestalTicker />}
       {modelSrc ? (
-        <Suspense fallback={<ChipPanel seed={seed} name={name} />}>
+        <Suspense fallback={<ChipPanel seed={seed} name={name} wireframe={wireframe} />}>
           <PedestalModel
             src={modelSrc}
             scale={entry.data.museum?.model?.scale}
             rotation={entry.data.museum?.model?.rotation}
             yOffset={entry.data.museum?.model?.yOffset}
+            wireframe={wireframe}
           />
         </Suspense>
       ) : (
-        <ChipPanel seed={seed} name={name} />
+        <ChipPanel seed={seed} name={name} wireframe={wireframe} />
       )}
       {/* Soft warm glow on top of the pedestal — radial gradient, additive,
           so it reads as light dissipating outward from the surface. */}
@@ -731,16 +751,39 @@ function PedestalModel({
   scale,
   rotation,
   yOffset,
+  wireframe,
 }: {
   src: string
   scale?: number
   rotation?: [number, number, number]
   yOffset?: number
+  wireframe?: boolean
 }) {
   const { scene } = useGLTF(src) as { scene: Group }
+  // Clone the cached scene so per-pedestal material overrides don't bleed
+  // into other instances of the same model, and so an Object3D isn't
+  // re-parented across multiple slots. Wireframe mode swaps every mesh
+  // material for a white MeshBasicMaterial so the geometry reads as a
+  // pure schematic — drop textures, lighting response, and any per-part
+  // tinting. The shaded path leaves the GLTF materials intact.
+  const display = useMemo(() => {
+    const cloned = scene.clone(true)
+    if (wireframe) {
+      cloned.traverse((obj) => {
+        if (obj instanceof Mesh) {
+          obj.material = new MeshBasicMaterial({
+            color: '#ffffff',
+            wireframe: true,
+            toneMapped: false,
+          })
+        }
+      })
+    }
+    return cloned
+  }, [scene, wireframe])
   return (
     <primitive
-      object={scene}
+      object={display}
       position={[0, PEDESTAL_SIZE + (yOffset ?? 0.4), 0]}
       rotation={rotation}
       scale={scale ?? 1}
