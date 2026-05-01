@@ -1,33 +1,11 @@
 export const ROOM = { w: 24, d: 24, h: 5 }
 export const PEDESTAL_SIZE = 1
 
-// One slug per pedestal slot (16 total). null = bare empty pedestal — no
-// chip, ticker, or top light. Order matches `pedestalPositions`
-// below; reordering this array changes which pedestal a document occupies,
-// but the cartridge's appearance is slug-hashed (see hashSlug in data/index)
-// so the document's look is stable regardless of slot.
-//
-// To put a document on a pedestal, add its slug here. To make a document
-// ambient (wiki-only, no pedestal), leave it out of this array — being in
-// REGISTRY is unrelated to museum presence.
-export const MUSEUM_PEDESTALS: (string | null)[] = [
-  'aria-vex',
-  'pallid-watcher',
-  'hollow-blade',
-  'yael-mox',
-  'greyfield-choir',
-  'spectral-caul',
-  'outpost-kaya',
-  'omicron-collapse',
-  'wasting-expanse',
-  'sable-threshold',
-  'sunken-relay',
-  'threshold-accords',
-  'glass-litany',
-  null,
-  null,
-  null,
-]
+// 16 anonymous pedestal slots. Slug binding happens at dock time — the
+// player's cart goes into whichever empty pedestal they're looking at.
+// Whether a slug *can* have a cartridge at all is declared on the
+// REGISTRY entry (`cartridge: true` in src/data/index.ts), not here.
+export const PEDESTAL_SLOT_COUNT = 16
 
 // 4×4 floor grid (16 pedestals). Pedestals are inset from every wall and
 // offset from the x=0 axis so the entry (+Z) and Carcosa (-Z) doors share

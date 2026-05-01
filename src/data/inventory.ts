@@ -92,12 +92,14 @@ export function scanNode(nodeId: string, nodeSlug: string): ScanResult {
   return 'ok'
 }
 
-// Player wipe — clears the held cart but leaves the tool equipped. Called
-// at the START of runDerezThen / runFadeThen so the change is hidden in
-// the visual chaos rather than visible during the cover-page transition.
+// Player wipe — clears the held cart AND returns the tool to its wall
+// rack so the next run starts from a known state (player has to pick
+// the tool up again). Called at the START of runDerezThen /
+// runFadeThen so the change is hidden in the visual chaos rather than
+// visible during the cover-page transition.
 export function derez(): void {
-  if (!state.cart) return
-  state = { ...state, cart: null }
+  if (!state.cart && !state.tool.equipped) return
+  state = { tool: { equipped: false }, cart: null }
   notify()
 }
 

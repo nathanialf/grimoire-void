@@ -1,54 +1,44 @@
 import { useSyncExternalStore } from 'react'
+import { BOOT_VARIATIONS } from './variations'
 
-// Per-cartridge load state. A pedestal can be empty ('absent'), holding a
-// cartridge that's only partially seated ('partial' — bound doc shows a
-// partial body in the wiki, see documents.md §"Partial visibility"), or
-// fully loaded ('complete').
+// Per-pedestal load state. The museum's 16 pedestal slots are anonymous —
+// no slug is hard-mapped to a slot. When the player docks a cart, the
+// dock writes { slug, state, gathered } into whatever slot they were
+// looking at. Slug binding is by-cart, not by-slot, and a single slug
+// occupies at most one slot at any moment (one-cart-at-a-time invariant
+// + complete-is-permanent + retrieve-only-if-partial together).
 //
-// Wiki visibility (isDocVisible in src/data/index.ts) reads this state:
-// bound docs hide on 'absent'; ambient docs attached via DocEntry.attachedTo
-// hide unless the parent is 'complete' (per documents.md, ambient docs
-// have no partial state — they appear all-or-nothing).
+// Wiki visibility (isDocVisible in src/data/index.ts) reads the derived
+// slug→state snapshot:
+//   - cart-bearing doc: hidden when no slot holds its slug, visible at
+//     'partial' or 'complete' otherwise.
+//   - attached ambient: visible only when the parent slug is seated in
+//     some slot at 'complete'.
+//   - standalone ambient: always visible.
 //
-// Partial pedestals also persist their gathered fragments (the per-node
-// flags from a docked partial cart). When the player retrieves a partial
-// cart from a pedestal the gathered set rehydrates the in-hand cart so
-// they can pick up where they left off across sessions.
-//
-// Discovered variations are stored alongside cartridge state because both
+// Discovered variations are stored alongside slot state because both
 // are part of the same "what the player has unlocked" persistence layer.
 
-export type CartridgeState = 'absent' | 'partial' | 'complete'
+export type CartridgeState = 'partial' | 'complete'
 
 const STORAGE_KEY = 'gv:cartridge-states'
-const STORAGE_VERSION = 2
+const STORAGE_VERSION = 3
 
-interface SlotPayload {
+export interface SlotPayload {
+  slug: string
   state: CartridgeState
-  gathered?: Record<string, true>
+  gathered: Record<string, true>
 }
 
 interface StoredStates {
   v: number
+  // Slot index → payload. Empty slots are absent from the map.
   slots: Record<string, SlotPayload>
   discoveredVariations: string[]
 }
 
-// Default for any slug not explicitly stored. 'absent' is the discovery-
-// driven progression: cartridges start unloaded, the wiki starts showing
-// only standalone-ambient docs, and the player canonizes entries by
-// docking carts. (Standalone ambient docs are visible regardless because
-// isDocVisible's no-attachedTo branch returns true.)
-const DEFAULT_STATE: CartridgeState = 'absent'
-
-// Variations the player can access from first boot. Imported here so
-// the store seeds the discovered set on init — the terminal's known-
-// variations list is non-empty on a fresh save, which keeps the loop
-// reachable without first reading anything.
-import { BOOT_VARIATIONS } from './variations'
-
 function isCartridgeState(v: unknown): v is CartridgeState {
-  return v === 'absent' || v === 'partial' || v === 'complete'
+  return v === 'partial' || v === 'complete'
 }
 
 function isStringRecordTrue(v: unknown): v is Record<string, true> {
@@ -60,7 +50,7 @@ function isStringRecordTrue(v: unknown): v is Record<string, true> {
 }
 
 interface LoadedStorage {
-  slots: Record<string, SlotPayload>
+  slots: Record<number, SlotPayload>
   discoveredVariations: string[]
 }
 
@@ -73,20 +63,22 @@ function readStorage(): LoadedStorage {
     if (parsed?.v !== STORAGE_VERSION || !parsed.slots || typeof parsed.slots !== 'object') {
       return { slots: {}, discoveredVariations: [] }
     }
-    const slots: Record<string, SlotPayload> = {}
+    const slots: Record<number, SlotPayload> = {}
     for (const [k, v] of Object.entries(parsed.slots)) {
-      if (typeof k !== 'string' || !v || typeof v !== 'object') continue
+      const idx = Number(k)
+      if (!Number.isInteger(idx) || idx < 0) continue
+      if (!v || typeof v !== 'object') continue
       const payload = v as Partial<SlotPayload>
+      if (typeof payload.slug !== 'string' || !payload.slug) continue
       if (!isCartridgeState(payload.state)) continue
-      const gathered = isStringRecordTrue(payload.gathered) ? payload.gathered : undefined
-      slots[k] = { state: payload.state, ...(gathered ? { gathered } : {}) }
+      const gathered = isStringRecordTrue(payload.gathered) ? payload.gathered : {}
+      slots[idx] = { slug: payload.slug, state: payload.state, gathered }
     }
     const discoveredVariations = Array.isArray(parsed.discoveredVariations)
       ? parsed.discoveredVariations.filter((s): s is string => typeof s === 'string')
       : []
     return { slots, discoveredVariations }
   } catch {
-    // Corrupt JSON, quota errors on read, or restricted storage — start fresh.
     return { slots: {}, discoveredVariations: [] }
   }
 }
@@ -94,23 +86,22 @@ function readStorage(): LoadedStorage {
 function writeStorage(): void {
   if (typeof window === 'undefined') return
   try {
+    const out: Record<string, SlotPayload> = {}
+    for (const [k, v] of Object.entries(slots)) out[k] = v
     const payload: StoredStates = {
       v: STORAGE_VERSION,
-      slots,
+      slots: out,
       discoveredVariations,
     }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
   } catch {
-    // Quota exceeded or private-mode storage refusal — in-memory state is
-    // still authoritative for the session, so swallow and keep going.
+    // Quota exceeded or private-mode storage refusal.
   }
 }
 
 const initial = readStorage()
-let slots: Record<string, SlotPayload> = initial.slots
+let slots: Record<number, SlotPayload> = initial.slots
 let discoveredVariations: string[] = initial.discoveredVariations
-// Seed any boot variations missing from the persisted set on first init,
-// then write back if anything changed. Idempotent across reloads.
 {
   const missing = BOOT_VARIATIONS.filter((k) => !discoveredVariations.includes(k))
   if (missing.length > 0) {
@@ -118,54 +109,72 @@ let discoveredVariations: string[] = initial.discoveredVariations
     writeStorage()
   }
 }
-// Snapshot used by useCartridgeStates — exposed as `Record<slug, state>`
-// (just the enum, not the gathered set) so existing visibility checks
-// don't have to migrate. Fragment access goes through `gatheredOf` which
-// reads the slot directly.
-let stateSnapshot: Record<string, CartridgeState> = mapStates(slots)
+
+// Snapshots used by useSyncExternalStore — replaced (not mutated) on
+// every transition so React's identity-equality skips no-op renders.
+let slotsSnapshot: Record<number, SlotPayload> = { ...slots }
+let slugStateSnapshot: Record<string, CartridgeState> = mapSlugStates(slots)
 let variationsSnapshot: string[] = [...discoveredVariations]
 const listeners = new Set<() => void>()
 
-function mapStates(s: Record<string, SlotPayload>): Record<string, CartridgeState> {
+function mapSlugStates(s: Record<number, SlotPayload>): Record<string, CartridgeState> {
   const out: Record<string, CartridgeState> = {}
-  for (const [k, v] of Object.entries(s)) out[k] = v.state
+  for (const v of Object.values(s)) out[v.slug] = v.state
   return out
+}
+
+function refreshSnapshots(): void {
+  slotsSnapshot = { ...slots }
+  slugStateSnapshot = mapSlugStates(slots)
 }
 
 function notify(): void {
   for (const l of listeners) l()
 }
 
-export function cartridgeStateOf(slug: string): CartridgeState {
-  return slots[slug]?.state ?? DEFAULT_STATE
+// Slug-keyed lookups. The wiki only knows about slugs, not slots, so
+// these are the helpers it needs.
+export function cartridgeStateBySlug(slug: string): CartridgeState | 'absent' {
+  for (const v of Object.values(slots)) if (v.slug === slug) return v.state
+  return 'absent'
 }
 
-export function gatheredOf(slug: string): Record<string, true> {
-  return slots[slug]?.gathered ?? {}
+export function gatheredBySlug(slug: string): Record<string, true> {
+  for (const v of Object.values(slots)) if (v.slug === slug) return v.gathered
+  return {}
 }
 
-// Single write path for cartridge slots — replaces the old
-// setCartridgeState. `gathered` is optional; pass an empty object (or
-// nothing) when transitioning to 'absent' or 'complete' to clear it.
-export function setCartridge(
+export function slotOfSlug(slug: string): number {
+  for (const [k, v] of Object.entries(slots)) if (v.slug === slug) return Number(k)
+  return -1
+}
+
+// Slot-keyed lookups, used by Pedestal rendering and dock/retrieve
+// triggers.
+export function slotPayload(slotIndex: number): SlotPayload | null {
+  return slots[slotIndex] ?? null
+}
+
+export function setSlot(
+  slotIndex: number,
   slug: string,
   state: CartridgeState,
-  gathered: Record<string, true> = {},
+  gathered: Record<string, true>,
 ): void {
-  const next: SlotPayload = Object.keys(gathered).length > 0
-    ? { state, gathered }
-    : { state }
-  slots = { ...slots, [slug]: next }
-  stateSnapshot = mapStates(slots)
+  slots = { ...slots, [slotIndex]: { slug, state, gathered } }
+  refreshSnapshots()
   writeStorage()
   notify()
 }
 
-// Compatibility shim — the old API only persisted the enum. Callers that
-// still use this won't lose any gathered fragments because a state-only
-// transition (e.g. 'complete') normally implies a full clear anyway.
-export function setCartridgeState(slug: string, state: CartridgeState): void {
-  setCartridge(slug, state, slots[slug]?.gathered ?? {})
+export function clearSlot(slotIndex: number): void {
+  if (!(slotIndex in slots)) return
+  const next = { ...slots }
+  delete next[slotIndex]
+  slots = next
+  refreshSnapshots()
+  writeStorage()
+  notify()
 }
 
 export function isVariationDiscovered(key: string): boolean {
@@ -180,17 +189,6 @@ export function addDiscoveredVariation(key: string): void {
   notify()
 }
 
-// Seed the discovered set with always-known boot variations on first
-// init. Idempotent; only writes if the seed actually adds something new.
-export function seedDiscoveredVariations(seed: string[]): void {
-  const missing = seed.filter((k) => !discoveredVariations.includes(k))
-  if (missing.length === 0) return
-  discoveredVariations = [...discoveredVariations, ...missing]
-  variationsSnapshot = [...discoveredVariations]
-  writeStorage()
-  notify()
-}
-
 function subscribe(cb: () => void): () => void {
   listeners.add(cb)
   return () => {
@@ -198,16 +196,28 @@ function subscribe(cb: () => void): () => void {
   }
 }
 
-function getStatesSnapshot(): Record<string, CartridgeState> {
-  return stateSnapshot
+function getSlugStateSnapshot(): Record<string, CartridgeState> {
+  return slugStateSnapshot
+}
+
+function getSlotsSnapshot(): Record<number, SlotPayload> {
+  return slotsSnapshot
 }
 
 function getVariationsSnapshot(): string[] {
   return variationsSnapshot
 }
 
+// Wiki/component subscription: gives slug → state for all currently-
+// seated cartridges. Slugs not present mean "no slot holds this cart"
+// (i.e. wiki visibility = absent).
 export function useCartridgeStates(): Record<string, CartridgeState> {
-  return useSyncExternalStore(subscribe, getStatesSnapshot, getStatesSnapshot)
+  return useSyncExternalStore(subscribe, getSlugStateSnapshot, getSlugStateSnapshot)
+}
+
+// Per-slot snapshot for Pedestal rendering.
+export function useSlots(): Record<number, SlotPayload> {
+  return useSyncExternalStore(subscribe, getSlotsSnapshot, getSlotsSnapshot)
 }
 
 export function useDiscoveredVariations(): string[] {

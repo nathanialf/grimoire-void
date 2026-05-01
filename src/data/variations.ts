@@ -35,9 +35,9 @@ export const VARIATIONS: Variation[] = [
     key: 'ironwood-tideline',
     title: 'IRONWOOD TIDELINE',
     nodes: [
-      { id: 'iw-001', slug: 'aria-vex', position: [-3.5, 1.4, -3] },
-      { id: 'iw-002', slug: 'aria-vex', position: [3.5, 1.4, -3] },
-      { id: 'iw-003', slug: 'aria-vex', position: [0, 1.4, 4] },
+      { id: 'iw-001', slug: 'test-cartridge', position: [-3.5, 1.4, -3] },
+      { id: 'iw-002', slug: 'test-cartridge', position: [3.5, 1.4, -3] },
+      { id: 'iw-003', slug: 'test-cartridge', position: [0, 1.4, 4] },
     ],
   },
   {

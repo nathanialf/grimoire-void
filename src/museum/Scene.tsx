@@ -22,10 +22,9 @@ import {
   PEDESTAL_SIZE,
   pedestalPositions,
   EXIT_Z_POS,
-  MUSEUM_PEDESTALS,
 } from './sceneConstants'
-import { REGISTRY_BY_SLUG, hashSlug, titleOf, type DocEntry } from '../data'
-import { useCartridgeStates } from '../data/loadState'
+import { REGISTRY_BY_SLUG, hashSlug, titleOf } from '../data'
+import { useSlots } from '../data/loadState'
 import {
   DOOR_W,
   DOOR_H,
@@ -627,14 +626,16 @@ function ChipPanel({ seed, name }: { seed: number; name: string }) {
   )
 }
 
-function Pedestal({ x, z, entry, topGlow }: { x: number; z: number; entry: DocEntry | undefined; topGlow: CanvasTexture }) {
+function Pedestal({ slotIndex, x, z, topGlow }: { slotIndex: number; x: number; z: number; topGlow: CanvasTexture }) {
   const emissiveIntensity = pedestalEmissiveIntensity(x, z)
-  // 'absent' renders the same bare pedestal as an empty slot (no entry).
-  // 'partial' and 'complete' both render the cartridge for now — visual
-  // distinction (desaturated / glitched material for partial) is deferred.
-  const states = useCartridgeStates()
-  const state = entry ? (states[entry.data.slug] ?? 'complete') : 'absent'
-  if (!entry || state === 'absent') {
+  // Pedestals are anonymous slots. The slot's contents (slug + state)
+  // come from the live store. Empty slot → bare pedestal; otherwise
+  // resolve the seated slug to its REGISTRY entry and render its
+  // cartridge art.
+  const slots = useSlots()
+  const seated = slots[slotIndex]
+  const entry = seated ? REGISTRY_BY_SLUG.get(seated.slug) : undefined
+  if (!seated || !entry) {
     return (
       <group position={[x, 0, z]}>
         <mesh position={[0, PEDESTAL_SIZE / 2, 0]}>
@@ -669,7 +670,7 @@ function Pedestal({ x, z, entry, topGlow }: { x: number; z: number; entry: DocEn
           emissiveIntensity={emissiveIntensity}
         />
       </mesh>
-      <PedestalTicker />
+      {entry.ticker !== 'none' && <PedestalTicker />}
       {modelSrc ? (
         <Suspense fallback={<ChipPanel seed={seed} name={name} />}>
           <PedestalModel
@@ -1075,11 +1076,9 @@ export function Scene() {
 
       <MuseumRoom ceilingLightMap={ceilingLightmap} floorLightMap={floorLightmap} wallLightMap={wallLightmap} />
 
-      {pedestalPositions.map(([x, z], i) => {
-        const slug = MUSEUM_PEDESTALS[i]
-        const entry = slug ? REGISTRY_BY_SLUG.get(slug) : undefined
-        return <Pedestal key={i} x={x} z={z} entry={entry} topGlow={pedestalGlow} />
-      })}
+      {pedestalPositions.map(([x, z], i) => (
+        <Pedestal key={i} slotIndex={i} x={x} z={z} topGlow={pedestalGlow} />
+      ))}
 
 
       <ExitDoor />

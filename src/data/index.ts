@@ -1,8 +1,10 @@
 // Flat document registry. Both the App route table and the museum scene
 // read from REGISTRY — wiki presence (route + sidebar entry) and museum
 // presence (a pedestal cartridge) are deliberately separate concerns.
-// To put a doc on a pedestal, add its slug to MUSEUM_PEDESTALS in
-// src/museum/sceneConstants.ts; ambient docs simply omit themselves there.
+// To declare that a doc has a cartridge at all, set `cartridge: true`
+// on its REGISTRY entry below. Slug-to-pedestal binding happens at
+// dock time in the player's hand, not at authoring; the registry only
+// declares the eligibility.
 //
 // Routes are diegetic — they reflect what the institution catalogues each
 // document as, not the underlying schema. Folder structure (this directory)
@@ -11,7 +13,6 @@
 // /lore/omicron-collapse because it's filed as institutional lore.
 
 import type { ContentBlock, DocMedia, TemplateData } from '../types'
-import { MUSEUM_PEDESTALS } from '../museum/sceneConstants'
 import type { CartridgeState } from './loadState'
 
 import { ariaVex } from './profile/aria-vex'
@@ -24,6 +25,7 @@ import { spectralCaul } from './artifact/spectral-caul'
 import { thresholdAccords } from './artifact/threshold-accords'
 import { recordingAperture } from './artifact/recording-aperture'
 import { variantTerminal } from './artifact/variant-terminal'
+import { testCartridge } from './artifact/test-cartridge'
 import { tmp4Artifact } from './artifact/tmp4-artifact'
 import { omicronCollapse } from './coe/omicron-collapse'
 import { sableThreshold } from './coe/sable-threshold'
@@ -31,6 +33,7 @@ import { glassLitany } from './coe/glass-litany'
 import { tmp3COE } from './coe/tmp3-coe'
 import { tmp1Comm } from './comm/tmp1-comm'
 import { vexDeploymentC4427 } from './comm/vex-deployment-c4427'
+import { testCartridgeNotes } from './comm/test-cartridge-notes'
 import { sunkenRelay } from './survey/sunken-relay'
 import { outpostKaya } from './survey/outpost-kaya'
 import { wastingExpanse } from './survey/wasting-expanse'
@@ -46,32 +49,36 @@ export interface DocEntry {
   data: TemplateData
   route: string
   ticker: TickerVariant
-  // Slug of a cartridge-bearing document this entry is conceptually filed
-  // under. Used by ambient docs (those absent from MUSEUM_PEDESTALS) to
-  // declare their relationship to a pedestal — the comm from Solenne to
-  // Vex, for instance, is filed under the Aria Vex cartridge. Pedestals
-  // can surface their attachments via `documentsAttachedTo(slug)` below.
+  // True when this doc has a cartridge — i.e. its body is reconstructed
+  // by scanning nodes in Carcosa, filling a cart, and docking the cart
+  // into a pedestal. Ambient docs (no cartridge) lack this flag.
+  cartridge?: boolean
+  // Slug of a cartridge-bearing doc this entry is filed under. Attached
+  // ambient docs surface in the wiki only when the parent slug has been
+  // canonised complete in some pedestal slot.
   attachedTo?: string
 }
 
 export const REGISTRY: DocEntry[] = [
-  { data: ariaVex,          route: '/personnel/aria-vex',         ticker: 'placeholder' },
+  { data: ariaVex,          route: '/personnel/aria-vex',         ticker: 'placeholder', cartridge: true },
   { data: vexDeploymentC4427, route: '/comm/vex-deployment-c4427', ticker: 'placeholder', attachedTo: 'aria-vex' },
-  { data: yaelMox,          route: '/personnel/yael-mox',         ticker: 'placeholder' },
-  { data: pallidWatcher,    route: '/bestiary/pallid-watcher',    ticker: 'placeholder' },
-  { data: greyfieldChoir,   route: '/bestiary/greyfield-choir',   ticker: 'placeholder' },
-  { data: hollowBlade,      route: '/artifact/hollow-blade',      ticker: 'placeholder' },
-  { data: spectralCaul,     route: '/artifact/spectral-caul',     ticker: 'placeholder' },
+  { data: yaelMox,          route: '/personnel/yael-mox',         ticker: 'placeholder', cartridge: true },
+  { data: pallidWatcher,    route: '/bestiary/pallid-watcher',    ticker: 'placeholder', cartridge: true },
+  { data: greyfieldChoir,   route: '/bestiary/greyfield-choir',   ticker: 'placeholder', cartridge: true },
+  { data: hollowBlade,      route: '/artifact/hollow-blade',      ticker: 'placeholder', cartridge: true },
+  { data: spectralCaul,     route: '/artifact/spectral-caul',     ticker: 'placeholder', cartridge: true },
   { data: recordingAperture, route: '/artifact/recording-aperture', ticker: 'none'        },
   { data: variantTerminal,  route: '/artifact/variant-terminal',  ticker: 'none'        },
-  { data: sunkenRelay,      route: '/location/sunken-relay',      ticker: 'placeholder' },
-  { data: outpostKaya,      route: '/location/outpost-kaya',      ticker: 'placeholder' },
-  { data: wastingExpanse,   route: '/map/wasting-expanse',        ticker: 'placeholder' },
+  { data: testCartridge,    route: '/artifact/test-cartridge',    ticker: 'none', cartridge: true },
+  { data: testCartridgeNotes, route: '/comm/test-cartridge-notes', ticker: 'none', attachedTo: 'test-cartridge' },
+  { data: sunkenRelay,      route: '/location/sunken-relay',      ticker: 'placeholder', cartridge: true },
+  { data: outpostKaya,      route: '/location/outpost-kaya',      ticker: 'placeholder', cartridge: true },
+  { data: wastingExpanse,   route: '/map/wasting-expanse',        ticker: 'placeholder', cartridge: true },
   { data: theMuseum,        route: '/location/the-museum',        ticker: 'none'        },
-  { data: omicronCollapse,  route: '/lore/omicron-collapse',      ticker: 'placeholder' },
-  { data: thresholdAccords, route: '/lore/threshold-accords',     ticker: 'placeholder' },
-  { data: sableThreshold,   route: '/coe/sable-threshold',        ticker: 'placeholder' },
-  { data: glassLitany,      route: '/coe/glass-litany',           ticker: 'placeholder' },
+  { data: omicronCollapse,  route: '/lore/omicron-collapse',      ticker: 'placeholder', cartridge: true },
+  { data: thresholdAccords, route: '/lore/threshold-accords',     ticker: 'placeholder', cartridge: true },
+  { data: sableThreshold,   route: '/coe/sable-threshold',        ticker: 'placeholder', cartridge: true },
+  { data: glassLitany,      route: '/coe/glass-litany',           ticker: 'placeholder', cartridge: true },
   { data: tmp1Comm,         route: '/comm/tmp1-comm',             ticker: 'template'    },
   { data: tmp2Profile,      route: '/personnel/tmp2-profile',     ticker: 'template'    },
   { data: tmp3COE,          route: '/coe/tmp3-coe',               ticker: 'template'    },
@@ -89,11 +96,11 @@ export function documentsAttachedTo(slug: string): DocEntry[] {
   return REGISTRY.filter((e) => e.attachedTo === slug)
 }
 
-// Slugs that occupy a museum pedestal (i.e. cartridge-bearing). Computed
-// once from MUSEUM_PEDESTALS — order doesn't matter for the visibility
-// filter, only set membership.
+// Slugs the registry declares as cart-bearing. Slot binding happens at
+// dock time; this set is the *eligibility* roster, not the seating
+// chart.
 const CARTRIDGE_SLUGS: Set<string> = new Set(
-  MUSEUM_PEDESTALS.filter((s): s is string => s !== null),
+  REGISTRY.filter((e) => e.cartridge).map((e) => e.data.slug),
 )
 
 export function isCartridgeDoc(slug: string): boolean {
@@ -116,10 +123,12 @@ export function isDocVisible(
 ): boolean {
   const slug = entry.data.slug
   if (CARTRIDGE_SLUGS.has(slug)) {
-    return (states[slug] ?? 'complete') !== 'absent'
+    // states is slug→state for whatever's currently seated in any
+    // slot. A slug not present means no slot holds it (i.e. absent).
+    return states[slug] === 'partial' || states[slug] === 'complete'
   }
   if (entry.attachedTo) {
-    return (states[entry.attachedTo] ?? 'complete') === 'complete'
+    return states[entry.attachedTo] === 'complete'
   }
   return true
 }

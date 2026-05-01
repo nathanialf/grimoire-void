@@ -14,7 +14,6 @@ import {
   wallFixtureAABB,
   fixtureBoxAABB,
   PEDESTAL_SIZE,
-  MUSEUM_PEDESTALS,
 } from '../museum/sceneConstants'
 import { DOOR_W, DOOR_H } from '../museum/frameTicker'
 import { Controls, type InputState, type Trigger } from '../museum/Controls'
@@ -38,10 +37,9 @@ import {
   useInventory,
 } from '../data/inventory'
 import {
-  cartridgeStateOf,
-  gatheredOf,
-  setCartridge,
-  useCartridgeStates,
+  clearSlot,
+  setSlot,
+  useSlots,
 } from '../data/loadState'
 import {
   BOOT_VARIATIONS,
@@ -231,7 +229,7 @@ export function MuseumPage() {
   }
 
   const inv = useInventory()
-  const cartridgeStates = useCartridgeStates()
+  const slotsState = useSlots()
 
   const handleLoadVariation = useCallback((key: string) => {
     setActiveVariationKey(key)
@@ -293,21 +291,22 @@ export function MuseumPage() {
         })
       }
 
-      // Per-pedestal triggers: dock the held cart, retrieve a partial
-      // cart that was previously docked, or surface a wrong-cart hover
-      // label naming the slug the pedestal expects. Pedestals already
-      // 'complete' contribute no trigger — the entry is permanent.
+      // Per-slot triggers. Pedestals are anonymous: empty slots accept
+      // any held cart with a slug; partial slots surface a RETRIEVE
+      // when the player has no cart; complete slots are permanent and
+      // contribute no trigger.
+      //
+      // Completion is determined by the active variation's node set
+      // for the cart's slug — every authored node for that slug must
+      // be in `gathered`. Slugs with nodes spread across multiple
+      // variations require visiting each one to complete.
       const variationNodeIdsBySlug = new Map<string, string[]>()
-      for (const v of [activeVariation]) {
-        for (const n of v.nodes) {
-          const list = variationNodeIdsBySlug.get(n.slug) ?? []
-          list.push(n.id)
-          variationNodeIdsBySlug.set(n.slug, list)
-        }
+      for (const n of activeVariation.nodes) {
+        const list = variationNodeIdsBySlug.get(n.slug) ?? []
+        list.push(n.id)
+        variationNodeIdsBySlug.set(n.slug, list)
       }
-      for (let i = 0; i < MUSEUM_PEDESTALS.length; i++) {
-        const slug = MUSEUM_PEDESTALS[i]
-        if (!slug) continue
+      for (let i = 0; i < pedestalPositions.length; i++) {
         const [px, pz] = pedestalPositions[i]
         const half = PEDESTAL_SIZE / 2
         const aabb = {
@@ -315,16 +314,15 @@ export function MuseumPage() {
           max: [px + half, PEDESTAL_SIZE + 0.6, pz + half] as [number, number, number],
         }
         const zone = { minX: aabb.min[0], maxX: aabb.max[0], minZ: aabb.min[2], maxZ: aabb.max[2] }
-        const state = cartridgeStateOf(slug)
-        if (state === 'complete') continue
+        const seated = slotsState[i]
 
-        if (inv.cart && inv.cart.slug === slug) {
-          // Dock — partial unless every node in the active variation that
-          // binds to this slug is gathered. (Other variations may bind to
-          // the same slug; we only know the current variation's expected
-          // count, so completion is "all currently-known nodes for this
-          // slug are gathered." Future authoring may extend this.)
-          const expected = variationNodeIdsBySlug.get(slug) ?? []
+        if (seated && seated.state === 'complete') continue
+
+        if (!seated && inv.cart && inv.cart.slug) {
+          // Empty slot + held cart → DOCK trigger. Any pedestal accepts
+          // any cart; the slug is set on the slot at dock time.
+          const cartSlug = inv.cart.slug
+          const expected = variationNodeIdsBySlug.get(cartSlug) ?? []
           const cart = inv.cart
           const allGathered = expected.length > 0 && expected.every((id) => cart.gathered[id])
           triggers.push({
@@ -334,32 +332,21 @@ export function MuseumPage() {
               if (!docked || !docked.slug) return
               const gathered: Record<string, true> = {}
               for (const [k, v] of Object.entries(docked.gathered)) if (v) gathered[k] = true
-              setCartridge(docked.slug, allGathered ? 'complete' : 'partial', gathered)
+              setSlot(i, docked.slug, allGathered ? 'complete' : 'partial', gathered)
             },
             label: allGathered ? 'DOCK · COMPLETE' : 'DOCK · PARTIAL',
             aim: { min: aabb.min, max: aabb.max, maxDist: 3.5 },
           })
-        } else if (inv.cart && inv.cart.slug && inv.cart.slug !== slug) {
-          // Wrong-cart HUD — hover label only, no activate. Names the
-          // slug this pedestal expects so the player knows where their
-          // current cart belongs (and where this one wants to go).
-          triggers.push({
-            zone,
-            onActivate: () => {},
-            label: `WRONG CART · ${slug.replace(/-/g, ' ').toUpperCase()}`,
-            aim: { min: aabb.min, max: aabb.max, maxDist: 3.5 },
-          })
-        } else if (!inv.cart && state === 'partial') {
-          // Retrieve a partial cart so it can be finished later or in a
-          // different variation. Per cartridges.md, partial pedestals
-          // continue to surface their bound doc in the wiki — so we
-          // leave the persisted state alone here. The held cart is
-          // re-bound with the same gathered set.
+        } else if (seated && seated.state === 'partial' && !inv.cart) {
+          // Partial slot + empty hands → RETRIEVE. Per cart-lifecycle
+          // discussion: retrieving the partial cart frees the slot so
+          // a cart can be re-docked anywhere later. The wiki entry is
+          // hidden while the cart is in-hand (no slot holds it).
           triggers.push({
             zone,
             onActivate: () => {
-              const ok = pickUpPartialCart(slug, gatheredOf(slug))
-              if (ok) setCartridge(slug, 'absent', {})
+              const ok = pickUpPartialCart(seated.slug, seated.gathered)
+              if (ok) clearSlot(i)
             },
             label: 'RETRIEVE CART',
             aim: { min: aabb.min, max: aabb.max, maxDist: 3.5 },
@@ -379,9 +366,22 @@ export function MuseumPage() {
     // tool must be equipped — without it, scanning is a no-op anyway.
     if (inv.tool.equipped) {
       const cart = inv.cart
+      // Slugs currently seated in any pedestal slot. A node whose slug
+      // is in the seated set can only be scanned if the held cart is
+      // already bound to that exact slug (i.e. the player retrieved
+      // the partial cart from its pedestal and is finishing it).
+      // Otherwise scanning would create a duplicate cart for one
+      // canonised slug — invariant: one slug, one cart, one slot.
+      const seatedSlugs = new Set(Object.values(slotsState).map((s) => s.slug))
       for (const n of activeVariation.nodes) {
         const alreadyGathered = !!(cart && cart.gathered[n.id])
         if (alreadyGathered) continue
+        // Held cart isn't bound to this slug AND the slug already
+        // exists in a slot → block. Player either has to retrieve the
+        // partial cart from its pedestal, or the slug is permanently
+        // canonised (complete) and can't be re-scanned.
+        const cartIsBoundToThisSlug = !!(cart && cart.slug === n.slug)
+        if (seatedSlugs.has(n.slug) && !cartIsBoundToThisSlug) continue
         const aabb = nodeAabb(n)
         const wrongSlug = cart && cart.slug !== null && cart.slug !== n.slug
         let label = 'SCAN'
@@ -397,7 +397,7 @@ export function MuseumPage() {
     }
     return triggers
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeScene, inv, cartridgeStates, activeVariation])
+  }, [activeScene, inv, slotsState, activeVariation])
 
   const sceneWalkable = activeScene === 'museum' ? walkableRects : CARCOSA_BOUNDS
   const scenePedestals = activeScene === 'museum' ? pedestalPositions : []
