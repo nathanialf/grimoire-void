@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { BackSide, BufferAttribute, CanvasTexture, Euler, ExtrudeGeometry, Group, NearestFilter, PerspectiveCamera, Quaternion, SRGBColorSpace, Shape, ShapeGeometry, TextureLoader, Vector3 } from 'three'
+import { BackSide, BufferAttribute, CanvasTexture, Camera, Euler, ExtrudeGeometry, Group, NearestFilter, Quaternion, SRGBColorSpace, Shape, ShapeGeometry, TextureLoader, Vector3 } from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
 import { cartDispenserFixture, toolMountFixture, toolMountRotationY } from './sceneConstants'
 import { type Cartridge, useInventory } from '../data/inventory'
@@ -201,7 +201,11 @@ const HELD_REST_ROT: [number, number, number] = [0, Math.PI / 2 + 0.15, -0.04]
 // aperture and cart can fall outside the visible frustum. Scale lateral
 // offsets by the aspect ratio when narrower than 1:1 so they slide
 // toward the centerline at the same rate the viewport narrows.
-function viewportXFactor(camera: PerspectiveCamera | { aspect?: number }): number {
+//
+// useThree's `camera` is typed as the perspective/orthographic union
+// (the runtime supports both); we read `aspect` structurally and fall
+// back to 1, so any camera can be passed in safely.
+function viewportXFactor(camera: Camera): number {
   const aspect = (camera as { aspect?: number }).aspect ?? 1
   return Math.min(1, aspect)
 }
