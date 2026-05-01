@@ -3,7 +3,15 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import { Matrix4, Quaternion, Vector3 } from 'three'
 import { Scene } from '../museum/Scene'
-import { CarcosaScene, returnPortalZone } from '../museum/CarcosaScene'
+import {
+  CarcosaScene,
+  returnPortalZone,
+  GLIMPSE_EXPOSURE_MS,
+  VISOR_SHUTTER_CLOSE_MS,
+  VISOR_SHUTTER_HOLD_MS,
+  VISOR_SHUTTER_OPEN_MS,
+} from '../museum/CarcosaScene'
+import { useVisionTier } from '../data/settings'
 import {
   walkableRects,
   pedestalPositions,
@@ -144,6 +152,54 @@ export function MuseumPage() {
   // resolves (GLTF models loaded) and Three.js has painted at least one
   // frame, so the player doesn't see a blank canvas during scene init.
   const [sceneReady, setSceneReady] = useState(false)
+
+  // Sensor-overload sequence fired every time the player enters Carcosa
+  // (door entry, terminal load, etc). Timeline:
+  //   0                              → exposure begins (full-tier glimpse)
+  //   GLIMPSE_EXPOSURE_MS            → shutter starts closing over the view
+  //   + VISOR_SHUTTER_CLOSE_MS       → shutter fully closed; tier swaps to
+  //                                    storedTier behind it (glimpse off)
+  //   + VISOR_SHUTTER_HOLD_MS        → shutter starts opening
+  //   + VISOR_SHUTTER_OPEN_MS        → shutter fully open; degraded tier
+  //                                    is now revealed
+  // visorClosed drives the DOM shutter via CSS transform transitions.
+  // visorGlimpse forces tier=2 inside CarcosaScene during exposure +
+  // shutter-close (when the full-tier render is still what's behind the
+  // closing shutter).
+  const [visorGlimpse, setVisorGlimpse] = useState(false)
+  const [visorClosed, setVisorClosed] = useState(false)
+  const storedVisionTier = useVisionTier()
+  // Whether the suit visor is currently restricting the player's view —
+  // i.e. the rendered tier in Carcosa is below full. Drives HUD chrome
+  // (hints / prompts) so it pops against the dark visor view at degraded
+  // tiers and stays subtle (museum-style) when the player has full
+  // sensors. visorGlimpse forces full-tier briefly on entry, so during
+  // the exposure window the HUD reads as "visor inactive" too.
+  const visorActive =
+    activeScene === 'carcosa' && !visorGlimpse && storedVisionTier !== 2
+  useEffect(() => {
+    // No sensor overload to recover from at full sensor capability —
+    // the visor sequence only fires when the player's stored tier is
+    // degraded.
+    if (activeScene !== 'carcosa' || storedVisionTier === 2) {
+      setVisorGlimpse(false)
+      setVisorClosed(false)
+      return
+    }
+    setVisorGlimpse(true)
+    setVisorClosed(false)
+    const closeAt = GLIMPSE_EXPOSURE_MS
+    const swapAt = closeAt + VISOR_SHUTTER_CLOSE_MS
+    const openAt = swapAt + VISOR_SHUTTER_HOLD_MS
+    const t1 = setTimeout(() => setVisorClosed(true), closeAt)
+    const t2 = setTimeout(() => setVisorGlimpse(false), swapAt)
+    const t3 = setTimeout(() => setVisorClosed(false), openAt)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+    }
+  }, [activeScene, activeVariationKey, storedVisionTier])
 
   // Held inventory lives in module state (intentionally — see
   // inventory.ts), which means it survives a browser-back into the
@@ -485,7 +541,7 @@ export function MuseumPage() {
             <Scene />
           </group>
           <group visible={activeScene === 'carcosa'}>
-            <CarcosaScene variation={activeVariation} />
+            <CarcosaScene variation={activeVariation} glimpse={visorGlimpse} />
           </group>
           {/* Held tool sits at top-level so it persists across scene
               swaps without re-mounting (which would tear down its
@@ -573,16 +629,22 @@ export function MuseumPage() {
         <DoorPrompt
           label={doors[activeDoor].label ?? 'OPEN'}
           touch={touch}
-          carcosa={activeScene === 'carcosa'}
+          carcosa={activeScene === 'carcosa' && !visorActive}
           onActivate={doors[activeDoor].onActivate}
         />
       )}
-      <div className={activeScene === 'carcosa' ? styles.cursorCarcosa : styles.cursor} />
+      <div className={activeScene === 'carcosa' && !visorActive ? styles.cursorCarcosa : styles.cursor} />
       <div className={styles.hintRow}>
         {(() => {
           const inCarcosa = activeScene === 'carcosa'
-          const hintCls = inCarcosa ? styles.hintCarcosa : styles.hint
-          const hintBtnCls = inCarcosa ? styles.hintButtonCarcosa : styles.hintButton
+          // Visor active = full-vision-tier glimpse or stored tier 2:
+          // HUD pops in the museum's bright black-on-accent chips.
+          // Visor inactive (degraded tier in Carcosa) = the dimmer
+          // white-on-black Carcosa chip so it doesn't compete with the
+          // sparse void rendering.
+          const useCarcosaChip = inCarcosa && !visorActive
+          const hintCls = useCarcosaChip ? styles.hintCarcosa : styles.hint
+          const hintBtnCls = useCarcosaChip ? styles.hintButtonCarcosa : styles.hintButton
           return touch ? (
             <>
               <span className={hintCls}>LEFT MOVE</span>
@@ -629,6 +691,75 @@ export function MuseumPage() {
           zIndex: 21,
         }}
       />
+      {/* Sensor-overload visor: two black halves meet at the horizon line
+          when the suit shutters down at the end of the entry exposure,
+          then retract to reveal the (degraded) tier underneath. Hidden
+          unless the player is actively in Carcosa so the museum view
+          can't accidentally show shutter chrome. */}
+      <div
+        style={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          top: 0,
+          height: '50%',
+          background: '#000',
+          transform: visorClosed ? 'translateY(0)' : 'translateY(-100%)',
+          transition: `transform ${visorClosed ? VISOR_SHUTTER_CLOSE_MS : VISOR_SHUTTER_OPEN_MS}ms ease-${visorClosed ? 'in' : 'out'}`,
+          pointerEvents: 'none',
+          zIndex: 22,
+          display: activeScene === 'carcosa' ? 'block' : 'none',
+        }}
+      />
+      <div
+        style={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: '50%',
+          background: '#000',
+          transform: visorClosed ? 'translateY(0)' : 'translateY(100%)',
+          transition: `transform ${visorClosed ? VISOR_SHUTTER_CLOSE_MS : VISOR_SHUTTER_OPEN_MS}ms ease-${visorClosed ? 'in' : 'out'}`,
+          pointerEvents: 'none',
+          zIndex: 22,
+          display: activeScene === 'carcosa' ? 'block' : 'none',
+        }}
+      />
+      {/* Sensor-overload warning shown for the entire pre-shutter window
+          of the visor sequence — i.e. while the player is still seeing
+          the full-fidelity glimpse but the suit is about to drop them
+          to a degraded tier. Hides the moment the shutter swap fires
+          (visorGlimpse → false). Sits above the shutter so the message
+          is the last thing visible before the world goes dark. */}
+      {activeScene === 'carcosa' && visorGlimpse && (
+        <div
+          className={styles.visorWarningPulse}
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.75rem',
+            color: 'var(--color-accent)',
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            textShadow: '0 0 8px #000, 0 0 2px #000',
+            pointerEvents: 'none',
+            userSelect: 'none',
+            zIndex: 23,
+          }}
+        >
+          <span style={{ fontSize: '4rem', lineHeight: 1 }} aria-hidden="true">⚠</span>
+          <span style={{ fontSize: '1.25rem', letterSpacing: '0.4em', textIndent: '0.4em' }}>
+            Danger — Sensor Overload Imminent
+          </span>
+        </div>
+      )}
       {!sceneReady && (
         <div className={appStyles.loadingOverlay}>
           <span className={appStyles.loadingRing} role="img" aria-hidden="true" />

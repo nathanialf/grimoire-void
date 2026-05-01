@@ -1,10 +1,23 @@
 import { useMemo, useRef, useState } from 'react'
-import { BufferAttribute, BufferGeometry, Group, Matrix4, Quaternion, Vector3 } from 'three'
+import { BackSide, BufferAttribute, BufferGeometry, Group, Matrix4, Quaternion, Vector3 } from 'three'
 import { useFrame } from '@react-three/fiber'
 import { DOOR_W, DOOR_H, DOOR_CY, FrameTicker, makeDebugTickerCanvas } from './frameTicker'
 import { useRevealedArtifactTexture, DOOR_ANIM_RADIUS } from './Scene'
 import { Node } from './Node'
 import type { Variation } from '../data/variations'
+import { useVisionTier, type VisionTier } from '../data/settings'
+
+// On entering a variation the suit takes a brief, full-fidelity reading of
+// Carcosa before sensors overload and force the dropdown to the player's
+// current upgrade tier ("one-shot per run", per
+// docs/private/systems/vision-and-suit.md). The full sequence — exposure
+// hold + shutter close + tier swap + shutter open — is orchestrated in
+// MuseumPage so it can drive the DOM visor overlay; the constants there
+// also export the boolean we read here.
+export const GLIMPSE_EXPOSURE_MS = 1000
+export const VISOR_SHUTTER_CLOSE_MS = 260
+export const VISOR_SHUTTER_HOLD_MS = 80
+export const VISOR_SHUTTER_OPEN_MS = 260
 
 export const PORTAL_Z = -10
 
@@ -187,6 +200,50 @@ function makeDustDiscGeometry(): BufferGeometry {
   return geo
 }
 
+// Tier-1 ground: subdivided plane carrying per-vertex colors that lerp
+// from the full red ground tone at the player's feet to pure black at
+// the edges. Renders as wireframe at tier 1, so the lines themselves
+// inherit the gradient and dissolve into the black skybox at the
+// horizon — gives the ground a near-the-player presence without
+// pretending to extend infinitely. Pre-rotation, the plane sits in the
+// XY plane; distance-from-center in (x, y) is distance-from-origin on
+// the rotated horizontal ground.
+const TIER1_GROUND_FADE_RADIUS = 50
+function makeTier1GroundGeometry(): BufferGeometry {
+  const SIZE = 2000
+  const SEGMENTS = 48
+  const positions: number[] = []
+  const colors: number[] = []
+  const indices: number[] = []
+  const RED = [0xe8 / 255, 0x20 / 255, 0x2a / 255] as const
+  const half = SIZE / 2
+  const step = SIZE / SEGMENTS
+  for (let j = 0; j <= SEGMENTS; j++) {
+    for (let i = 0; i <= SEGMENTS; i++) {
+      const x = -half + i * step
+      const y = -half + j * step
+      positions.push(x, y, 0)
+      const t = Math.min(Math.hypot(x, y) / TIER1_GROUND_FADE_RADIUS, 1)
+      const k = 1 - t
+      colors.push(RED[0] * k, RED[1] * k, RED[2] * k)
+    }
+  }
+  for (let j = 0; j < SEGMENTS; j++) {
+    for (let i = 0; i < SEGMENTS; i++) {
+      const a = j * (SEGMENTS + 1) + i
+      const b = a + 1
+      const c = a + (SEGMENTS + 1)
+      const d = c + 1
+      indices.push(a, c, b, b, c, d)
+    }
+  }
+  const geo = new BufferGeometry()
+  geo.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3))
+  geo.setAttribute('color', new BufferAttribute(new Float32Array(colors), 3))
+  geo.setIndex(indices)
+  return geo
+}
+
 // Static dome dust — ambient density across the upper hemisphere, world-space.
 // Stays put while the galaxy spins.
 function makeDustDomeGeometry(): BufferGeometry {
@@ -219,7 +276,7 @@ function makeDustDomeGeometry(): BufferGeometry {
 // the portal pop highlights a complementary tone against the red ground.
 const PORTAL_PALETTE = { base: '#000000', ink: '#ffffff', accent: '#ffd400' }
 
-function ReturnPortal() {
+function ReturnPortal({ tier }: { tier: VisionTier }) {
   const [idx, setIdx] = useState(0)
   const cycleAccum = useRef(0)
   useFrame(({ camera }, delta) => {
@@ -234,7 +291,8 @@ function ReturnPortal() {
     }
   })
   // Same per-pixel reveal animation the museum doors use, with a black/white
-  // palette and the portal's sparse noise density.
+  // palette and the portal's sparse noise density. Skipped at tier<2: the
+  // texture isn't visible on a wireframe or vertex-only render.
   const tex = useRevealedArtifactTexture(
     401 + idx * 19,
     {
@@ -249,6 +307,28 @@ function ReturnPortal() {
     900,
   )
 
+  if (tier === 0) {
+    // Subdivide the door plane so its vertex grid reads as a door
+    // silhouette (~7×13 dot grid) rather than just four corner points.
+    // The exit is the only thing the player needs to find at tier 0, so
+    // it gets the densest dot pattern of any tier-0 element.
+    return (
+      <points position={[0, DOOR_CY, PORTAL_Z]}>
+        <planeGeometry args={[DOOR_W, DOOR_H, 6, 12]} />
+        <pointsMaterial color="#ffffff" size={4} sizeAttenuation={false} toneMapped={false} />
+      </points>
+    )
+  }
+
+  if (tier === 1) {
+    return (
+      <mesh position={[0, DOOR_CY, PORTAL_Z]}>
+        <planeGeometry args={[DOOR_W, DOOR_H]} />
+        <meshBasicMaterial color="#ffffff" wireframe wireframeLinewidth={2} toneMapped={false} />
+      </mesh>
+    )
+  }
+
   // Faces +Z (toward the player at spawn). Door panel only — frame is drawn
   // separately by ReturnPortalFrame so the ticker strips can render in front.
   return (
@@ -259,8 +339,12 @@ function ReturnPortal() {
   )
 }
 
-function ReturnPortalFrame() {
+function ReturnPortalFrame({ tier }: { tier: VisionTier }) {
   const { canvas } = useMemo(() => makeDebugTickerCanvas(), [])
+  // The frame is decorative chrome (animated red ticker strips). At
+  // degraded tiers it would read as misplaced UI rather than world
+  // geometry, so it's hidden until tier 2.
+  if (tier < 2) return null
   // Portal faces +Z (rotationY = 0); strips sit at PORTAL_Z + 0.005, slightly
   // closer to the spawn camera at z=0.
   return (
@@ -282,11 +366,12 @@ function ReturnPortalFrame() {
 // is roughly one revolution every ~7 minutes: a slow celestial drift.
 const GALAXY_SPIN_RAD_PER_SEC = 0.015
 
-export function CarcosaScene({ variation }: { variation: Variation }) {
+export function CarcosaScene({ variation, glimpse }: { variation: Variation; glimpse: boolean }) {
   const galaxyGeo = useMemo(() => makeGalaxyGeometry(), [])
   const skyStarsGeo = useMemo(() => makeSkyStarsGeometry(), [])
   const dustDiscGeo = useMemo(() => makeDustDiscGeometry(), [])
   const dustDomeGeo = useMemo(() => makeDustDomeGeometry(), [])
+  const tier1GroundGeo = useMemo(() => makeTier1GroundGeometry(), [])
 
   // Quaternion that maps local (x, y, z) onto the disc basis (u, v, n) so the
   // spin axis (local z) coincides with the disc normal. Computed once.
@@ -305,48 +390,92 @@ export function CarcosaScene({ variation }: { variation: Variation }) {
     if (spinRef.current) spinRef.current.rotation.z += delta * GALAXY_SPIN_RAD_PER_SEC
   })
 
+  // Stored tier (set in credits) is overridden to full for the brief
+  // sensor-overload glimpse. The glimpse boolean is owned by MuseumPage
+  // so it can synchronize the visor-shutter DOM overlay with the tier
+  // swap — see the visor sequence around setActiveScene.
+  const storedTier = useVisionTier()
+  const tier: VisionTier = glimpse ? 2 : storedTier
+
   return (
     <>
       {/* Flat lighting; no directional light → no shadows. */}
       <ambientLight intensity={0.9} />
 
-      {/* Bright red ground. Basic material so saturation holds across the
-          whole horizon (no lighting falloff darkening distant ground). */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[2000, 2000]} />
-        <meshBasicMaterial color="#e8202a" toneMapped={false} />
-      </mesh>
+      {/* Tiers 0 and 1 both wrap the player in a black skybox so the world
+          reads as a void — the canvas's declarative <color attach="background">
+          in MuseumPage is white for Carcosa, so this sphere is what actually
+          paints the sky black. renderOrder=-100 + depthWrite=false keeps
+          everything else drawing cleanly in front. */}
+      {tier !== 2 && (
+        <mesh renderOrder={-100}>
+          <sphereGeometry args={[3000, 16, 16]} />
+          <meshBasicMaterial color="#000000" side={BackSide} toneMapped={false} depthWrite={false} />
+        </mesh>
+      )}
 
-      {/* Galaxy + sky points are pushed to renderOrder=-10 with depthWrite
-          off so they paint first without contributing to the depth buffer.
-          The ground (and door) then draw normally over them at the horizon —
-          no depth fighting, and the door stays opaque. */}
-      <points geometry={dustDomeGeo} renderOrder={-10}>
-        <pointsMaterial color="#000000" size={2} sizeAttenuation toneMapped={false} depthWrite={false} />
-      </points>
+      {/* Ground.
+          - Tier 0: omitted; sensors don't resolve terrain.
+          - Tier 1: a red→black gradient wireframe (vertex-coloured plane)
+            so the ground feels grounded near the player and dissolves
+            into the black skybox at the horizon. wireframeLinewidth
+            asks the driver for slightly thicker lines (capped at 1 on
+            many WebGL impls but harmless where unsupported).
+          - Tier 2: full saturated red plane. */}
+      {tier === 1 && (
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0, 0]}
+          geometry={tier1GroundGeo}
+        >
+          <meshBasicMaterial vertexColors wireframe wireframeLinewidth={2} toneMapped={false} />
+        </mesh>
+      )}
+      {tier === 2 && (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+          <planeGeometry args={[2000, 2000]} />
+          <meshBasicMaterial color="#e8202a" toneMapped={false} />
+        </mesh>
+      )}
 
-      <points geometry={skyStarsGeo} renderOrder={-10}>
-        <pointsMaterial color="#000000" size={2.5} sizeAttenuation toneMapped={false} depthWrite={false} />
-      </points>
-
-      <group position={GALAXY_OFFSET} quaternion={discQuat}>
-        <group ref={spinRef}>
-          <points geometry={dustDiscGeo} renderOrder={-10}>
-            <pointsMaterial color="#000000" size={2} sizeAttenuation toneMapped={false} depthWrite={false} />
+      {/* Sky / dust dome and stars.
+          - Tier 0: hidden; the void is empty.
+          - Tier 1: white points so they pop against the black skybox.
+            Galaxy + dust disc are hidden at tier 1 (one celestial layer
+            is enough for the degraded read).
+          - Tier 2: black points against the white sky, full galaxy. */}
+      {tier !== 0 && (
+        <>
+          <points geometry={dustDomeGeo} renderOrder={-10}>
+            <pointsMaterial color={tier === 1 ? '#ffffff' : '#000000'} size={2} sizeAttenuation toneMapped={false} depthWrite={false} />
           </points>
-          <points geometry={galaxyGeo} renderOrder={-10}>
-            <pointsMaterial color="#000000" size={3} sizeAttenuation toneMapped={false} depthWrite={false} />
+
+          <points geometry={skyStarsGeo} renderOrder={-10}>
+            <pointsMaterial color={tier === 1 ? '#ffffff' : '#000000'} size={2.5} sizeAttenuation toneMapped={false} depthWrite={false} />
           </points>
+        </>
+      )}
+
+      {tier === 2 && (
+        <group position={GALAXY_OFFSET} quaternion={discQuat}>
+          <group ref={spinRef}>
+            <points geometry={dustDiscGeo} renderOrder={-10}>
+              <pointsMaterial color="#000000" size={2} sizeAttenuation toneMapped={false} depthWrite={false} />
+            </points>
+            <points geometry={galaxyGeo} renderOrder={-10}>
+              <pointsMaterial color="#000000" size={3} sizeAttenuation toneMapped={false} depthWrite={false} />
+            </points>
+          </group>
         </group>
-      </group>
+      )}
 
-      <ReturnPortal />
-      <ReturnPortalFrame />
+      <ReturnPortal tier={tier} />
+      <ReturnPortalFrame tier={tier} />
 
       {/* Variation-bound scan nodes. Each variation declares its own set
           in src/data/variations.ts. */}
       {variation.nodes.map((n) => (
-        <Node key={n.id} node={n} />
+        <Node key={n.id} node={n} tier={tier} />
       ))}
     </>
   )

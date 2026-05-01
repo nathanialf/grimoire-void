@@ -60,6 +60,13 @@
   to { opacity: 0.2; }
 }
 
+/* Sensor-overload warning shown during the pre-shutter window of the
+   visor sequence. Reuses the same blink keyframe the danger CRT timer
+   uses so the two states feel like the same alarm. */
+.visorWarningPulse {
+  animation: blink 0.5s steps(2, end) infinite;
+}
+
 .prompt {
   position: fixed;
   bottom: 18%;
@@ -83,9 +90,10 @@
 div.prompt { pointer-events: none; }
 button.prompt { pointer-events: auto; cursor: pointer; }
 
-/* Same Carcosa shift the cursor and hint chips use: the accent red
-   vanishes against Carcosa's ground, so the prompt flips to
-   white-on-black there. */
+/* Tier-2 Carcosa prompt: the accent red vanishes against Carcosa's
+   ground, so the prompt flips to white-on-black. At degraded vision
+   tiers the visor view is dark and the HUD reverts to the museum's
+   bright black-on-accent .prompt instead. */
 .promptCarcosa {
   composes: prompt;
   color: #fff;
@@ -141,6 +149,9 @@ button.prompt { pointer-events: auto; cursor: pointer; }
   text-align: center;
 }
 
+/* Tier-2 Carcosa hint chip: white-on-black so it survives the bright
+   red ground. At degraded vision tiers the world is dark and the HUD
+   uses the museum's .hint (black-on-accent) for pop instead. */
 .hintCarcosa {
   composes: hint;
   color: #fff;
