@@ -19,10 +19,10 @@
       <line x1="12.95" y1="12"  x2="13.25" y2="12"/>
     </g>
 
-    <!-- Outer walls. Gaps for the carcosa threshold (-Z wall) and the
+    <!-- Outer walls. Gaps for the variation threshold (-Z wall) and the
          return egress (+Z wall). Wall stroke is heavier than fixture lines. -->
     <g stroke-width="0.18">
-      <!-- top wall (-Z, y = -12): broken by carcosa threshold -->
+      <!-- top wall (-Z, y = -12): broken by variation threshold -->
       <line x1="-12" y1="-12" x2="-0.6" y2="-12"/>
       <line x1="0.6"  y1="-12" x2="12"  y2="-12"/>
       <!-- bottom wall (+Z, y = 12): broken by return egress -->
@@ -48,10 +48,10 @@
     <!-- Variant terminal on -Z wall: centerX=-1.6, w=0.72, depth 0.09 inward -->
     <rect x="-1.96" y="-12" width="0.72" height="0.09" stroke-width="0.06"/>
 
-    <!-- East wall fixtures: tool (left) + cart dispenser (right), side
-         by side at chest height. Tool sits flush at x=12 with a 0.16×0.4
-         footprint centered on z=0; dispenser is 0.22×0.5 centered on
-         z=0.55. -->
+    <!-- East wall fixtures: aperture (left) + cart dispenser (right),
+         side by side at chest height. Aperture sits flush at x=12 with a
+         0.16×0.4 footprint centered on z=0; dispenser is 0.22×0.5 centered
+         on z=0.55. -->
     <g stroke-width="0.05">
       <rect x="11.84" y="-0.20" width="0.16" height="0.40"/>
       <rect x="11.78" y="0.30"  width="0.22" height="0.50"/>
@@ -72,7 +72,7 @@
       <circle cx="7.5"  cy="-7.5" r="0.18"/><circle cx="7.5"  cy="-2.5" r="0.18"/><circle cx="7.5"  cy="2.5" r="0.18"/><circle cx="7.5"  cy="7.5" r="0.18"/>
     </g>
 
-    <!-- Compass — N points to -Z (toward Carcosa threshold) -->
+    <!-- Compass — N points to -Z (toward variation threshold) -->
     <g stroke-width="0.05">
       <circle cx="13.6" cy="-13.6" r="0.95"/>
       <line x1="13.6" y1="-12.65" x2="13.6" y2="-14.55"/>
@@ -101,14 +101,14 @@
   <!-- Text labels -->
   <g fill="#e8202a" font-size="0.42" letter-spacing="0.06">
     <!-- Wall openings -->
-    <text x="0" y="-12.4" text-anchor="middle">CARCOSA THRESHOLD</text>
+    <text x="0" y="-12.4" text-anchor="middle">VARIATION THRESHOLD</text>
     <text x="0" y="12.85" text-anchor="middle">RETURN EGRESS</text>
 
     <!-- Wall fixtures -->
     <text x="-1.6" y="-11.4" text-anchor="middle" font-size="0.3">VAR. TERM.</text>
 
     <!-- East wall fixture callouts -->
-    <text x="11.65" y="0.05" text-anchor="end" font-size="0.32">TOOL</text>
+    <text x="11.65" y="0.05" text-anchor="end" font-size="0.32">APERTURE</text>
     <text x="11.65" y="0.55" text-anchor="end" font-size="0.32">DISPENSER</text>
 
     <!-- Pedestal grid axis labels -->

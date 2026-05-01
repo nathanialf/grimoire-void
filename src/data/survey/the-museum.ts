@@ -27,7 +27,7 @@ export const theMuseum: SurveyTemplate = {
     aspect: 'square',
     src: '/images/the-museum-plan.svg',
     alt: 'Schematic floor plan of the museum, plan view, level 0.',
-    caption: 'Sheet 004 — The Museum, plan view. Sixteen pedestals on a 4 × 4 grid; central fixture houses the dispenser and tool rack; the variant terminal flanks the Carcosa threshold on the north wall.',
+    caption: 'Sheet 004 — The Museum, plan view. Sixteen pedestals on a 4 × 4 grid; the east wall carries the Recording Aperture and the cartridge dispenser side by side; the Variant Terminal flanks the variation threshold on the north wall.',
   },
   sections: [
     {
@@ -35,7 +35,7 @@ export const theMuseum: SurveyTemplate = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'The Museum is the standing exhibition floor of the archive — a single chamber laid out as a regular grid of pedestals, bracketed by a return egress on one wall and the Carcosa threshold on the opposite wall. It is the floor on which all canonised material is held in physical custody, and the room from which all field excursions begin and conclude.',
+          text: 'The Museum is the standing exhibition floor of the archive — a single chamber laid out as a regular grid of pedestals, bracketed by a return egress on one wall and the variation threshold on the opposite wall. It is the floor on which all canonised material is held in physical custody, and the room from which all field excursions begin and conclude.',
         },
       ],
     },
@@ -44,7 +44,7 @@ export const theMuseum: SurveyTemplate = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'Each pedestal in the grid is keyed to a single document. A pedestal may stand empty, hold a partially seated cartridge, or hold a complete one. The east wall carries the recording tool and the cartridge dispenser, side by side. The Carcosa threshold is fronted by the Variant Terminal and is not locked — once a variation has been entered, it remains addressable.',
+          text: 'Each pedestal in the grid is keyed to a single document. A pedestal may stand empty, hold a partially seated cartridge, or hold a complete one. The east wall carries the [[Recording Aperture|/artifact/recording-aperture]] and the cartridge dispenser, side by side. The variation threshold is fronted by the [[Variant Terminal|/artifact/variant-terminal]] and is not locked — once a variation has been entered, it remains addressable.',
         },
       ],
     },
