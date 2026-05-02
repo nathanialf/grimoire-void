@@ -13,7 +13,7 @@ export function Timeline({ entries }: { entries: TimelineEntry[] }) {
       <ul className={styles.timeline}>
         {entries.map((e, i) => (
           <li key={i}>
-            <span className={styles.timestamp}>{e.timestamp}</span>
+            <span className={styles.timestamp}>{renderText(e.timestamp)}</span>
             <span className={styles.event}>{renderText(e.event)}</span>
           </li>
         ))}

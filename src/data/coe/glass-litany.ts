@@ -1,5 +1,16 @@
 import type { COETemplate } from '../../types'
 
+// Glass Litany COE. Fragment topology: 12 nodes total — 9 hosted in
+// the glass-litany variation (the primary subject), 3 stray nodes in
+// test-variation (hybrid theming, see variations-and-terminal.md).
+// Partial-state reveal is per-fragment: each authored node
+// (gl-001..012 in src/data/variations.ts) declares a `reveals` array
+// pointing at exact positions in this doc — issueSummary paragraphs,
+// timeline events, fiveWhys lines, action items, related items, and
+// the three incidentResponseAnalysis metric rows. Together the 12
+// fragments cover all 34 redactable positions; scanning a particular
+// node unlocks exactly that subset of doc content in the wiki.
+
 export const glassLitany: COETemplate = {
   kind: 'coe',
   pageNumber: '090',

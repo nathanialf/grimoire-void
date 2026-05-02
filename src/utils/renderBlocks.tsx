@@ -9,18 +9,18 @@ export function renderBlocks(blocks: ContentBlock[], shared: Record<string, stri
       return (
         <blockquote key={i} className={shared.quote}>
           {renderText(block.text)}
-          <span className={shared.quoteSource}>{`— ${block.source}`}</span>
+          <span className={shared.quoteSource}>— {renderText(block.source)}</span>
         </blockquote>
       )
     }
     if (block.type === 'table') {
       return (
         <table key={i} className={shared.table}>
-          {block.caption && <caption className={shared.tableCaption}>{block.caption}</caption>}
+          {block.caption && <caption className={shared.tableCaption}>{renderText(block.caption)}</caption>}
           <thead>
             <tr>
               {block.columns.map((c, ci) => (
-                <th key={ci} scope="col" className={shared.tableHeader}>{c}</th>
+                <th key={ci} scope="col" className={shared.tableHeader}>{renderText(c)}</th>
               ))}
             </tr>
           </thead>

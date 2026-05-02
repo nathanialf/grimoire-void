@@ -13,7 +13,7 @@ export function MetaTable({ rows }: { rows: MetaRow[] }) {
     <div className={styles.table}>
       {rows.map((r, i) => (
         <div key={i} className={styles.row}>
-          <span className={styles.label}>{r.label}</span>
+          <span className={styles.label}>{renderText(r.label)}</span>
           <span
             className={
               r.variant === 'danger'

@@ -54,6 +54,7 @@ import {
 import {
   BOOT_VARIATIONS,
   findVariationByKey,
+  fragmentNodeIdsForSlug,
   type Variation,
 } from '../data/variations'
 import styles from '../styles/Museum.module.css'
@@ -427,16 +428,13 @@ export function MuseumPage() {
       // when the player has no cart; complete slots are permanent and
       // contribute no trigger.
       //
-      // Completion is determined by the active variation's node set
-      // for the cart's slug — every authored node for that slug must
-      // be in `gathered`. Slugs with nodes spread across multiple
-      // variations require visiting each one to complete.
-      const variationNodeIdsBySlug = new Map<string, string[]>()
-      for (const n of activeVariation.nodes) {
-        const list = variationNodeIdsBySlug.get(n.slug) ?? []
-        list.push(n.id)
-        variationNodeIdsBySlug.set(n.slug, list)
-      }
+      // Completion is determined by the slug's full authored fragment
+      // set across every variation — fragmentNodeIdsForSlug pulls from
+      // all of VARIATIONS, not just the active one — so a cart with
+      // fragments spread across multiple variations only canonises
+      // 'complete' when every authored node is gathered. Docking a
+      // 3-of-3 sweep from a stray-only variation no longer falsely
+      // marks the slot complete.
       for (let i = 0; i < pedestalPositions.length; i++) {
         const [px, pz] = pedestalPositions[i]
         const half = PEDESTAL_SIZE / 2
@@ -453,7 +451,7 @@ export function MuseumPage() {
           // Empty slot + held cart → DOCK trigger. Any pedestal accepts
           // any cart; the slug is set on the slot at dock time.
           const cartSlug = inv.cart.slug
-          const expected = variationNodeIdsBySlug.get(cartSlug) ?? []
+          const expected = fragmentNodeIdsForSlug(cartSlug)
           const cart = inv.cart
           const allGathered = expected.length > 0 && expected.every((id) => cart.gathered[id])
           triggers.push({

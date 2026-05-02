@@ -180,3 +180,23 @@
 .poiDesc {
   color: var(--color-text-dim);
 }
+
+/* ── Redacted scramble text ── */
+/* Applied by renderText when its input begins with the U+200B marker
+   prepended by scrambleText. Lets the wiki tint length-matched
+   scramble runs in the danger hue so the player reads them as
+   redaction noise rather than authored content. */
+.redact {
+  color: var(--color-danger);
+  opacity: 0.85;
+  /* Scramble strings are long unbroken runs of FILL block characters
+     and stitched FRAGMENT phrases — without these properties, an
+     intrinsic-sized grid track (e.g. the action items table's
+     `minmax(8rem, max-content)` owner column) grows to the scramble's
+     full natural width and starves the 1fr description column down
+     to a single character per line. Allowing the browser to break
+     anywhere collapses the redacted span's max-content to
+     per-character width so it sizes like ordinary wrapping text. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

@@ -2,9 +2,13 @@ import type { ArtifactTemplate } from '../../types'
 
 // Test / tutorial cartridge document. Bound to its own pedestal so the
 // vertical-slice loop (dispense → scan → dock → canonize) doesn't have
-// to overwrite an existing cart-bearing pedestal. Partial state crops to
-// 33% of the body via partialFraction so a one-of-three-nodes dock
-// produces a visible gap.
+// to overwrite an existing cart-bearing pedestal. Partial state is
+// per-fragment: each of the three authored test-variation nodes
+// (tv-001..003) declares an explicit reveal ref pointing at one of
+// the doc's three prose blocks (Overview block 0, Operating Notes
+// block 0, Operating Notes block 1). Scanning a specific node unlocks
+// exactly that paragraph in the wiki regardless of how many other
+// fragments are in the cart.
 //
 // `test-cartridge-notes` (a comm) is registered with attachedTo:
 // 'test-cartridge', so completing this cart unlocks the attached ambient
@@ -16,7 +20,6 @@ export const testCartridge: ArtifactTemplate = {
   pageNumber: '006',
   drift: 0.12,
   slug: 'test-cartridge',
-  partialFraction: 0.33,
   filename: 'test-cartridge-fixture.artifact',
   filetype: 'ARTIFACT',
   author: 'Archive Custody',

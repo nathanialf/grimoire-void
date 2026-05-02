@@ -14,7 +14,8 @@ import { renderBlocks } from '../utils/renderBlocks'
 import { renderText } from '../utils/renderText'
 import { applyPartial } from '../utils/applyPartial'
 import { deriveMedia } from '../data'
-import { useCartridgeStates } from '../data/loadState'
+import { useCartridgeStates, useGatheredBySlug } from '../data/loadState'
+import { revealsForGathered } from '../data/variations'
 import shared from '../styles/shared.module.css'
 import styles from '../styles/TemplatePage.module.css'
 import type {
@@ -39,13 +40,20 @@ import type {
 
 export function TemplatePage(props: TemplateData) {
   // Partial-state cropping: when the bound cart is half-docked (state =
-  // 'partial') and the doc declares a partialFraction, swap in the
-  // cropped body before dispatching to the kind-specific renderer.
+  // 'partial'), redact every croppable position the player hasn't yet
+  // scanned. Each authored VariationNode carries a `reveals` array
+  // pointing at exact doc positions (a paragraph in a section, a
+  // timeline entry, an action-item row, an IRA metric, etc.) — the
+  // wiki composes the visible doc from the union of revealed positions
+  // across the slot's gathered nodes. Two players with the same scan
+  // count can see different reveals depending on which fragments they
+  // recovered.
   // 'complete' shows the whole body; ambient docs (no pedestal) never
   // reach 'partial' state and bypass this entirely.
   const states = useCartridgeStates()
-  const doc = props.partialFraction !== undefined && states[props.slug] === 'partial'
-    ? applyPartial(props, props.partialFraction)
+  const gathered = useGatheredBySlug(props.slug)
+  const doc = states[props.slug] === 'partial'
+    ? applyPartial(props, revealsForGathered(gathered))
     : props
   return (
     <PageFrame pageNumber={doc.pageNumber}>
@@ -119,7 +127,7 @@ function ServiceRecord({ entries }: { entries: ServiceEntry[] }) {
       <ol className={styles.serviceRecordList}>
         {entries.map((e, i) => (
           <li key={i} className={styles.serviceRecordRow}>
-            <span className={styles.serviceRecordDate}>{e.date}</span>
+            <span className={styles.serviceRecordDate}>{renderText(e.date)}</span>
             <span className={styles.serviceRecordEntry}>{renderText(e.entry)}</span>
           </li>
         ))}
@@ -194,15 +202,15 @@ function ResponseAnalysisTable({ analysis }: { analysis: IncidentResponseAnalysi
           <div className={styles.responseMetric}>
             <span className={styles.responseAbbr}>{r.abbr}</span>
             <span className={styles.responseMetricLabel}>{r.metric}</span>
-            <span className={styles.responseValue}>{r.data.value}</span>
+            <span className={styles.responseValue}>{renderText(r.data.value)}</span>
           </div>
           <div className={styles.responseDetail}>
             <span className={styles.responseDetailLabel}>Rationale</span>
-            <span className={styles.responseDetailText}>{r.data.rationale}</span>
+            <span className={styles.responseDetailText}>{renderText(r.data.rationale)}</span>
           </div>
           <div className={styles.responseDetail}>
             <span className={styles.responseDetailLabel}>Improvement</span>
-            <span className={styles.responseDetailText}>{r.data.improvement ?? 'None.'}</span>
+            <span className={styles.responseDetailText}>{r.data.improvement !== undefined ? renderText(r.data.improvement) : 'None.'}</span>
           </div>
         </div>
       ))}
@@ -225,9 +233,9 @@ function ActionItemsTable({ items }: { items: ActionItem[] }) {
         <div key={i} className={styles.actionsRow}>
           <span className={styles.actionsCellNum}>{String(i + 1).padStart(2, '0')}</span>
           <span className={styles.actionsCellAction}>{renderText(item.description)}</span>
-          <span className={styles.actionsCellOwner}>{item.owner}</span>
+          <span className={styles.actionsCellOwner}>{renderText(item.owner)}</span>
           <span className={`${styles.actionsCellPriority} ${priorityClass(item.priority)}`}>{item.priority}</span>
-          <span className={styles.actionsCellDue}>{item.dueDate}</span>
+          <span className={styles.actionsCellDue}>{renderText(item.dueDate)}</span>
           <span className={`${styles.actionsCellStatus} ${statusClass(item.status)}`}>{item.status}</span>
         </div>
       ))}
@@ -315,7 +323,7 @@ function SurveyDoc({ doc }: { doc: SurveyTemplate }) {
                 <span className={c.status === 'KIA' ? styles.casualtyKia : styles.casualtyLost}>
                   {c.status}
                 </span>{' '}
-                {c.text}
+                {renderText(c.text)}
               </li>
             ))}
           </ul>

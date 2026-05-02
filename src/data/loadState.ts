@@ -223,3 +223,19 @@ export function useSlots(): Record<number, SlotPayload> {
 export function useDiscoveredVariations(): string[] {
   return useSyncExternalStore(subscribe, getVariationsSnapshot, getVariationsSnapshot)
 }
+
+// Reactive lookup of the docked slot's gathered map for a given slug.
+// Returns the literal `Record<string, true>` from the slot (one slot
+// per slug by invariant) so downstream code can resolve gathered node
+// IDs to authored reveal refs. Held-cart progress is intentionally
+// excluded because the wiki only reflects canonised / partially-
+// canonised material — fragments still in-hand have not entered the
+// archive yet.
+const EMPTY_GATHERED: Record<string, true> = Object.freeze({}) as Record<string, true>
+export function useGatheredBySlug(slug: string): Record<string, true> {
+  const slotsByIndex = useSlots()
+  for (const v of Object.values(slotsByIndex)) {
+    if (v.slug === slug) return v.gathered
+  }
+  return EMPTY_GATHERED
+}

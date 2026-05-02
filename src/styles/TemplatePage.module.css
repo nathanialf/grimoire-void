@@ -342,10 +342,18 @@
 
 .actionsRow {
   display: grid;
+  /* Owner used to be `minmax(8rem, max-content)` which let the column
+     grow to whatever the longest owner string measured at — combined
+     with the other fixed-width tracks (priority/due/status totalling
+     20rem) and gaps, that left the description column's `minmax(0,
+     1fr)` track with effectively zero remaining space at narrow
+     content widths, collapsing to one character per line and inflating
+     vertical height. Capping owner with `minmax(0, 12rem)` keeps it
+     bounded and shrinkable, so 1fr always has predictable room. */
   grid-template-columns:
     3rem
     minmax(0, 1fr)
-    minmax(8rem, max-content)
+    minmax(0, 12rem)
     5rem
     8rem
     7rem;
@@ -404,7 +412,13 @@
   font-weight: 700;
 }
 
-@media (max-width: 900px) {
+/* Match the .twoCol breakpoint (1100px) so the stacked single-column
+   layout kicks in before the 6-track grid runs out of room. Tablet-
+   portrait widths (~820px–1024px) sit just above the old 900px
+   breakpoint where the desktop grid was cramped; bumping the
+   threshold up to 1100px collapses the table into per-row labelled
+   stacks at the same point the page itself stops being two-column. */
+@media (max-width: 1100px) {
   .actionsRow {
     grid-template-columns: 1fr;
     gap: 2px;
