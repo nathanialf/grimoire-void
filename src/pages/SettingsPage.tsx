@@ -19,9 +19,9 @@ const TIER_LABELS: Record<VisionTier, string> = {
 };
 
 const TIER_DESCRIPTIONS: Record<VisionTier, string> = {
-  0: 'Sensor minimum — the world resolves only as the sparse vertex points your suit can still pick up.',
-  1: 'Mid-tier — geometric edges become visible, but surfaces remain unrendered.',
-  2: 'Full sensor capability — the world as the camera fully resolves it.',
+  0: 'Vertex points only.',
+  1: 'Geometric edges only.',
+  2: 'Surfaces resolved.',
 };
 
 function resetGame() {
@@ -58,56 +58,69 @@ export function SettingsPage() {
 
         <ChapterDivider label="Operator Controls" />
 
-        <div className={shared.prose}>
-          <p>Vision tier — degrades how the world renders inside a variation. Persists across reloads. Progression-gated in the final game; freely toggled here while the suit-upgrade system is unbuilt.</p>
-          <p>{TIER_DESCRIPTIONS[tier]}</p>
-          <div className={styles.tierGroup} role="radiogroup" aria-label="Vision Tier">
-            {([0, 1, 2] as const).map((t) => {
-              const active = tier === t;
-              return (
-                <button
-                  key={t}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  className={`${styles.tierButton} ${active ? styles.tierButtonActive : ''}`}
-                  onClick={() => setVisionTier(t)}
-                >
-                  <PixelatedText letterSpacing={2} textTransform="uppercase">
-                    {TIER_LABELS[t]}
-                  </PixelatedText>
-                </button>
-              );
-            })}
+        <div className={styles.menu}>
+          <div className={styles.row}>
+            <div className={styles.rowLabel}>
+              <PixelatedText letterSpacing={2} textTransform="uppercase">Vision Tier</PixelatedText>
+            </div>
+            <div className={styles.tierGroup} role="radiogroup" aria-label="Vision Tier">
+              {([0, 1, 2] as const).map((t) => {
+                const active = tier === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    className={`${styles.tierButton} ${active ? styles.tierButtonActive : ''}`}
+                    onClick={() => setVisionTier(t)}
+                  >
+                    <PixelatedText letterSpacing={2} textTransform="uppercase">
+                      {TIER_LABELS[t]}
+                    </PixelatedText>
+                  </button>
+                );
+              })}
+            </div>
+            <div className={styles.rowHint}>{TIER_DESCRIPTIONS[tier]}</div>
           </div>
 
-          <p>Post-processing — disables wiki chromatic aberration and the 3D scene effect chain (bloom, CA, scanlines, grain, dither, vignette, derez sort). The raw scene renders without colour-fringed chrome. Persists across reloads.</p>
-          <p>These effects are intended ambience — the game's look depends on them. With this setting disabled, presentation will read as incomplete.</p>
-          <div className={styles.tierGroup} role="radiogroup" aria-label="Post-processing">
-            {([true, false] as const).map((on) => {
-              const active = postFx === on;
-              return (
-                <button
-                  key={on ? 'on' : 'off'}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  className={`${styles.tierButton} ${active ? styles.tierButtonActive : ''}`}
-                  onClick={() => setPostProcessing(on)}
-                >
-                  <PixelatedText letterSpacing={2} textTransform="uppercase">
-                    {on ? 'On' : 'Off'}
-                  </PixelatedText>
-                </button>
-              );
-            })}
+          <div className={styles.row}>
+            <div className={styles.rowLabel}>
+              <PixelatedText letterSpacing={2} textTransform="uppercase">Post-Processing</PixelatedText>
+            </div>
+            <div className={styles.tierGroup} role="radiogroup" aria-label="Post-processing">
+              {([true, false] as const).map((on) => {
+                const active = postFx === on;
+                return (
+                  <button
+                    key={on ? 'on' : 'off'}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    className={`${styles.tierButton} ${active ? styles.tierButtonActive : ''}`}
+                    onClick={() => setPostProcessing(on)}
+                  >
+                    <PixelatedText letterSpacing={2} textTransform="uppercase">
+                      {on ? 'On' : 'Off'}
+                    </PixelatedText>
+                  </button>
+                );
+              })}
+            </div>
+            <div className={styles.rowHint}>Bloom, CA, scanlines, grain, vignette.</div>
           </div>
 
-          <p>Wipes every docked cartridge, discovered variation, and any other persistent state from this browser, then reloads.</p>
-          <button type="button" className={styles.resetButton} onClick={resetGame}>
-            <span className="visually-hidden">Reset Game</span>
-            <PixelatedText letterSpacing={2} textTransform="uppercase">Reset Game</PixelatedText>
-          </button>
+          <div className={styles.row}>
+            <div className={styles.rowLabel}>
+              <PixelatedText letterSpacing={2} textTransform="uppercase">Reset</PixelatedText>
+            </div>
+            <button type="button" className={styles.resetButton} onClick={resetGame}>
+              <span className="visually-hidden">Reset Game</span>
+              <PixelatedText letterSpacing={2} textTransform="uppercase">Wipe Save</PixelatedText>
+            </button>
+            <div className={styles.rowHint}>Clears all carts and variations, then reloads.</div>
+          </div>
         </div>
       </div>
     </PageFrame>
