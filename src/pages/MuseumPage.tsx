@@ -515,7 +515,7 @@ export function MuseumPage() {
         const wrongSlug = cart && cart.slug !== null && cart.slug !== n.slug
         let label = 'SCAN'
         if (!cart) label = 'NO CART'
-        else if (wrongSlug) label = `WRONG CART · ${n.slug.replace(/-/g, ' ').toUpperCase()}`
+        else if (wrongSlug) label = 'WRONG CART'
         triggers.push({
           zone: { minX: aabb.min[0], maxX: aabb.max[0], minZ: aabb.min[2], maxZ: aabb.max[2] },
           onActivate: () => { scanNode(n.id, n.slug) },
