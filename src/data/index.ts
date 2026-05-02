@@ -24,6 +24,7 @@ import { hollowBlade } from './artifact/hollow-blade'
 import { spectralCaul } from './artifact/spectral-caul'
 import { thresholdAccords } from './artifact/threshold-accords'
 import { recordingAperture } from './artifact/recording-aperture'
+import { cartridge } from './artifact/cartridge'
 import { variantTerminal } from './artifact/variant-terminal'
 import { testCartridge } from './artifact/test-cartridge'
 import { tmp4Artifact } from './artifact/tmp4-artifact'
@@ -68,6 +69,7 @@ export const REGISTRY: DocEntry[] = [
   { data: hollowBlade,      route: '/artifact/hollow-blade',      ticker: 'placeholder', cartridge: true },
   { data: spectralCaul,     route: '/artifact/spectral-caul',     ticker: 'placeholder', cartridge: true },
   { data: recordingAperture, route: '/artifact/recording-aperture', ticker: 'none'        },
+  { data: cartridge,        route: '/artifact/cartridge',         ticker: 'none'        },
   { data: variantTerminal,  route: '/artifact/variant-terminal',  ticker: 'none'        },
   { data: testCartridge,    route: '/artifact/test-cartridge',    ticker: 'placeholder', cartridge: true },
   { data: testCartridgeNotes, route: '/comm/test-cartridge-notes', ticker: 'placeholder', attachedTo: 'test-cartridge' },

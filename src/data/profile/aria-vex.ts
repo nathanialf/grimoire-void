@@ -2,7 +2,7 @@ import type { ProfileTemplate } from '../../types'
 
 export const ariaVex: ProfileTemplate = {
   kind: 'profile',
-  pageNumber: '007',
+  pageNumber: '008',
   drift: 0.31,
   slug: 'aria-vex',
   filename: 'vex-a-s9-2207.profile',

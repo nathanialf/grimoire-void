@@ -13,7 +13,7 @@ import type { ArtifactTemplate } from '../../types'
 
 export const testCartridge: ArtifactTemplate = {
   kind: 'artifact',
-  pageNumber: '005',
+  pageNumber: '006',
   drift: 0.12,
   slug: 'test-cartridge',
   partialFraction: 0.33,

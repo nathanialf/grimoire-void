@@ -22,6 +22,12 @@ export const recordingAperture: ArtifactTemplate = {
     title: 'Recording Aperture',
     tags: ['equipment', 'archive issue', 'field instrument', 'cartridge interface'],
   },
+  image: {
+    aspect: 'square',
+    src: '/images/recording-aperture.svg',
+    alt: 'Recording Aperture — profile and three-quarter wireframe diagrams',
+    caption: 'Fig. 02 — Recording Aperture, Mark I. Profile (top) and ¾ angle (bottom) wireframes; rear face carries the operator display.',
+  },
   sections: [
     {
       heading: 'Instrument Overview',

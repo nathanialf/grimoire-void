@@ -7,7 +7,7 @@ import type { CommTemplate } from '../../types'
 
 export const testCartridgeNotes: CommTemplate = {
   kind: 'comm',
-  pageNumber: '006',
+  pageNumber: '007',
   drift: 0.07,
   slug: 'test-cartridge-notes',
   filename: 'custody-notes-test-cartridge.cmm',

@@ -7,7 +7,7 @@ import type { SurveyTemplate } from '../../types'
 
 export const theMuseum: SurveyTemplate = {
   kind: 'survey',
-  pageNumber: '004',
+  pageNumber: '005',
   drift: 0.04,
   slug: 'the-museum',
   filename: 'survey-the-museum.survey',

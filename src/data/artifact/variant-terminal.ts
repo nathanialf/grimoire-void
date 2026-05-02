@@ -7,7 +7,7 @@ import type { ArtifactTemplate } from '../../types'
 
 export const variantTerminal: ArtifactTemplate = {
   kind: 'artifact',
-  pageNumber: '003',
+  pageNumber: '004',
   drift: 0.09,
   slug: 'variant-terminal',
   filename: 'fixture-variant-terminal.artifact',
