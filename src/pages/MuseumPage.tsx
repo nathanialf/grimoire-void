@@ -1,6 +1,5 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import { Matrix4, Quaternion, Vector3 } from 'three'
 import { Scene } from '../museum/Scene'
 import {
@@ -34,7 +33,7 @@ import { TerminalLog } from '../museum/TerminalLog'
 import { DoorPrompt } from '../museum/DoorPrompt'
 import { HeldCart, HeldTool } from '../museum/CartTool'
 import { nodeAabb } from '../museum/nodeAabb'
-import { TerminalInput } from '../museum/TerminalInput'
+import { VariantTerminalUI } from '../museum/VariantTerminalUI'
 import { pixelSort } from '../museum/effects/pixelSortUniform'
 import { datamosh } from '../museum/effects/datamoshUniform'
 import { useNavigate } from '../hooks/useNavigate'
@@ -72,16 +71,15 @@ const MUSEUM_RETURN_SPAWN: SpawnPose = { pos: [0, 1.6, -10.5], lookAt: [0, 1.6, 
 const CARCOSA_SPAWN: SpawnPose = { pos: [0, 1.6, -8.8], lookAt: [0, 1.6, 0] }
 
 // Diegetic terminal focus: the camera flies to a fixed pose squarely in
-// front of the variant terminal's screen and locks there so the input
-// overlay reads as the screen content. Screen plane sits just inside
-// the bezel; viewing distance is ~0.9m so the screen fills most of the
-// frame without consuming it. Look target is the screen center, so the
-// player sees the screen head-on regardless of which way they were
-// facing when they engaged.
+// front of the variant terminal's screen and locks there so the dialog
+// reads as the screen content. Screen plane sits just inside the bezel;
+// viewing distance is ~0.9 m so the screen fills most of the frame
+// without consuming it. Eye Y is matched to screen-center Y so the
+// player sees the dialog head-on.
 const TERMINAL_SCREEN_Z = WALL_Z + variantTerminalFixture.depth - 0.005
 const TERMINAL_FOCUS_POS: [number, number, number] = [
   variantTerminalFixture.centerX,
-  1.6,
+  variantTerminalFixture.centerY,
   TERMINAL_SCREEN_Z + 0.9,
 ]
 const TERMINAL_FOCUS_LOOKAT: [number, number, number] = [
@@ -90,23 +88,6 @@ const TERMINAL_FOCUS_LOOKAT: [number, number, number] = [
   TERMINAL_SCREEN_Z,
 ]
 const TERMINAL_TRANSITION_MS = 480
-
-// Visible CRT screen rect — must match CarcosaTerminal's `screenW/screenH`
-// (78% × 70% of the fixture). The diegetic dialog is sized to cover it.
-const TERMINAL_SCREEN_W = variantTerminalFixture.width * 0.78
-const TERMINAL_SCREEN_H = variantTerminalFixture.height * 0.7
-// drei <Html transform> mounts children inside a CSS3D plane and
-// applies an internal `factor = 400 / (distanceFactor || 10)` divisor
-// to the matrix scale parts before emitting the CSS matrix3d (see
-// drei/web/Html.js — getObjectCSSMatrix multipliers `1/f`). With no
-// `distanceFactor` set the factor is 40, so my "intuitive" scale of
-// `world / dom_px` ends up rendered 40× smaller and the dialog
-// collapses to a few viewport pixels. The pre-multiply by 40 cancels
-// drei's divisor so the dialog actually occupies the screen rect.
-const TERMINAL_DOM_W = 720
-const TERMINAL_DOM_H = Math.round(TERMINAL_DOM_W * (TERMINAL_SCREEN_H / TERMINAL_SCREEN_W))
-const TERMINAL_HTML_FACTOR = 40
-const TERMINAL_HTML_SCALE = (TERMINAL_SCREEN_W / TERMINAL_DOM_W) * TERMINAL_HTML_FACTOR
 
 type TerminalPhase = 'closed' | 'enter' | 'open' | 'exit'
 
@@ -210,6 +191,37 @@ export function MuseumPage() {
   useEffect(() => {
     derezInventory()
   }, [])
+
+  // Release pointer lock while the variant terminal is open, and
+  // re-engage it the moment the player leaves the terminal so they
+  // don't have to click to regain look-control. drei's
+  // PointerLockControls.disconnect() only removes its listeners — it
+  // does NOT exit the browser's pointer lock — so without the explicit
+  // exit the cursor stays hidden and clicks on the dialog route to the
+  // locked canvas instead. The re-lock leans on the transient
+  // activation from the closing gesture (Esc, ×-click, Enter, or
+  // known-row click) which all qualify as user gestures, so the
+  // browser allows requestPointerLock for ~1–3 seconds afterward.
+  // Touch devices skip both branches.
+  const wasTerminalLocked = useRef(false)
+  useEffect(() => {
+    if (touch) return
+    const prev = wasTerminalLocked.current
+    wasTerminalLocked.current = terminalLocked
+    if (terminalLocked && document.pointerLockElement) {
+      document.exitPointerLock()
+      return
+    }
+    if (prev && !terminalLocked) {
+      const canvas = canvasContainerRef.current?.querySelector('canvas')
+      if (canvas && document.pointerLockElement !== canvas) {
+        const req = (canvas as HTMLElement).requestPointerLock?.()
+        if (req && typeof (req as Promise<void>).catch === 'function') {
+          (req as Promise<void>).catch(() => {})
+        }
+      }
+    }
+  }, [terminalLocked, touch])
 
   // Countdown loop (rAF-based) — keeps running through scene swaps so the
   // timer persists when the player is in Carcosa.
@@ -556,51 +568,27 @@ export function MuseumPage() {
             onArrived={() => setTerminalPhase('open')}
             onExited={() => setTerminalPhase('closed')}
           />
-          {/* Variant terminal dialog rendered ON the CRT screen plane
-              only while the player is actively using the terminal.
-              Always-on rendering caused buggy behaviour from far away
-              (drei's CSS3D layer composites separately from the
-              WebGL scene, so the dialog was visible/clickable from
-              positions where it shouldn't be). The wrapper div has
-              an explicit pixel size because drei mounts children
-              inside three nested divs and only the outermost gets
-              the `style` prop — the innermost collapses to natural
-              content size and `width: 100%` resolves to 0. Gated on
-              `activeScene === 'museum'` so it doesn't bleed into
-              Carcosa via drei's out-of-tree portal. */}
+          {/* Variant terminal dialog. Rendered as in-scene meshes on
+              the CRT screen plane so the EffectComposer post-FX
+              (bloom, halation, scanlines, CA, vignette) hits it like
+              every other scene element — phosphor glow comes from
+              real bloom on emissive `<Text>`, not CSS text-shadow.
+              Mounted only while phase is 'open' so the dialog's
+              keydown listener actually unmounts on teleport — leaving
+              it mounted with a `visible` flag would let the listener
+              keep capturing keystrokes into the input even after we've
+              swapped scenes to Carcosa. */}
           {activeScene === 'museum' && terminalPhase === 'open' && (
-            <Html
-              transform
-              occlude={false}
+            <VariantTerminalUI
               position={[
                 variantTerminalFixture.centerX,
                 variantTerminalFixture.centerY,
-                TERMINAL_SCREEN_Z + 0.001,
+                TERMINAL_SCREEN_Z + 0.003,
               ]}
-              scale={[TERMINAL_HTML_SCALE, TERMINAL_HTML_SCALE, TERMINAL_HTML_SCALE]}
-              zIndexRange={[100, 0]}
-            >
-              <div
-                style={{
-                  width: `${TERMINAL_DOM_W}px`,
-                  height: `${TERMINAL_DOM_H}px`,
-                  pointerEvents: 'auto',
-                  color: '#7cffa3',
-                  fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-                  // No solid bg here — let the embedded panel's
-                  // semi-transparent background composite over the
-                  // live CRT canvas behind so the green phosphor
-                  // bleeds through.
-                  background: 'transparent',
-                }}
-              >
-                <TerminalInput
-                  embedded
-                  onLoad={handleLoadVariation}
-                  onClose={() => setTerminalPhase('exit')}
-                />
-              </div>
-            </Html>
+              onLoad={handleLoadVariation}
+              onClose={() => setTerminalPhase('exit')}
+              touch={touch}
+            />
           )}
           <Effects />
           <FirstFrameProbe onReady={() => setSceneReady(true)} />
@@ -619,7 +607,12 @@ export function MuseumPage() {
       </Canvas>
       </div>
       <TerminalLog ms={msLeft} />
-      {touch && <TouchControls input={inputRef} />}
+      {/* TouchControls renders a full-screen .touchLayer (pointer-events:auto)
+          to capture the joystick + look-swipe gestures. While the variant
+          terminal dialog is open it would swallow every tap before the
+          canvas could raycast to a list row, ENTER, or × — so unmount it
+          for the duration of the dialog. Player input is locked anyway. */}
+      {touch && !terminalLocked && <TouchControls input={inputRef} />}
       {/* Guard against the index briefly outliving its trigger: when an
           aim trigger removes itself in response to its own onActivate
           (dispenser, tool rack, demo node), the doors array shrinks

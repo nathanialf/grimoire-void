@@ -129,11 +129,17 @@ export function Controls({
   }, [touch, gl])
 
   // 'E' key activates the currently-inside trigger (desktop only — mobile
-  // uses the DoorPrompt button directly).
+  // uses the DoorPrompt button directly). Skip while locked (e.g. the
+  // variant terminal dialog is open — re-firing its trigger would
+  // restart the camera flight and flicker the dialog) and skip when
+  // the focus is in a text input (typing 'e' as part of a keyword
+  // would otherwise re-engage the same trigger).
   useEffect(() => {
     if (touch) return
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== 'KeyE') return
+      if (lockedRef.current) return
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
       const i = activeRef.current
       if (i === null) return
       triggersRef.current[i]?.onActivate()

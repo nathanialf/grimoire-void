@@ -202,10 +202,17 @@ export function CarcosaTerminal() {
   const screenH = f.height * 0.7
   const screenZ = WALL_Z + f.depth - 0.005
 
+  // raycast={() => null} on every CRT mesh: the variant terminal
+  // dialog (VariantTerminalUI) renders a few mm in front of the
+  // screen plane and needs to receive all pointer events. The CRT
+  // itself is purely decorative — never interactive — so suppressing
+  // its raycast both keeps clicks reaching the dialog and avoids the
+  // halo plane (which is large and emissive) eating clicks aimed at
+  // the dialog's edges.
   return (
     <group>
       {/* CRT bezel / housing — chunky 1990s sci-fi monitor. */}
-      <mesh position={[f.centerX, f.centerY, bodyZ]}>
+      <mesh position={[f.centerX, f.centerY, bodyZ]} raycast={() => null}>
         <boxGeometry args={[f.width, f.height, f.depth]} />
         <meshStandardMaterial
           color="#b6b8bc"
@@ -216,7 +223,7 @@ export function CarcosaTerminal() {
         />
       </mesh>
       {/* Inner bezel — recessed dark lip framing the screen. */}
-      <mesh position={[f.centerX, f.centerY, screenZ - 0.002]}>
+      <mesh position={[f.centerX, f.centerY, screenZ - 0.002]} raycast={() => null}>
         <boxGeometry args={[screenW + 0.04, screenH + 0.04, 0.01]} />
         <meshStandardMaterial
           color="#3a3c40"
@@ -228,13 +235,16 @@ export function CarcosaTerminal() {
       </mesh>
       {/* Screen plane — emissive map = the texture itself, so it glows
           regardless of room light and survives bloom from the post-stack. */}
-      <mesh position={[f.centerX, f.centerY, screenZ]}>
+      <mesh position={[f.centerX, f.centerY, screenZ]} raycast={() => null}>
         <planeGeometry args={[screenW, screenH]} />
         <meshBasicMaterial map={tex} toneMapped={false} />
       </mesh>
       {/* Tiny indicator LED bottom-right of the bezel — green to match the
           screen text, sells the "powered" state. */}
-      <mesh position={[f.centerX + f.width / 2 - 0.06, f.centerY - f.height / 2 + 0.05, bodyZ + halfD + 0.001]}>
+      <mesh
+        position={[f.centerX + f.width / 2 - 0.06, f.centerY - f.height / 2 + 0.05, bodyZ + halfD + 0.001]}
+        raycast={() => null}
+      >
         <boxGeometry args={[0.02, 0.02, 0.005]} />
         <meshBasicMaterial color="#7cffa3" toneMapped={false} />
       </mesh>
@@ -243,7 +253,10 @@ export function CarcosaTerminal() {
           own footprint (no spill onto the wall, floor, or nearby
           fixtures). The plane sits a hair forward of the screen plane
           to avoid z-fighting at distance. */}
-      <mesh position={[f.centerX, f.centerY, screenZ + 0.006]}>
+      <mesh
+        position={[f.centerX, f.centerY, screenZ + 0.006]}
+        raycast={() => null}
+      >
         <planeGeometry args={[Math.min(screenW * 1.2, f.width * 0.95), Math.min(screenH * 1.3, f.height * 0.95)]} />
         <meshBasicMaterial
           map={haloTex}

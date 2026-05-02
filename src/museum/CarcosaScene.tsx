@@ -321,11 +321,49 @@ function ReturnPortal({ tier }: { tier: VisionTier }) {
   }
 
   if (tier === 1) {
+    // Tier-1 wireframe — was a single `<mesh wireframe>` with
+    // wireframeLinewidth={2}, but most WebGL implementations clamp
+    // line width to 1 pixel (driver limit), so on HiDPI the door
+    // read as faint dots. We render the same outline-plus-diagonal
+    // pattern as four long thin emissive plane segments so the
+    // bloom catches them and the line thickness is consistent
+    // across every entry path. Each segment is `1.4 * BLOOM_LIFT`
+    // emissive so the green/white phosphor rim survives the
+    // EffectComposer chain (Bloom → ColorGrade → CA → Halation)
+    // even when the surrounding scene is dim.
+    const t = 0.012
     return (
-      <mesh position={[0, DOOR_CY, PORTAL_Z]}>
-        <planeGeometry args={[DOOR_W, DOOR_H]} />
-        <meshBasicMaterial color="#ffffff" wireframe wireframeLinewidth={2} toneMapped={false} />
-      </mesh>
+      <group position={[0, DOOR_CY, PORTAL_Z]}>
+        {/* top */}
+        <mesh position={[0, DOOR_H / 2, 0]}>
+          <planeGeometry args={[DOOR_W, t]} />
+          <meshBasicMaterial color="#ffffff" toneMapped={false} />
+        </mesh>
+        {/* bottom */}
+        <mesh position={[0, -DOOR_H / 2, 0]}>
+          <planeGeometry args={[DOOR_W, t]} />
+          <meshBasicMaterial color="#ffffff" toneMapped={false} />
+        </mesh>
+        {/* left */}
+        <mesh position={[-DOOR_W / 2, 0, 0]}>
+          <planeGeometry args={[t, DOOR_H]} />
+          <meshBasicMaterial color="#ffffff" toneMapped={false} />
+        </mesh>
+        {/* right */}
+        <mesh position={[DOOR_W / 2, 0, 0]}>
+          <planeGeometry args={[t, DOOR_H]} />
+          <meshBasicMaterial color="#ffffff" toneMapped={false} />
+        </mesh>
+        {/* diagonal — bottom-left to top-right. Built as a thin
+            plane rotated to the diagonal angle. */}
+        <mesh
+          position={[0, 0, 0]}
+          rotation={[0, 0, Math.atan2(DOOR_H, DOOR_W)]}
+        >
+          <planeGeometry args={[Math.hypot(DOOR_W, DOOR_H), t]} />
+          <meshBasicMaterial color="#ffffff" toneMapped={false} />
+        </mesh>
+      </group>
     )
   }
 
